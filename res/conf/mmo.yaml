@@ -1,0 +1,69 @@
+entities:
+  worlds:
+    - id: 'w1'
+      name: '主世界'
+      max: 100
+    - id: 'w2'
+      name: '世界二'
+      max: 100
+  zones:
+    - id: 'z11'
+      name: '测试区-11'
+      max: 100
+    - id: 'z12'
+      name: '测试区-12'
+      max: 100
+    - id: 'z21'
+      name: '测试区-21'
+      max: 100
+    - id: 'z22'
+      name: '测试区-22'
+      max: 100
+  rooms:
+    - id: 'r111'
+      name: '测试房间111'
+      max: 100
+    - id: 'r112'
+      name: '测试房间112'
+      max: 100
+    - id: 'r121'
+      name: '测试房间121'
+      max: 100
+    - id: 'r122'
+      name: '测试房间122'
+      max: 100
+    - id: 'r211'
+      name: '测试房间211'
+      max: 100
+    - id: 'r212'
+      name: '测试房间212'
+      max: 100
+    - id: 'r221'
+      name: '测试房间221'
+      max: 100
+    - id: 'r222'
+      name: '测试房间222'
+      max: 100
+
+relations:
+  worlds:
+    - world: 'w1'
+      zones:
+        - zone: 'z11'
+          rooms: [ 'r111', 'r112' ]
+        - zone: 'z12'
+          rooms: [ 'r121', 'r122' ]
+    - world: 'w2'
+      zones:
+        - zone: 'z21'
+          rooms: [ 'r211', 'r212' ]
+        - zone: 'z22'
+          rooms: [ 'r221', 'r222' ]
+
+default: 'w0'
+
+log:
+  type: 3 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+  level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
+  path: 'log/mmo.log'
+  size: '10MB'

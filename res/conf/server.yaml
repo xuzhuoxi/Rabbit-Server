@@ -1,0 +1,21 @@
+servers:
+  - id: "main"
+    name: "main"
+    to_home:
+      name: "to-home"
+      network: "http"
+      addr: "127.0.0.1:9000"
+    from_user:
+      name: "from-user"
+      network: "tcp"
+      addr: "127.0.0.1:40000"
+    from_home:
+      name: "from-home"
+      network: "http"
+      addr: "127.0.0.1:9001"
+    log:
+      type: 3 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+      level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
+      path: 'log/main.log'
+      size: '10MB'
+mmo: 'conf/mmo.yaml'
