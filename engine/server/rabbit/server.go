@@ -61,8 +61,7 @@ func (s *RabbitServer) Init() {
 	// 初始化Logger
 	cfgLog := s.Config.Log
 	if nil != cfgLog {
-		s.Logger.SetConfig(logx.LogConfig{Type: cfgLog.LogType, Level: cfgLog.LogLevel,
-			FilePath: cfgLog.GetLogPath(), MaxSize: cfgLog.MaxSize()})
+		s.Logger.SetConfig(cfgLog.ToLogConfig())
 	}
 }
 

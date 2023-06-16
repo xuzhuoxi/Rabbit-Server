@@ -66,8 +66,7 @@ func (o *RabbitLoader) initMMO() {
 		o.MMOManager.SetLogger(logx.DefaultLogger())
 	} else {
 		logger := logx.NewLogger()
-		logger.SetConfig(logx.LogConfig{Type: cfgLog.LogType, Level: cfgLog.LogLevel,
-			FilePath: cfgLog.GetLogPath(), MaxSize: cfgLog.MaxSize()})
+		logger.SetConfig(cfgLog.ToLogConfig())
 		o.MMOManager.SetLogger(logger)
 	}
 	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.ConfigMMO)
