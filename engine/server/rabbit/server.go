@@ -10,6 +10,7 @@ import (
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
 	"github.com/xuzhuoxi/infra-go/netx/tcpx"
+	"net/http"
 	"time"
 )
 
@@ -103,14 +104,12 @@ func (o *RabbitServer) Save() {
 }
 
 func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
-	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternLink)
-	homeClient.LinkWithGet(url, o.getLinkInfo(), o.StatusDetail.StatsWeight())
+	o.doLink()
 	go o.rateUpdate()
 }
 
 func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
-	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternUnlink)
-	homeClient.UnlinkWithGet(url, o.GetId())
+	o.doUnlink()
 }
 
 func (o *RabbitServer) rateUpdate() {
@@ -118,10 +117,17 @@ func (o *RabbitServer) rateUpdate() {
 	rate := o.Config.GetToHomeRate()
 	for o.SockServer.IsRunning() {
 		time.Sleep(rate)
-		err := homeClient.UpdateWithGet(url, o.getUpdateStatus())
+		err := homeClient.UpdateWithGet(url, o.getUpdateStatus(), o.onUpdateResp)
 		if nil != err {
 			o.Logger.Warnln(err)
 		}
+	}
+}
+
+func (o *RabbitServer) onUpdateResp(resp *http.Response, body *[]byte) {
+	if resp.StatusCode == http.StatusNotFound {
+		// 未注册, 重连
+		o.doLink()
 	}
 }
 
@@ -133,6 +139,18 @@ func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
 	address := evd.Data.(string)
 	AddressProxy.RemoveByAddress(address)
 	o.StatusDetail.RemoveLinkCount()
+}
+
+// -----------------------------------
+
+func (o *RabbitServer) doLink() {
+	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternLink)
+	homeClient.LinkWithGet(url, o.getLinkInfo(), o.StatusDetail.StatsWeight())
+}
+
+func (o *RabbitServer) doUnlink() {
+	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternUnlink)
+	homeClient.UnlinkWithGet(url, o.GetId())
 }
 
 func (o *RabbitServer) getLinkInfo() core.LinkEntity {
