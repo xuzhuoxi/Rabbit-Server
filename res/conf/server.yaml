@@ -1,21 +1,42 @@
 servers:
-  - id: "main"
+  - id: "main01"
     name: "main"
     to_home:
       name: "to-home"
       network: "http"
       addr: "127.0.0.1:9000"
+    to_home_rate: 10s # h小时 m分钟 s秒 ms毫秒 ns纳秒
     from_user:
-      name: "from-user"
+      name: "main01-from-user"
       network: "tcp"
-      addr: "127.0.0.1:40000"
+      addr: "127.0.0.1:41000"
     from_home:
-      name: "from-home"
+      name: "main01-from-home"
       network: "http"
-      addr: "127.0.0.1:9001"
+      addr: "127.0.0.1:9101"
     log:
       type: 3 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
       level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
-      path: 'log/main.log'
+      path: 'log/main01.log'
+      size: '10MB'
+  - id: "main02"
+    name: "main"
+    to_home:
+      name: "to-home"
+      network: "http"
+      addr: "127.0.0.1:9000"
+    to_home_rate: 5s # h小时 m分钟 s秒 ms毫秒 ns纳秒
+    from_user:
+      name: "main02-from-user"
+      network: "tcp"
+      addr: "127.0.0.1:42000"
+    from_home:
+      name: "main02-from-home"
+      network: "http"
+      addr: "127.0.0.1:9201"
+    log:
+      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+      level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
+      path: 'log/main02.log'
       size: '10MB'
 mmo: 'conf/mmo.yaml'

@@ -1,11 +1,16 @@
 package rabbit
 
 import (
+	"fmt"
+	"github.com/xuzhuoxi/Rabbit-Home/core"
+	homeClient "github.com/xuzhuoxi/Rabbit-Home/core/client"
+	"github.com/xuzhuoxi/Rabbit-Home/core/home"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
 	"github.com/xuzhuoxi/infra-go/netx/tcpx"
+	"time"
 )
 
 func NewRabbitServer(cfg server.CfgRabbitServer) server.IRabbitServer {
@@ -25,6 +30,7 @@ func NewRabbitServer(cfg server.CfgRabbitServer) server.IRabbitServer {
 }
 
 type RabbitServer struct {
+	eventx.EventDispatcher
 	Config       server.CfgRabbitServer
 	SockServer   tcpx.ITCPServer
 	ExtContainer IServerExtensionContainer
@@ -33,71 +39,114 @@ type RabbitServer struct {
 	Logger       logx.ILogger
 }
 
-func (s *RabbitServer) GetId() string {
-	return s.Config.Id
+func (o *RabbitServer) GetId() string {
+	return o.Config.Id
 }
 
-func (s *RabbitServer) GetName() string {
-	return s.Config.Name
+func (o *RabbitServer) GetName() string {
+	return o.Config.Name
 }
 
-func (s *RabbitServer) GetLogger() logx.ILogger {
-	return s.Logger
+func (o *RabbitServer) GetLogger() logx.ILogger {
+	return o.Logger
 }
 
-func (s *RabbitServer) Init() {
+func (o *RabbitServer) Init() {
 	// 注入Extension
 	ForeachExtensionConstructor(func(constructor FuncServerExtension) {
-		s.ExtContainer.AppendExtension(constructor())
+		o.ExtContainer.AppendExtension(constructor())
 	})
 	// 设置SockServer信息
-	s.SockServer.SetName(s.Config.FromUser.Name)
-	s.SockServer.SetMax(100)
-	s.SockServer.SetLogger(s.Logger)
+	o.SockServer.SetName(o.Config.FromUser.Name)
+	o.SockServer.SetMax(100)
+	o.SockServer.SetLogger(o.Logger)
 	// 初始化ExtensionManager
-	s.ExtManager.InitManager(s.SockServer.GetPackHandlerContainer(), s.ExtContainer, s.SockServer)
-	s.ExtManager.SetLogger(s.Logger)
-	s.ExtManager.SetAddressProxy(AddressProxy)
+	o.ExtManager.InitManager(o.SockServer.GetPackHandlerContainer(), o.ExtContainer, o.SockServer)
+	o.ExtManager.SetLogger(o.Logger)
+	o.ExtManager.SetAddressProxy(AddressProxy)
 	// 初始化Logger
-	cfgLog := s.Config.Log
+	cfgLog := o.Config.Log
 	if nil != cfgLog {
-		s.Logger.SetConfig(cfgLog.ToLogConfig())
+		o.Logger.SetConfig(cfgLog.ToLogConfig())
 	}
 }
 
-func (s *RabbitServer) Start() {
-	s.StatusDetail.Start()
-	s.SockServer.AddEventListener(netx.ServerEventConnOpened, s.onConnOpened)
-	s.SockServer.AddEventListener(netx.ServerEventConnClosed, s.onConnClosed)
-	s.ExtManager.StartManager()
-	s.SockServer.StartServer(netx.SockParams{
-		Network: netx.ParseSockNetwork(s.Config.FromUser.Network), LocalAddress: s.Config.FromUser.Addr}) //这里会阻塞
+func (o *RabbitServer) Start() {
+	o.StatusDetail.Start()
+	o.SockServer.AddEventListener(netx.ServerEventStart, o.onSockServerStart)
+	o.SockServer.AddEventListener(netx.ServerEventStop, o.onSockServerStop)
+	o.SockServer.AddEventListener(netx.ServerEventConnOpened, o.onConnOpened)
+	o.SockServer.AddEventListener(netx.ServerEventConnClosed, o.onConnClosed)
+	o.ExtManager.StartManager()
+	o.SockServer.StartServer(netx.SockParams{
+		Network: netx.ParseSockNetwork(o.Config.FromUser.Network), LocalAddress: o.Config.FromUser.Addr}) //这里会阻塞
 }
 
-func (s *RabbitServer) Stop() {
-	s.SockServer.StopServer()
-	s.ExtManager.StopManager()
-	s.SockServer.RemoveEventListener(netx.ServerEventConnOpened, s.onConnOpened)
-	s.SockServer.RemoveEventListener(netx.ServerEventConnClosed, s.onConnClosed)
-	s.StatusDetail.ReStats()
+func (o *RabbitServer) Stop() {
+	o.SockServer.StopServer()
+	o.ExtManager.StopManager()
+	o.SockServer.RemoveEventListener(netx.ServerEventConnOpened, o.onConnOpened)
+	o.SockServer.RemoveEventListener(netx.ServerEventConnClosed, o.onConnClosed)
+	o.SockServer.RemoveEventListener(netx.ServerEventStop, o.onSockServerStop)
+	o.SockServer.RemoveEventListener(netx.ServerEventStart, o.onSockServerStart)
+	o.StatusDetail.ReStats()
 }
 
-func (s *RabbitServer) Restart() {
-	s.Stop()
-	s.Start()
+func (o *RabbitServer) Restart() {
+	o.Stop()
+	o.Save()
+	o.Start()
 }
 
-func (s *RabbitServer) Save() {
-	//TODO implement me
-	panic("implement me")
+func (o *RabbitServer) Save() {
+	o.Logger.Infoln("Save!")
 }
 
-func (s *RabbitServer) onConnOpened(evd *eventx.EventData) {
-	s.StatusDetail.AddLinkCount()
+func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
+	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternLink)
+	homeClient.LinkWithGet(url, o.getLinkInfo(), o.StatusDetail.StatsWeight())
+	go o.rateUpdate()
 }
 
-func (s *RabbitServer) onConnClosed(evd *eventx.EventData) {
+func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
+	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternUnlink)
+	homeClient.UnlinkWithGet(url, o.GetId())
+}
+
+func (o *RabbitServer) rateUpdate() {
+	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternUpdate)
+	rate := o.Config.GetToHomeRate()
+	for o.SockServer.IsRunning() {
+		time.Sleep(rate)
+		err := homeClient.UpdateWithGet(url, o.getUpdateStatus())
+		if nil != err {
+			o.Logger.Warnln(err)
+		}
+	}
+}
+
+func (o *RabbitServer) onConnOpened(evd *eventx.EventData) {
+	o.StatusDetail.AddLinkCount()
+}
+
+func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
 	address := evd.Data.(string)
 	AddressProxy.RemoveByAddress(address)
-	s.StatusDetail.RemoveLinkCount()
+	o.StatusDetail.RemoveLinkCount()
+}
+
+func (o *RabbitServer) getLinkInfo() core.LinkEntity {
+	return core.LinkEntity{
+		Id:         o.Config.FromUser.Name,
+		PlatformId: o.Config.Name,
+		Name:       o.Config.Name,
+		Network:    o.Config.FromUser.Network,
+		Addr:       o.Config.FromUser.Addr,
+	}
+}
+func (o *RabbitServer) getUpdateStatus() core.EntityStatus {
+	return core.EntityStatus{
+		Id:     o.Config.FromUser.Name,
+		Weight: o.StatusDetail.StatsWeight(),
+	}
 }

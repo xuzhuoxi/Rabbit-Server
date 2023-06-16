@@ -7,8 +7,10 @@ import (
 	"github.com/xuzhuoxi/infra-go/filex"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/osxu"
-	"gopkg.in/yaml.v3"
+	"github.com/xuzhuoxi/infra-go/timex"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"time"
 )
 
 type CfgNet struct {
@@ -18,12 +20,17 @@ type CfgNet struct {
 }
 
 type CfgRabbitServer struct {
-	Id       string       `yaml:"id"`                  // 服务哭喊实例Id
-	Name     string       `yaml:"name"`                // 服务器名称
-	ToHome   CfgNet       `yaml:"to_home"`             // Home连接信息
-	FromUser CfgNet       `yaml:"from_user"`           // 接收User请求
-	FromHome CfgNet       `yaml:"from_home,omitempty"` // 接收Home命令
-	Log      *logx.CfgLog `yaml:"log,omitempty"`       // 日志记录路径
+	Id         string       `yaml:"id"`                  // 服务哭喊实例Id
+	Name       string       `yaml:"name"`                // 服务器名称
+	ToHome     CfgNet       `yaml:"to_home"`             // Home连接信息
+	ToHomeRate string       `yaml:"to_home_rate"`        // Home更新频率
+	FromUser   CfgNet       `yaml:"from_user"`           // 接收User请求
+	FromHome   CfgNet       `yaml:"from_home,omitempty"` // 接收Home命令
+	Log        *logx.CfgLog `yaml:"log,omitempty"`       // 日志记录路径
+}
+
+func (o CfgRabbitServer) GetToHomeRate() time.Duration {
+	return timex.ParseDuration(o.ToHomeRate)
 }
 
 type CfgRabbitServerConfig struct {
