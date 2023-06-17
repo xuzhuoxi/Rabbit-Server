@@ -5,7 +5,7 @@ servers:
       name: "to-home"
       network: "http"
       addr: "127.0.0.1:9000"
-    to_home_rate: 10s # h小时 m分钟 s秒 ms毫秒 ns纳秒
+    to_home_rate: 30s # h小时 m分钟 s秒 ms毫秒 ns纳秒
     from_user:
       name: "main01-from-user"
       network: "tcp"
@@ -17,7 +17,7 @@ servers:
     extension:
       all: true
     log:
-      type: 3 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
       level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
       path: 'log/main01.log'
       size: '10MB'
@@ -27,7 +27,7 @@ servers:
       name: "to-home"
       network: "http"
       addr: "127.0.0.1:9000"
-    to_home_rate: 5s # h小时 m分钟 s秒 ms毫秒 ns纳秒
+    to_home_rate: 60s # h小时 m分钟 s秒 ms毫秒 ns纳秒
     from_user:
       name: "main02-from-user"
       network: "tcp"
@@ -38,7 +38,7 @@ servers:
       addr: "127.0.0.1:9201"
     extension:
       all: false
-      list: [ "login" ]
+      list: [ "Login" ]
     log:
       type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
       level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off

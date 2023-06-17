@@ -3,9 +3,10 @@
 package main
 
 import (
+	"github.com/xuzhuoxi/Rabbit-Server/demo/server/cmd"
+	_ "github.com/xuzhuoxi/Rabbit-Server/demo/server/extension"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/loader"
 	_ "github.com/xuzhuoxi/Rabbit-Server/engine/server/rabbit"
-	"github.com/xuzhuoxi/Rabbit-Server/src/cmd"
 )
 
 func main() {

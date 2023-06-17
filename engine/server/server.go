@@ -31,7 +31,10 @@ type IRabbitServerInfo interface {
 
 // Extension ---
 
-type IRabbitExtension = protox.IProtocolExtension
+type IRabbitExtension interface {
+	protox.IProtocolExtension
+	logx.ILoggerSupport
+}
 type FuncNewRabbitExtension func() IRabbitExtension
 type IRabbitExtensionContainer = protox.IProtocolExtensionContainer
 type IRabbitExtensionManager = protox.IExtensionManager
