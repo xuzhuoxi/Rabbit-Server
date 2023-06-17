@@ -4,41 +4,48 @@
 package rabbit
 
 import (
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"github.com/xuzhuoxi/infra-go/timex"
 	"time"
 )
 
-func NewServerExtensionManager(statusDetail *ServerStatusDetail) IServerExtensionManager {
-	rs := &ServerExtensionManager{
+// Container
+
+func NewRabbitExtensionContainer() server.IRabbitExtensionContainer {
+	return protox.NewIProtocolExtensionContainer()
+}
+
+// Manager
+
+func NewRabbitExtensionManager(statusDetail *ServerStatusDetail) server.IRabbitExtensionManager {
+	rs := &RabbitExtensionManager{
 		ExtensionManager: *protox.NewExtensionManager(),
 		StatusDetail:     statusDetail,
 	}
 	return rs
 }
 
-type IServerExtensionManager = protox.IExtensionManager
-
-type ServerExtensionManager struct {
+type RabbitExtensionManager struct {
 	protox.ExtensionManager
 	StatusDetail *ServerStatusDetail
 }
 
-func (m *ServerExtensionManager) StartManager() {
+func (m *RabbitExtensionManager) StartManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.InitExtensions()
 	m.HandlerContainer.AppendPackHandler(m.onSnailGamePack)
 }
 
-func (m *ServerExtensionManager) StopManager() {
+func (m *RabbitExtensionManager) StopManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.HandlerContainer.ClearHandler(m.onSnailGamePack)
 	m.ExtensionContainer.DestroyExtensions()
 }
 
-func (m *ServerExtensionManager) onSnailGamePack(msgData []byte, senderAddress string, other interface{}) bool {
+func (m *RabbitExtensionManager) onSnailGamePack(msgData []byte, senderAddress string, other interface{}) bool {
 	//m.Log.Infoln("ExtManager.onPack", senderAddress, msgData)
 	m.StatusDetail.AddReqCount()
 	name, pid, uid, data := m.ParseMessage(msgData)

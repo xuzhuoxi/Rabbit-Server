@@ -19,6 +19,18 @@ type CfgNet struct {
 	Addr    string `yaml:"addr"`
 }
 
+type CfgExtension struct {
+	All  bool     `yaml:"all"`
+	List []string `yaml:"list,omitempty"`
+}
+
+func (o CfgExtension) Extensions() []string {
+	if o.All {
+		return GetAllExtensions()
+	}
+	return o.List
+}
+
 type CfgRabbitServer struct {
 	Id         string       `yaml:"id"`                  // 服务哭喊实例Id
 	Name       string       `yaml:"name"`                // 服务器名称
@@ -26,6 +38,7 @@ type CfgRabbitServer struct {
 	ToHomeRate string       `yaml:"to_home_rate"`        // Home更新频率
 	FromUser   CfgNet       `yaml:"from_user"`           // 接收User请求
 	FromHome   CfgNet       `yaml:"from_home,omitempty"` // 接收Home命令
+	Extension  CfgExtension `yaml:"extension,omitempty"` // Extension配置
 	Log        *logx.CfgLog `yaml:"log,omitempty"`       // 日志记录路径
 }
 
@@ -35,7 +48,7 @@ func (o CfgRabbitServer) GetToHomeRate() time.Duration {
 
 type CfgRabbitServerConfig struct {
 	Servers []CfgRabbitServer `yaml:"servers"`
-	MMO     string            `yaml:"mmo"`
+	MMO     string            `yaml:"mmo,omitempty"`
 }
 
 func PauseServerConfig(filePath string) (cfg *CfgRabbitServerConfig, err error) {

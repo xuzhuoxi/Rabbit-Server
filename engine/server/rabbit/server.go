@@ -14,28 +14,32 @@ import (
 	"time"
 )
 
-func NewRabbitServer(cfg server.CfgRabbitServer) server.IRabbitServer {
-	container := NewServerExtensionContainer()
-	server := tcpx.NewTCPServer()
-	statusDetail := NewServerStatusDetail(cfg.Name, DefaultStatsInterval)
-	mgr := NewServerExtensionManager(statusDetail)
+func init() {
+	server.RegisterRabbitServerDefault(NewIRabbitServer)
+}
+
+func NewIRabbitServer() server.IRabbitServer {
+	return NewRabbitServer()
+}
+
+func NewRabbitServer() *RabbitServer {
+	container := NewRabbitExtensionContainer()
+	sockServer := tcpx.NewTCPServer()
 	logger := logx.NewLogger()
-	return &RabbitServer{
-		Config:       cfg,
-		SockServer:   server,
+	rs := &RabbitServer{
+		SockServer:   sockServer,
 		ExtContainer: container,
-		ExtManager:   mgr,
-		StatusDetail: statusDetail,
 		Logger:       logger,
 	}
+	return rs
 }
 
 type RabbitServer struct {
 	eventx.EventDispatcher
 	Config       server.CfgRabbitServer
 	SockServer   tcpx.ITCPServer
-	ExtContainer IServerExtensionContainer
-	ExtManager   IServerExtensionManager
+	ExtContainer server.IRabbitExtensionContainer
+	ExtManager   server.IRabbitExtensionManager
 	StatusDetail *ServerStatusDetail
 	Logger       logx.ILogger
 }
@@ -52,23 +56,41 @@ func (o *RabbitServer) GetLogger() logx.ILogger {
 	return o.Logger
 }
 
-func (o *RabbitServer) Init() {
-	// 注入Extension
-	ForeachExtensionConstructor(func(constructor FuncServerExtension) {
-		o.ExtContainer.AppendExtension(constructor())
-	})
-	// 设置SockServer信息
-	o.SockServer.SetName(o.Config.FromUser.Name)
-	o.SockServer.SetMax(100)
-	o.SockServer.SetLogger(o.Logger)
-	// 初始化ExtensionManager
-	o.ExtManager.InitManager(o.SockServer.GetPackHandlerContainer(), o.ExtContainer, o.SockServer)
-	o.ExtManager.SetLogger(o.Logger)
-	o.ExtManager.SetAddressProxy(AddressProxy)
+func (o *RabbitServer) Init(cfg server.CfgRabbitServer) {
+	o.Config = cfg
+	o.StatusDetail = NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
+	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
+
 	// 初始化Logger
 	cfgLog := o.Config.Log
 	if nil != cfgLog {
 		o.Logger.SetConfig(cfgLog.ToLogConfig())
+	}
+	// 设置SockServer信息
+	o.SockServer.SetName(o.Config.FromUser.Name)
+	o.SockServer.SetMax(100)
+	o.SockServer.SetLogger(o.Logger)
+	// 注入Extension
+	o.initExtensions()
+	// 初始化ExtensionManager
+	// 这里把Manager、SockServer、Container进行关联
+	o.ExtManager.InitManager(o.SockServer.GetPackHandlerContainer(), o.ExtContainer, o.SockServer)
+	o.ExtManager.SetLogger(o.Logger)
+	o.ExtManager.SetAddressProxy(AddressProxy)
+}
+
+func (o *RabbitServer) initExtensions() {
+	list := o.Config.Extension.Extensions()
+	if len(list) == 0 {
+		return
+	}
+	for _, extName := range list {
+		extension, err := server.NewRabbitExtension(extName)
+		if err != nil {
+			o.Logger.Errorln(err)
+			continue
+		}
+		o.ExtContainer.AppendExtension(extension)
 	}
 }
 

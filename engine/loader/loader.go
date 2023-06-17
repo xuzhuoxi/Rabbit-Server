@@ -7,7 +7,6 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/rabbit"
 	"github.com/xuzhuoxi/infra-go/logx"
 )
 
@@ -77,9 +76,12 @@ func (o *RabbitLoader) initServers() {
 		return
 	}
 	for _, cfgServer := range o.ConfigServer.Servers {
-		s := rabbit.NewRabbitServer(cfgServer)
+		s, err := server.NewRabbitServer(cfgServer.Name)
+		if nil != err {
+			panic(err)
+		}
 		o.Servers = append(o.Servers, s)
-		s.Init()
+		s.Init(cfgServer)
 	}
 }
 

@@ -1,6 +1,6 @@
 servers:
   - id: "main01"
-    name: "main"
+    name: "RabbitServer"
     to_home:
       name: "to-home"
       network: "http"
@@ -14,13 +14,15 @@ servers:
       name: "main01-from-home"
       network: "http"
       addr: "127.0.0.1:9101"
+    extension:
+      all: true
     log:
       type: 3 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
       level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
       path: 'log/main01.log'
       size: '10MB'
-  - id: "main02"
-    name: "main"
+  - id: "rabbit_login"
+    name: "RabbitServer"
     to_home:
       name: "to-home"
       network: "http"
@@ -34,6 +36,9 @@ servers:
       name: "main02-from-home"
       network: "http"
       addr: "127.0.0.1:9201"
+    extension:
+      all: false
+      list: [ "login" ]
     log:
       type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
       level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
