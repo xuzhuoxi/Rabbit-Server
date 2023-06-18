@@ -1,4 +1,4 @@
-// Package server
+// Package extension
 // Created by xuzhuoxi
 // on 2019-03-03.
 // @author xuzhuoxi
@@ -26,8 +26,8 @@ type RabbitLoginExtension struct {
 
 func (e *RabbitLoginExtension) InitExtension() error {
 	e.GetLogger().Debugln("LoginExtension.InitExtension", e.Name)
-	e.SetRequestHandlerJson(LoginId, e.onRequestLogin)
-	e.SetRequestHandlerJson(ReLoginId, e.onRequestReLogin)
+	e.SetRequestHandlerString(LoginId, e.onRequestLogin)
+	e.SetRequestHandlerString(ReLoginId, e.onRequestReLogin)
 	return nil
 }
 
@@ -38,24 +38,24 @@ func (e *RabbitLoginExtension) DestroyExtension() error {
 	return nil
 }
 
-func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionJsonResponse, req protox.IExtensionJsonRequest) {
-	password := req.RequestJsonData()[0]
+func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
+	password := string(req.RequestStringData()[0])
 	if e.check(req.ClientId(), password) {
 		rabbit.AddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
-		resp.SendJsonResponse("ok")
-		e.GetLogger().Traceln("LoginExtension.onRequestLogin:", "Check Succ!", req.ProtoId(), req.ClientId(), password)
+		resp.SendStringResponse("ok", "200")
+		e.GetLogger().Traceln("LoginExtension.onRequestLogin:", "Check Suc!", req.ProtoId(), req.ClientId(), password)
 	} else {
 		e.GetLogger().Warnln("LoginExtension.onRequestLogin:", "Check Fail!", req.ProtoId(), req.ClientId(), password)
 	}
 }
 
-func (e *RabbitLoginExtension) onRequestReLogin(resp protox.IExtensionJsonResponse, req protox.IExtensionJsonRequest) {
-	password := req.RequestJsonData()[0]
+func (e *RabbitLoginExtension) onRequestReLogin(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
+	password := req.RequestStringData()[0]
 	if e.check(req.ClientId(), password) {
 		rabbit.AddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
-		resp.SendJsonResponse("ok")
+		resp.SendStringResponse("ok")
 		e.GetLogger().Traceln("LoginExtension.onRequestReLogin:", "Check Succ!", req.ProtoId(), req.ClientId(), password)
 	} else {
 		e.GetLogger().Warnln("LoginExtension.onRequestReLogin:", "Check Fail!", req.ProtoId(), req.ClientId(), password)

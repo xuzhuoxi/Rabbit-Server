@@ -7,7 +7,7 @@ package login
 
 import (
 	"fmt"
-	"github.com/xuzhuoxi/Rabbit-Server/demo/client"
+	"github.com/xuzhuoxi/Rabbit-Server/demo/client/net"
 	"math/rand"
 	"sync"
 	"testing"
@@ -18,7 +18,7 @@ const UserCount = 200 //服务器与测试程序运行在同一ip下,可用端�
 
 var (
 	UserIds     []string
-	UserClients map[string]*client.UserClient
+	UserClients map[string]*net.UserClient
 	sleep       = make(chan struct{})
 	once        sync.Once
 )
@@ -27,9 +27,9 @@ func init() {
 	for index := 0; index < UserCount; index++ {
 		UserIds = append(UserIds, fmt.Sprintf("u_%d", 10000+index))
 	}
-	UserClients = make(map[string]*client.UserClient)
+	UserClients = make(map[string]*net.UserClient)
 	for _, userId := range UserIds {
-		uc := client.NewUserClient(userId)
+		uc := net.NewUserClient(userId)
 		err := uc.Open()
 		if nil != err {
 			continue
@@ -71,7 +71,7 @@ func TestPressure(t *testing.T) {
 	<-sleep
 }
 
-func mgrAtRobot(uc *client.UserClient) {
+func mgrAtRobot(uc *net.UserClient) {
 	if err := uc.Open(); err != nil {
 		fmt.Println(err)
 		return

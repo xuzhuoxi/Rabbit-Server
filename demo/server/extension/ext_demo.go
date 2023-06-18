@@ -1,4 +1,4 @@
-// Package server
+// Package extension
 // Created by xuzhuoxi
 // on 2019-02-19.
 // @author xuzhuoxi
@@ -56,7 +56,7 @@ func (e *RabbitDemoExtension) InitExtension() error {
 	e.GetLogger().Debugln("DemoExtension.InitExtension", e.Name)
 	e.SetRequestHandler("N_0", e.onRequestNoneParam)
 	e.SetRequestHandlerBinary("B_0", e.onRequestBinary)
-	e.SetRequestHandlerJson("J_0", e.onRequestJson)
+	e.SetRequestHandlerString("J_0", e.onRequestJson)
 	e.SetRequestHandlerObject("Obj_0", e.onRequestObj, originObj{}, &paramHandler{})
 	return nil
 }
@@ -81,7 +81,7 @@ func (e *RabbitDemoExtension) onRequestBinary(resp protox.IExtensionBinaryRespon
 	e.GetLogger().Debugln("DemoExtension.onRequestBinary!", req, resp)
 }
 
-func (e *RabbitDemoExtension) onRequestJson(resp protox.IExtensionJsonResponse, req protox.IExtensionJsonRequest) {
+func (e *RabbitDemoExtension) onRequestJson(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestJson!", req, resp)
 }
 

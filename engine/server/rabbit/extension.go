@@ -35,17 +35,17 @@ func (m *RabbitExtensionManager) StartManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.InitExtensions()
-	m.HandlerContainer.AppendPackHandler(m.onSnailGamePack)
+	m.HandlerContainer.AppendPackHandler(m.onRabbitGamePack)
 }
 
 func (m *RabbitExtensionManager) StopManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.HandlerContainer.ClearHandler(m.onSnailGamePack)
+	m.HandlerContainer.ClearHandler(m.onRabbitGamePack)
 	m.ExtensionContainer.DestroyExtensions()
 }
 
-func (m *RabbitExtensionManager) onSnailGamePack(msgData []byte, senderAddress string, other interface{}) bool {
+func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress string, other interface{}) bool {
 	//m.Log.Infoln("ExtManager.onPack", senderAddress, msgData)
 	m.StatusDetail.AddReqCount()
 	name, pid, uid, data := m.ParseMessage(msgData)

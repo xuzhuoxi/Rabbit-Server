@@ -8,7 +8,7 @@ package demo
 import (
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/xuzhuoxi/Rabbit-Server/demo/client"
+	"github.com/xuzhuoxi/Rabbit-Server/demo/client/net"
 	"github.com/xuzhuoxi/infra-go/bytex"
 )
 
@@ -50,7 +50,7 @@ func (s *S) Func3() {
 	fmt.Println("S3")
 }
 
-func TestDemoExtension(uc *client.UserClient) {
+func TestDemoExtension(uc *net.UserClient) {
 	bsName := []byte("ObjDemo")
 	bsPid := []byte("Obj_0")
 	bsUid := []byte("顶你个肺")
