@@ -35,7 +35,7 @@ type IRabbitExtension interface {
 	protox.IProtocolExtension
 	logx.ILoggerSupport
 }
-type FuncNewRabbitExtension func() IRabbitExtension
+type FuncNewRabbitExtension func(name string) IRabbitExtension
 type IRabbitExtensionContainer = protox.IProtocolExtensionContainer
 type IRabbitExtensionManager = protox.IExtensionManager
 
@@ -101,7 +101,7 @@ func NewRabbitExtension(name string) (extension IRabbitExtension, err error) {
 	defer lock.RUnlock()
 	for _, meta := range extList {
 		if meta.Name == name {
-			return meta.C(), nil
+			return meta.C(name), nil
 		}
 	}
 	return nil, errors.New(fmt.Sprintf("No name[%s] at RabbitExtension list.", name))

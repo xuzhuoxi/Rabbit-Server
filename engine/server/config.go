@@ -49,6 +49,7 @@ func (o CfgRabbitServer) GetToHomeRate() time.Duration {
 type CfgRabbitServerConfig struct {
 	Servers []CfgRabbitServer `yaml:"servers"`
 	MMO     string            `yaml:"mmo,omitempty"`
+	Logger  *logx.CfgLog      `yaml:"log_global,omitempty"`
 }
 
 func PauseServerConfig(filePath string) (cfg *CfgRabbitServerConfig, err error) {

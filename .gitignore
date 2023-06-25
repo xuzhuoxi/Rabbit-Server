@@ -14,6 +14,7 @@
 .idea
 /build/debug/*
 /build/release/*
-/res/target/*
+/res/*.exe
 
+/res/log
 *.log

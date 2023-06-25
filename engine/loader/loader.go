@@ -19,13 +19,21 @@ func NewRabbitLoader() IRabbitLoader {
 }
 
 type IRabbitLoader interface {
+	logx.ILoggerGetter
 	LoadConfig(cfgPath string) error
-	InitServer()
-	StartServer()
-	StopServer()
+
+	InitServers()
+	StartServers()
+	StopServers()
+	SaveServers()
+
+	StartServer(id string)
+	StopServer(id string)
+	SaveServer(id string)
 }
 
 type RabbitLoader struct {
+	logx.LoggerSupport
 	ConfigServer *server.CfgRabbitServerConfig
 	ConfigMMO    *config.MMOConfig
 
@@ -49,9 +57,19 @@ func (o *RabbitLoader) LoadConfig(cfgPath string) error {
 	return nil
 }
 
-func (o *RabbitLoader) InitServer() {
+func (o *RabbitLoader) InitServers() {
+	o.initLogger()
 	o.initMMO()
 	o.initServers()
+}
+
+func (o *RabbitLoader) initLogger() {
+	logger := logx.NewLogger()
+	o.SetLogger(logger)
+	if o.ConfigServer == nil || o.ConfigServer.Logger == nil {
+		return
+	}
+	logger.SetConfig(o.ConfigServer.Logger.ToLogConfig())
 }
 
 func (o *RabbitLoader) initMMO() {
@@ -85,14 +103,44 @@ func (o *RabbitLoader) initServers() {
 	}
 }
 
-func (o *RabbitLoader) StartServer() {
+func (o *RabbitLoader) StartServer(id string) {
+	for _, s := range o.Servers {
+		if s.GetId() == id {
+			go s.Start()
+		}
+	}
+}
+
+func (o *RabbitLoader) StopServer(id string) {
+	for _, s := range o.Servers {
+		if s.GetId() == id {
+			s.Stop()
+		}
+	}
+}
+
+func (o *RabbitLoader) SaveServer(id string) {
+	for _, s := range o.Servers {
+		if s.GetId() == id {
+			s.Save()
+		}
+	}
+}
+
+func (o *RabbitLoader) StartServers() {
 	for _, s := range o.Servers {
 		go s.Start()
 	}
 }
 
-func (o *RabbitLoader) StopServer() {
+func (o *RabbitLoader) StopServers() {
 	for index := len(o.Servers) - 1; index >= 0; index -= 1 {
 		o.Servers[index].Stop()
+	}
+}
+
+func (o *RabbitLoader) SaveServers() {
+	for _, s := range o.Servers {
+		s.Save()
 	}
 }

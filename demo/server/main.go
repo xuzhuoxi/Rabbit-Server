@@ -15,7 +15,7 @@ func main() {
 	if nil != err {
 		panic(err)
 	}
-	loader.InitServer()
+	loader.InitServers()
 	loader.StartServer()
 	cmd.StartCmdListener()
 }
