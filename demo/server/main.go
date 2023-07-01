@@ -14,11 +14,11 @@ func main() {
 	fmt.Println()
 	fmt.Println("Rabbit-Server:demo Start... ")
 	loader := loader.DefaultLoader
-	err := loader.LoadConfig("rabbit.yaml")
+	err := loader.LoadRabbitConfig("rabbit.yaml")
 	if nil != err {
 		panic(err)
 	}
-	loader.InitLoader()
+	loader.InitLoggerManager()
 	loader.StartServers()
 	cmd.StartCmdListener()
 }

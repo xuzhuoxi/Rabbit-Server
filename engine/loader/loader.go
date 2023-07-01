@@ -20,8 +20,14 @@ func NewRabbitLoader() IRabbitLoader {
 
 type IRabbitLoader interface {
 	logx.ILoggerGetter
-	LoadConfig(rootPath string) error
-	InitLoader() (logManager logx.ILoggerManager, mmoManager mmo.IMMOManager)
+	// LoadRabbitConfig 加载配置
+	LoadRabbitConfig(rootPath string) error
+	// InitLoggerManager 初始化Log管理器
+	InitLoggerManager() logx.ILoggerManager
+	// InitServers 初始化逻辑服务器
+	InitServers()
+	// CreateMMOWorld 创建MMO世界
+	CreateMMOWorld() mmo.IMMOManager
 
 	StartServers()
 	StopServers()
@@ -49,7 +55,7 @@ func (o *RabbitLoader) GetLogger() logx.ILogger {
 	return o.LogManager.FindLogger(o.CfgLog.Default)
 }
 
-func (o *RabbitLoader) LoadConfig(rootPath string) error {
+func (o *RabbitLoader) LoadRabbitConfig(rootPath string) error {
 	cfgRoot, err := server.LoadRabbitRootConfig(rootPath)
 	if nil != err {
 		return err
@@ -70,11 +76,18 @@ func (o *RabbitLoader) LoadConfig(rootPath string) error {
 	return nil
 }
 
-func (o *RabbitLoader) InitLoader() (logManager logx.ILoggerManager, mmoManager mmo.IMMOManager) {
+func (o *RabbitLoader) InitLoggerManager() logx.ILoggerManager {
 	o.initLogger()
-	o.initMMO()
+	return o.LogManager
+}
+
+func (o *RabbitLoader) InitServers() {
 	o.initServers()
-	return o.LogManager, o.MMOManager
+}
+
+func (o *RabbitLoader) CreateMMOWorld() mmo.IMMOManager {
+	o.initMMOWorld()
+	return o.MMOManager
 }
 
 func (o *RabbitLoader) initLogger() {
@@ -89,26 +102,6 @@ func (o *RabbitLoader) initLogger() {
 		}
 		o.LogManager.SetDefault(o.CfgLog.Default)
 	}
-}
-
-func (o *RabbitLoader) initMMO() {
-	if o.CfgMMO == nil {
-		return
-	}
-	o.MMOManager = mmo.NewMMOManager()
-	o.MMOManager.InitManager()
-	if nil == o.CfgMMO.Log && len(o.CfgMMO.LogRef) == 0 {
-		o.MMOManager.SetLogger(o.LogManager.GetDefaultLogger())
-	} else {
-		if o.CfgMMO.Log != nil {
-			logger := logx.NewLogger()
-			logger.SetConfig(o.CfgMMO.Log.ToLogConfig())
-			o.MMOManager.SetLogger(logger)
-		} else {
-			o.MMOManager.SetLogger(o.LogManager.FindLogger(o.CfgMMO.LogRef))
-		}
-	}
-	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.CfgMMO)
 }
 
 func (o *RabbitLoader) initServers() {
@@ -128,6 +121,26 @@ func (o *RabbitLoader) initServers() {
 		}
 		s.Init(cfgServerItem)
 	}
+}
+
+func (o *RabbitLoader) initMMOWorld() {
+	if o.CfgMMO == nil {
+		return
+	}
+	o.MMOManager = mmo.NewMMOManager()
+	o.MMOManager.InitManager()
+	if nil == o.CfgMMO.Log && len(o.CfgMMO.LogRef) == 0 {
+		o.MMOManager.SetLogger(o.LogManager.GetDefaultLogger())
+	} else {
+		if o.CfgMMO.Log != nil {
+			logger := logx.NewLogger()
+			logger.SetConfig(o.CfgMMO.Log.ToLogConfig())
+			o.MMOManager.SetLogger(logger)
+		} else {
+			o.MMOManager.SetLogger(o.LogManager.FindLogger(o.CfgMMO.LogRef))
+		}
+	}
+	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.CfgMMO)
 }
 
 func (o *RabbitLoader) StartServer(id string) {
