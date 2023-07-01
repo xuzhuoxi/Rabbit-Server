@@ -4,12 +4,10 @@
 package server
 
 import (
-	"github.com/xuzhuoxi/infra-go/filex"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/utils"
 	"github.com/xuzhuoxi/infra-go/logx"
-	"github.com/xuzhuoxi/infra-go/osxu"
 	"github.com/xuzhuoxi/infra-go/timex"
-	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"time"
 )
 
@@ -31,7 +29,7 @@ func (o CfgExtension) Extensions() []string {
 	return o.List
 }
 
-type CfgRabbitServer struct {
+type CfgRabbitServerItem struct {
 	Id         string       `yaml:"id"`                  // 服务哭喊实例Id
 	Name       string       `yaml:"name"`                // 服务器名称
 	ToHome     CfgNet       `yaml:"to_home"`             // Home连接信息
@@ -39,29 +37,76 @@ type CfgRabbitServer struct {
 	FromUser   CfgNet       `yaml:"from_user"`           // 接收User请求
 	FromHome   CfgNet       `yaml:"from_home,omitempty"` // 接收Home命令
 	Extension  CfgExtension `yaml:"extension,omitempty"` // Extension配置
-	Log        *logx.CfgLog `yaml:"log,omitempty"`       // 日志记录路径
+	LogRef     string       `yaml:"log_ref,omitempty"`   // 日志记录路径
 }
 
-func (o CfgRabbitServer) GetToHomeRate() time.Duration {
+func (o CfgRabbitServerItem) GetToHomeRate() time.Duration {
 	return timex.ParseDuration(o.ToHomeRate)
 }
 
-type CfgRabbitServerConfig struct {
-	Servers []CfgRabbitServer `yaml:"servers"`
-	MMO     string            `yaml:"mmo,omitempty"`
-	Logger  *logx.CfgLog      `yaml:"log_global,omitempty"`
+type CfgRabbitServer struct {
+	Servers []CfgRabbitServerItem `yaml:"servers"`
 }
 
-func PauseServerConfig(filePath string) (cfg *CfgRabbitServerConfig, err error) {
-	if !filex.IsFile(filePath) {
-		filePath = filex.Combine(osxu.GetRunningDir(), filePath)
+type CfgRabbitLogItem struct {
+	Name string      `yaml:"name"`
+	Conf logx.CfgLog `yaml:"conf"`
+}
+
+type CfgRabbitLog struct {
+	Default string             `yaml:"default"`
+	Logs    []CfgRabbitLogItem `yaml:"logs"`
+}
+
+type CfgRabbitRoot struct {
+	LogPath    string `yaml:"log,omitempty"`
+	ServerPath string `yaml:"server,omitempty"`
+	MMOPath    string `yaml:"mmo,omitempty"`
+}
+
+func (o CfgRabbitRoot) LoadLogConfig() (conf *CfgRabbitLog, err error) {
+	if o.LogPath == "" {
+		return nil, nil
 	}
-	bs, err1 := ioutil.ReadFile(filePath)
-	if nil != err1 {
+	filePath := utils.FixFilePath(o.LogPath)
+	conf = &CfgRabbitLog{}
+	err = utils.UnmarshalFromYaml(filePath, conf)
+	if nil != err {
 		return nil, err
 	}
-	cfg = &CfgRabbitServerConfig{}
-	err = yaml.Unmarshal(bs, cfg)
+	return
+}
+
+func (o CfgRabbitRoot) LoadServerConfig() (conf *CfgRabbitServer, err error) {
+	if o.ServerPath == "" {
+		return nil, nil
+	}
+	filePath := utils.FixFilePath(o.ServerPath)
+	conf = &CfgRabbitServer{}
+	err = utils.UnmarshalFromYaml(filePath, conf)
+	if nil != err {
+		return nil, err
+	}
+	return
+}
+
+func (o CfgRabbitRoot) LoadMMOConfig() (conf *config.MMOConfig, err error) {
+	if o.MMOPath == "" {
+		return nil, nil
+	}
+	filePath := utils.FixFilePath(o.MMOPath)
+	conf = &config.MMOConfig{}
+	err = utils.UnmarshalFromYaml(filePath, conf)
+	if nil != err {
+		return nil, err
+	}
+	return
+}
+
+func LoadRabbitRootConfig(filePath string) (cfg *CfgRabbitRoot, err error) {
+	filePath = utils.FixFilePath(filePath)
+	cfg = &CfgRabbitRoot{}
+	err = utils.UnmarshalFromYaml(filePath, cfg)
 	if nil != err {
 		return nil, err
 	}

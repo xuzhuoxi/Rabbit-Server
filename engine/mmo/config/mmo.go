@@ -22,6 +22,7 @@ type MMOConfig struct {
 	Relations    *CfgRelations   `json:"relations" yaml:"relations"`
 	DefaultWorld string          `json:"default"yaml:"default"`
 	Log          *logx.CfgLog    `json:"log,omitempty" yaml:"log,omitempty"`
+	LogRef       string          `json:"log_ref,omitempty" yaml:"log_ref,omitempty"`
 }
 
 func (o *MMOConfig) CheckEntity(entityId string) bool {

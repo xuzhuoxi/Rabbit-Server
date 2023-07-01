@@ -25,23 +25,21 @@ func NewIRabbitServer() server.IRabbitServer {
 func NewRabbitServer() *RabbitServer {
 	container := NewRabbitExtensionContainer()
 	sockServer := tcpx.NewTCPServer()
-	logger := logx.NewLogger()
 	rs := &RabbitServer{
 		SockServer:   sockServer,
 		ExtContainer: container,
-		Logger:       logger,
 	}
 	return rs
 }
 
 type RabbitServer struct {
 	eventx.EventDispatcher
-	Config       server.CfgRabbitServer
+	logx.LoggerSupport
+	Config       server.CfgRabbitServerItem
 	SockServer   tcpx.ITCPServer
 	ExtContainer server.IRabbitExtensionContainer
 	ExtManager   server.IRabbitExtensionManager
 	StatusDetail *ServerStatusDetail
-	Logger       logx.ILogger
 }
 
 func (o *RabbitServer) GetId() string {
@@ -52,30 +50,21 @@ func (o *RabbitServer) GetName() string {
 	return o.Config.Name
 }
 
-func (o *RabbitServer) GetLogger() logx.ILogger {
-	return o.Logger
-}
-
-func (o *RabbitServer) Init(cfg server.CfgRabbitServer) {
+func (o *RabbitServer) Init(cfg server.CfgRabbitServerItem) {
 	o.Config = cfg
 	o.StatusDetail = NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
 	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
 
-	// 初始化Logger
-	cfgLog := o.Config.Log
-	if nil != cfgLog {
-		o.Logger.SetConfig(cfgLog.ToLogConfig())
-	}
 	// 设置SockServer信息
 	o.SockServer.SetName(o.Config.FromUser.Name)
 	o.SockServer.SetMax(100)
-	o.SockServer.SetLogger(o.Logger)
+	o.SockServer.SetLogger(o.GetLogger())
 	// 注入Extension
 	o.initExtensions()
 	// 初始化ExtensionManager
 	// 这里把Manager、SockServer、Container进行关联
 	o.ExtManager.InitManager(o.SockServer.GetPackHandlerContainer(), o.ExtContainer, o.SockServer)
-	o.ExtManager.SetLogger(o.Logger)
+	o.ExtManager.SetLogger(o.GetLogger())
 	o.ExtManager.SetAddressProxy(AddressProxy)
 }
 
@@ -87,7 +76,7 @@ func (o *RabbitServer) initExtensions() {
 	for _, extName := range list {
 		extension, err := server.NewRabbitExtension(extName)
 		if err != nil {
-			o.Logger.Errorln(err)
+			o.GetLogger().Errorln(err)
 			continue
 		}
 		o.ExtContainer.AppendExtension(extension)
@@ -122,7 +111,7 @@ func (o *RabbitServer) Restart() {
 }
 
 func (o *RabbitServer) Save() {
-	o.Logger.Infoln("Save!")
+	o.GetLogger().Infoln("Save!")
 }
 
 func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
@@ -141,7 +130,7 @@ func (o *RabbitServer) rateUpdate() {
 		time.Sleep(rate)
 		err := homeClient.UpdateWithGet(url, o.getUpdateStatus(), o.onUpdateResp)
 		if nil != err {
-			o.Logger.Warnln(err)
+			o.GetLogger().Warnln(err)
 		}
 	}
 }

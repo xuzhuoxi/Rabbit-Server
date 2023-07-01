@@ -16,7 +16,7 @@ type IRabbitServer interface {
 }
 
 type IRabbitServerController interface {
-	Init(cfg CfgRabbitServer)
+	Init(cfg CfgRabbitServerItem)
 	Start()
 	Stop()
 	Restart()
@@ -24,9 +24,9 @@ type IRabbitServerController interface {
 }
 
 type IRabbitServerInfo interface {
+	logx.ILoggerSupport
 	GetId() string
 	GetName() string
-	GetLogger() logx.ILogger
 }
 
 // Extension ---

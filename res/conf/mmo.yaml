@@ -61,9 +61,4 @@ relations:
           rooms: [ 'r221', 'r222' ]
 
 default: 'w0'
-
-log:
-  type: 3 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
-  level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
-  path: 'log/mmo.log'
-  size: '10MB'
+log_ref: 'log_mmo'

@@ -1,0 +1,26 @@
+default: log_global
+logs:
+  - name: log_global
+    conf:
+      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+      level: 0 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
+      path: 'log/server.log'
+      size: '10MB'
+  - name: log_main01
+    conf:
+      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+      level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
+      path: 'log/main01.log'
+      size: '10MB'
+  - name: log_main02
+    conf:
+      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+      level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
+      path: 'log/main02.log'
+      size: '10MB'
+  - name: log_mmo
+    conf:
+      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
+      level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
+      path: 'log/mmo.log'
+      size: '10MB'

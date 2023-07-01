@@ -16,11 +16,7 @@ servers:
       addr: "127.0.0.1:9101"
     extension:
       all: true
-    log:
-      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
-      level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
-      path: 'log/main01.log'
-      size: '10MB'
+    log_ref: 'log_main01'
   - id: "rabbit_login"
     name: "RabbitServer"
     to_home:
@@ -39,9 +35,4 @@ servers:
     extension:
       all: false
       list: [ "Login" ]
-    log:
-      type: 0 # 0:Console 1:RollingFile 2:DailyFile 3:DailyRollingFile
-      level: 3 # 0:All 1:Trace 2:Debug 3:Info 4:Warn 5:Error 6:Fatal 7:Off
-      path: 'log/main02.log'
-      size: '10MB'
-mmo: 'conf/mmo.yaml'
+    log_ref: 'log_main02'

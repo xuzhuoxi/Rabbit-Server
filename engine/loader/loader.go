@@ -20,9 +20,9 @@ func NewRabbitLoader() IRabbitLoader {
 
 type IRabbitLoader interface {
 	logx.ILoggerGetter
-	LoadConfig(cfgPath string) error
+	LoadConfig(rootPath string) error
+	InitLoader() (logManager logx.ILoggerManager, mmoManager mmo.IMMOManager)
 
-	InitServers()
 	StartServers()
 	StopServers()
 	SaveServers()
@@ -33,73 +33,100 @@ type IRabbitLoader interface {
 }
 
 type RabbitLoader struct {
-	logx.LoggerSupport
-	ConfigServer *server.CfgRabbitServerConfig
-	ConfigMMO    *config.MMOConfig
+	CfgLog    *server.CfgRabbitLog
+	CfgServer *server.CfgRabbitServer
+	CfgMMO    *config.MMOConfig
 
+	LogManager logx.ILoggerManager
 	MMOManager mmo.IMMOManager
 	Servers    []server.IRabbitServer
 }
 
-func (o *RabbitLoader) LoadConfig(cfgPath string) error {
-	cfgServer, err := server.PauseServerConfig(cfgPath)
+func (o *RabbitLoader) GetLogger() logx.ILogger {
+	if nil == o.CfgLog {
+		return o.LogManager.FindLogger(logx.DefaultLoggerName)
+	}
+	return o.LogManager.FindLogger(o.CfgLog.Default)
+}
+
+func (o *RabbitLoader) LoadConfig(rootPath string) error {
+	cfgRoot, err := server.LoadRabbitRootConfig(rootPath)
 	if nil != err {
 		return err
 	}
-	var cfgMMO *config.MMOConfig
-	if cfgServer.MMO != "" {
-		cfgMMO, err = config.ParseByYamlPath(cfgServer.MMO)
-		if nil != err {
-			return err
-		}
+	cfgLog, err := cfgRoot.LoadLogConfig()
+	if nil != err {
+		return err
 	}
-	o.ConfigServer, o.ConfigMMO = cfgServer, cfgMMO
+	cfgServer, err := cfgRoot.LoadServerConfig()
+	if nil != err {
+		return err
+	}
+	cfgMMO, err := cfgRoot.LoadMMOConfig()
+	if nil != err {
+		return err
+	}
+	o.CfgLog, o.CfgServer, o.CfgMMO = cfgLog, cfgServer, cfgMMO
 	return nil
 }
 
-func (o *RabbitLoader) InitServers() {
+func (o *RabbitLoader) InitLoader() (logManager logx.ILoggerManager, mmoManager mmo.IMMOManager) {
 	o.initLogger()
 	o.initMMO()
 	o.initServers()
+	return o.LogManager, o.MMOManager
 }
 
 func (o *RabbitLoader) initLogger() {
-	logger := logx.NewLogger()
-	o.SetLogger(logger)
-	if o.ConfigServer == nil || o.ConfigServer.Logger == nil {
-		return
+	o.LogManager = logx.DefaultLoggerManager
+	if nil == o.CfgLog {
+		logger := logx.NewLogger()
+		o.LogManager.RegisterLogger(logx.DefaultLoggerName, logger)
+		o.LogManager.SetDefault(logx.DefaultLoggerName)
+	} else {
+		for _, log := range o.CfgLog.Logs {
+			o.LogManager.GenLogger(log.Name, log.Conf)
+		}
+		o.LogManager.SetDefault(o.CfgLog.Default)
 	}
-	logger.SetConfig(o.ConfigServer.Logger.ToLogConfig())
 }
 
 func (o *RabbitLoader) initMMO() {
-	if o.ConfigMMO == nil {
+	if o.CfgMMO == nil {
 		return
 	}
 	o.MMOManager = mmo.NewMMOManager()
 	o.MMOManager.InitManager()
-	cfgLog := o.ConfigMMO.Log
-	if nil == cfgLog {
-		o.MMOManager.SetLogger(logx.DefaultLogger())
+	if nil == o.CfgMMO.Log && len(o.CfgMMO.LogRef) == 0 {
+		o.MMOManager.SetLogger(o.LogManager.GetDefaultLogger())
 	} else {
-		logger := logx.NewLogger()
-		logger.SetConfig(cfgLog.ToLogConfig())
-		o.MMOManager.SetLogger(logger)
+		if o.CfgMMO.Log != nil {
+			logger := logx.NewLogger()
+			logger.SetConfig(o.CfgMMO.Log.ToLogConfig())
+			o.MMOManager.SetLogger(logger)
+		} else {
+			o.MMOManager.SetLogger(o.LogManager.FindLogger(o.CfgMMO.LogRef))
+		}
 	}
-	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.ConfigMMO)
+	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.CfgMMO)
 }
 
 func (o *RabbitLoader) initServers() {
-	if o.ConfigServer == nil || len(o.ConfigServer.Servers) == 0 {
+	if o.CfgServer == nil || len(o.CfgServer.Servers) == 0 {
 		return
 	}
-	for _, cfgServer := range o.ConfigServer.Servers {
-		s, err := server.NewRabbitServer(cfgServer.Name)
+	for _, cfgServerItem := range o.CfgServer.Servers {
+		s, err := server.NewRabbitServer(cfgServerItem.Name)
 		if nil != err {
 			panic(err)
 		}
 		o.Servers = append(o.Servers, s)
-		s.Init(cfgServer)
+		if cfgServerItem.LogRef == "" {
+			s.SetLogger(o.LogManager.GetDefaultLogger())
+		} else {
+			s.SetLogger(o.LogManager.FindLogger(cfgServerItem.LogRef))
+		}
+		s.Init(cfgServerItem)
 	}
 }
 
