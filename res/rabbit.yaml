@@ -1,3 +1,4 @@
 log: conf/log.yaml
 server: conf/server.yaml
 mmo: conf/mmo.yaml
+db: conf/mysql.yaml

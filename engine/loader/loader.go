@@ -22,6 +22,9 @@ type IRabbitLoader interface {
 	logx.ILoggerGetter
 	// LoadRabbitConfig 加载配置
 	LoadRabbitConfig(rootPath string) error
+	// GetConfigs 取加载好的配置信息
+	GetConfigs() (root server.CfgRabbitRoot, log server.CfgRabbitLog, server server.CfgRabbitServer, mmo config.MMOConfig)
+
 	// InitLoggerManager 初始化Log管理器
 	InitLoggerManager() logx.ILoggerManager
 	// InitServers 初始化逻辑服务器
@@ -39,6 +42,7 @@ type IRabbitLoader interface {
 }
 
 type RabbitLoader struct {
+	CfgRoot   *server.CfgRabbitRoot
 	CfgLog    *server.CfgRabbitLog
 	CfgServer *server.CfgRabbitServer
 	CfgMMO    *config.MMOConfig
@@ -72,8 +76,12 @@ func (o *RabbitLoader) LoadRabbitConfig(rootPath string) error {
 	if nil != err {
 		return err
 	}
-	o.CfgLog, o.CfgServer, o.CfgMMO = cfgLog, cfgServer, cfgMMO
+	o.CfgRoot, o.CfgLog, o.CfgServer, o.CfgMMO = cfgRoot, cfgLog, cfgServer, cfgMMO
 	return nil
+}
+
+func (o *RabbitLoader) GetConfigs() (root server.CfgRabbitRoot, log server.CfgRabbitLog, server server.CfgRabbitServer, mmo config.MMOConfig) {
+	return *o.CfgRoot, *o.CfgLog, *o.CfgServer, *o.CfgMMO
 }
 
 func (o *RabbitLoader) InitLoggerManager() logx.ILoggerManager {

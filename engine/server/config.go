@@ -62,6 +62,7 @@ type CfgRabbitRoot struct {
 	LogPath    string `yaml:"log,omitempty"`
 	ServerPath string `yaml:"server,omitempty"`
 	MMOPath    string `yaml:"mmo,omitempty"`
+	DbPath     string `yaml:"db,omitempty"`
 }
 
 func (o CfgRabbitRoot) LoadLogConfig() (conf *CfgRabbitLog, err error) {
