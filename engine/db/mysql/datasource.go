@@ -15,12 +15,12 @@ const (
 		"SELECT TABLE_NAME, AVG_ROW_LENGTH, DATA_LENGTH, MAX_DATA_LENGTH, INDEX_LENGTH " +
 		"FROM `information_schema`.`TABLES` " +
 		"WHERE TABLE_SCHEMA = \"%s\" " +
-		"ORDER BY `TABLE_NAME` DESC;"
+		"ORDER BY `TABLE_NAME` ASC;"
 	QueryColumnMeta = "" +
 		"SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, IS_NULLABLE, DATA_TYPE, COLUMN_KEY " +
 		"FROM `information_schema`.`COLUMNS` " +
 		"WHERE TABLE_SCHEMA = \"%s\" " +
-		"ORDER BY `TABLE_NAME` DESC, `ORDINAL_POSITION` ASC;"
+		"ORDER BY `TABLE_NAME` ASC, `ORDINAL_POSITION` ASC;"
 )
 
 type OnQuery func(rows *sql.Rows, err error)
@@ -39,7 +39,10 @@ type IDataSource interface {
 	IsOpen() bool
 	Open()
 	Close()
+
+	GetMeta() DatabaseMeta
 	UpdateMeta()
+
 	Query(query string, onQuery OnQuery)
 	Update(query string, onUpdate OnUpdate, args ...interface{})
 	//LoadUserData(userId string)
@@ -51,7 +54,7 @@ type DataSource struct {
 	eventx.EventDispatcher
 	Config CfgDataSource
 
-	Meta DBMeta
+	Meta DatabaseMeta
 	Db   *sql.DB
 
 	open bool
@@ -86,6 +89,10 @@ func (o *DataSource) Close() {
 		return
 	}
 	o.DispatchEvent(EventOnDataSourceClosed, o, nil)
+}
+
+func (o *DataSource) GetMeta() DatabaseMeta {
+	return o.Meta
 }
 
 func (o *DataSource) UpdateMeta() {
@@ -140,16 +147,15 @@ func (o *DataSource) onTableMeta(rows *sql.Rows, err error) {
 	var tables []TableMeta
 	for rows.Next() {
 		meta := TableMeta{TableSchema: o.Config.Schema}
-		err := rows.Scan(&meta.TableName, &meta.AvgRowLen,
+		err1 := rows.Scan(&meta.TableName, &meta.AvgRowLen,
 			&meta.DataLen, &meta.MaxDataLen, &meta.IndexLen)
-		if nil != err {
-			o.DispatchEvent(EventOnDataSourceMetaUpdated, o, err)
+		if nil != err1 {
+			o.DispatchEvent(EventOnDataSourceMetaUpdated, o, err1)
 			return
 		}
 		tables = append(tables, meta)
 	}
-	o.Meta = DBMeta{SchemaName: o.Config.Schema, Tables: tables}
-	o.DispatchEvent(EventOnDataSourceMetaUpdated, o, nil)
+	o.Meta = DatabaseMeta{SchemaName: o.Config.Schema, Tables: tables}
 	o.queryColumnMeta()
 }
 
@@ -175,12 +181,12 @@ func (o *DataSource) onColumnMeta(rows *sql.Rows, err error) {
 		columns = append(columns, meta)
 	}
 	idxT := 0
+	fmt.Println("Column Size:", len(columns))
 	for idxC := range columns {
-		if columns[idxC].TableName == o.Meta.Tables[idxT].TableName {
-			o.Meta.Tables[idxT].Columns = append(o.Meta.Tables[idxT].Columns, columns[idxC])
-		} else {
+		if columns[idxC].TableName != o.Meta.Tables[idxT].TableName {
 			idxT += 1
 		}
+		o.Meta.Tables[idxT].Columns = append(o.Meta.Tables[idxT].Columns, columns[idxC])
 	}
 	o.DispatchEvent(EventOnDataSourceMetaUpdated, o, nil)
 }

@@ -63,16 +63,16 @@ func (o *TableMeta) GetPriKeys() []string {
 	return rs
 }
 
-type DBMeta struct {
+type DatabaseMeta struct {
 	SchemaName string
 	Tables     []TableMeta
 }
 
-func (o *DBMeta) String() string {
+func (o *DatabaseMeta) String() string {
 	return fmt.Sprintf("{%s, %v}", o.SchemaName, o.Tables)
 }
 
-func (o *DBMeta) GetTables() []string {
+func (o *DatabaseMeta) GetTables() []string {
 	if len(o.Tables) == 0 {
 		return nil
 	}
@@ -83,7 +83,7 @@ func (o *DBMeta) GetTables() []string {
 	return rs
 }
 
-func (o *DBMeta) GetTableMetas() []TableMeta {
+func (o *DatabaseMeta) GetTableMetas() []TableMeta {
 	if len(o.Tables) == 0 {
 		return nil
 	}
@@ -92,7 +92,7 @@ func (o *DBMeta) GetTableMetas() []TableMeta {
 	return rs
 }
 
-func (o *DBMeta) GetTableMeta(tableName string) (meta TableMeta, ok bool) {
+func (o *DatabaseMeta) GetTableMeta(tableName string) (meta TableMeta, ok bool) {
 	if len(o.Tables) == 0 {
 		return
 	}

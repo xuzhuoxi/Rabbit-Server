@@ -115,11 +115,17 @@ func (o *RabbitServer) Save() {
 }
 
 func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
+	if o.Config.ToHome.Disable {
+		return
+	}
 	o.doLink()
 	go o.rateUpdate()
 }
 
 func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
+	if o.Config.ToHome.Disable {
+		return
+	}
 	o.doUnlink()
 }
 

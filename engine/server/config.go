@@ -15,6 +15,7 @@ type CfgNet struct {
 	Name    string `yaml:"name"`
 	Network string `yaml:"network"`
 	Addr    string `yaml:"addr"`
+	Disable bool   `yaml:"disable,omitempty"`
 }
 
 type CfgExtension struct {

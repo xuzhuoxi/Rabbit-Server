@@ -24,6 +24,7 @@ type IDataSourceManager interface {
 	UpdateMeta()
 	CloseAll()
 
+	List() []string
 	GetDataSource(dbName string) IDataSource
 	GetDefaultDataSource() IDataSource
 }
@@ -125,6 +126,17 @@ func (o *DataSourceManager) onMetaUpdated(evd *eventx.EventData) {
 	}
 	o.Index += 1
 	o.updateMeta()
+}
+
+func (o *DataSourceManager) List() []string {
+	if len(o.DataSources) == 0 {
+		return nil
+	}
+	rs := make([]string, len(o.DataSources))
+	for index := range o.DataSources {
+		rs[index] = o.DataSources[index].Config.Name
+	}
+	return rs
 }
 
 func (o *DataSourceManager) GetDataSource(dbName string) IDataSource {
