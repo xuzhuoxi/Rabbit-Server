@@ -10,12 +10,16 @@ import (
 	"github.com/xuzhuoxi/infra-go/eventx"
 )
 
-const (
+var (
+	// QueryTableMeta 用于查询表元数据的Sql语言
+	// 在DataSourceManager初始化后，如果配置表上有配置这条Sql语言，则覆盖
 	QueryTableMeta = "" +
 		"SELECT TABLE_NAME, AVG_ROW_LENGTH, DATA_LENGTH, MAX_DATA_LENGTH, INDEX_LENGTH " +
 		"FROM `information_schema`.`TABLES` " +
 		"WHERE TABLE_SCHEMA = \"%s\" " +
 		"ORDER BY `TABLE_NAME` ASC;"
+	// QueryColumnMeta 用于查询表字段元数据的Sql语言
+	// 在DataSourceManager初始化后，如果配置表上有配置这条Sql语言，则覆盖
 	QueryColumnMeta = "" +
 		"SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION, IS_NULLABLE, DATA_TYPE, COLUMN_KEY " +
 		"FROM `information_schema`.`COLUMNS` " +
@@ -26,11 +30,11 @@ const (
 type OnQuery func(rows *sql.Rows, err error)
 type OnUpdate func(rowLen int64, err error)
 
-func NewIDataSource(config CfgDataSource) IDataSource {
+func NewIDataSource(config CfgDataSourceItem) IDataSource {
 	return NewDataSource(config)
 }
 
-func NewDataSource(config CfgDataSource) *DataSource {
+func NewDataSource(config CfgDataSourceItem) *DataSource {
 	return &DataSource{Config: config}
 }
 
@@ -52,7 +56,7 @@ type IDataSource interface {
 
 type DataSource struct {
 	eventx.EventDispatcher
-	Config CfgDataSource
+	Config CfgDataSourceItem
 
 	Meta DatabaseMeta
 	Db   *sql.DB
@@ -180,13 +184,13 @@ func (o *DataSource) onColumnMeta(rows *sql.Rows, err error) {
 		}
 		columns = append(columns, meta)
 	}
-	idxT := 0
-	fmt.Println("Column Size:", len(columns))
+	index := 0
+	//fmt.Println("Column Size:", len(columns))
 	for idxC := range columns {
-		if columns[idxC].TableName != o.Meta.Tables[idxT].TableName {
-			idxT += 1
+		if columns[idxC].TableName != o.Meta.Tables[index].TableName {
+			index += 1
 		}
-		o.Meta.Tables[idxT].Columns = append(o.Meta.Tables[idxT].Columns, columns[idxC])
+		o.Meta.Tables[index].Columns = append(o.Meta.Tables[index].Columns, columns[idxC])
 	}
 	o.DispatchEvent(EventOnDataSourceMetaUpdated, o, nil)
 }

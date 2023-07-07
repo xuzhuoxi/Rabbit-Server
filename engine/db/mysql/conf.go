@@ -5,7 +5,7 @@ package mysql
 
 import "fmt"
 
-type CfgDataSource struct {
+type CfgDataSourceItem struct {
 	Name     string `yaml:"name"`
 	Driver   string `yaml:"driver"`
 	Url      string `yaml:"url"`
@@ -14,13 +14,13 @@ type CfgDataSource struct {
 	Schema   string `yaml:"schema"`
 }
 
-func (o *CfgDataSource) DataSourceName() string {
+func (o *CfgDataSourceItem) DataSourceName() string {
 	return fmt.Sprintf("%s:%s@tcp(%s)/%s", o.UserName, o.Passwd, o.Url, o.Schema)
 }
 
-type CfgDataSources struct {
-	Default         string          `yaml:"default"` // format: url/schema
-	DataSources     []CfgDataSource `yaml:"data_sources"`
-	QueryTableMeta  string          `yaml:"query_table_meta"`
-	QueryColumnMeta string          `yaml:"query_column_meta"`
+type CfgDataSource struct {
+	Default         string              `yaml:"default"` // format: url/schema
+	DataSources     []CfgDataSourceItem `yaml:"data_sources"`
+	QueryTableMeta  string              `yaml:"query_table_meta"`
+	QueryColumnMeta string              `yaml:"query_column_meta"`
 }

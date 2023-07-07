@@ -20,6 +20,7 @@ func NewDataSourceManager() *DataSourceManager {
 type IDataSourceManager interface {
 	eventx.IEventDispatcher
 	Init(cfgPath string) error
+
 	OpenAll()
 	UpdateMeta()
 	CloseAll()
@@ -31,14 +32,14 @@ type IDataSourceManager interface {
 
 type DataSourceManager struct {
 	eventx.EventDispatcher
-	Default     string
+	Config      CfgDataSource
 	DataSources []*DataSource
 	Index       int
 }
 
 func (o *DataSourceManager) Init(cfgPath string) error {
-	config := &CfgDataSources{}
 	cfgPath = utils.FixFilePath(cfgPath)
+	config := &CfgDataSource{}
 	err := utils.UnmarshalFromYaml(cfgPath, config)
 	if nil != err {
 		o.DispatchEvent(EventOnManagerInited, o, err)
@@ -48,7 +49,13 @@ func (o *DataSourceManager) Init(cfgPath string) error {
 	for index := range config.DataSources {
 		o.DataSources = append(o.DataSources, NewDataSource(config.DataSources[index]))
 	}
-	o.Default = config.Default
+	o.Config = *config
+	if len(config.QueryTableMeta) != 0 {
+		QueryTableMeta = config.QueryTableMeta
+	}
+	if len(config.QueryColumnMeta) != 0 {
+		QueryColumnMeta = config.QueryColumnMeta
+	}
 	o.DispatchEvent(EventOnManagerInited, o, nil)
 	return nil
 }
@@ -149,5 +156,5 @@ func (o *DataSourceManager) GetDataSource(dbName string) IDataSource {
 }
 
 func (o *DataSourceManager) GetDefaultDataSource() IDataSource {
-	return o.GetDataSource(o.Default)
+	return o.GetDataSource(o.Config.Default)
 }
