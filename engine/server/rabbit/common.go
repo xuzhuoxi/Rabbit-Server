@@ -4,15 +4,13 @@
 package rabbit
 
 import (
-	"github.com/xuzhuoxi/infra-go/bytex"
 	"github.com/xuzhuoxi/infra-go/mathx"
 	"github.com/xuzhuoxi/infra-go/netx"
 	"time"
 )
 
 var (
-	AddressProxy     = netx.NewIAddressProxy()            //uid与address的交叉映射,整个game模块共享
-	DataBlockHandler = bytex.NewDefaultDataBlockHandler() //数据封包处理
+	AddressProxy = netx.NewIAddressProxy() //uid与address的交叉映射,整个game模块共享
 )
 
 const (

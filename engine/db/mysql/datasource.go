@@ -40,11 +40,13 @@ func NewDataSource(config CfgDataSourceItem) *DataSource {
 
 type IDataSource interface {
 	eventx.IEventDispatcher
+
 	IsOpen() bool
+	GetMeta() DatabaseMeta
+
 	Open()
 	Close()
 
-	GetMeta() DatabaseMeta
 	UpdateMeta()
 
 	Query(query string, onQuery OnQuery)
@@ -66,6 +68,10 @@ type DataSource struct {
 
 func (o *DataSource) IsOpen() bool {
 	return o.open
+}
+
+func (o *DataSource) GetMeta() DatabaseMeta {
+	return o.Meta
 }
 
 func (o *DataSource) Open() {
@@ -95,10 +101,6 @@ func (o *DataSource) Close() {
 	o.DispatchEvent(EventOnDataSourceClosed, o, nil)
 }
 
-func (o *DataSource) GetMeta() DatabaseMeta {
-	return o.Meta
-}
-
 func (o *DataSource) UpdateMeta() {
 	o.queryTableMeta()
 }
@@ -118,16 +120,22 @@ func (o *DataSource) Update(query string, onUpdate OnUpdate, args ...interface{}
 	res, err2 := stmt.Exec(args...) // 执行预编译语句，传入参数
 	if err2 != nil {
 		err2 = errors.New(fmt.Sprintf("Exec failed,%s", err2))
-		onUpdate(0, err2)
+		if nil != onUpdate {
+			onUpdate(0, err2)
+		}
 		return
 	}
 	row, err3 := res.RowsAffected() // 获取影响的行数
 	if err3 != nil {
 		err3 = errors.New(fmt.Sprintf("Rows affected failed,%s", err3))
-		onUpdate(0, err3)
+		if nil != onUpdate {
+			onUpdate(0, err3)
+		}
 		return
 	}
-	onUpdate(row, nil)
+	if nil != onUpdate {
+		onUpdate(row, nil)
+	}
 }
 
 func (o *DataSource) query(query string, onQuery OnQuery) {
@@ -135,7 +143,9 @@ func (o *DataSource) query(query string, onQuery OnQuery) {
 	if nil != rows {
 		defer rows.Close()
 	}
-	onQuery(rows, err)
+	if nil != onQuery {
+		onQuery(rows, err)
+	}
 }
 
 func (o *DataSource) queryTableMeta() {

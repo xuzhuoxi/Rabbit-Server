@@ -115,6 +115,7 @@ func (o *RabbitServer) Save() {
 }
 
 func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
+	o.GetLogger().Infoln("SockServer Start...")
 	if o.Config.ToHome.Disable {
 		return
 	}
@@ -123,6 +124,7 @@ func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
 }
 
 func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
+	o.GetLogger().Infoln("SockServer Stop...")
 	if o.Config.ToHome.Disable {
 		return
 	}
@@ -150,11 +152,14 @@ func (o *RabbitServer) onUpdateResp(resp *http.Response, body *[]byte) {
 
 func (o *RabbitServer) onConnOpened(evd *eventx.EventData) {
 	o.StatusDetail.AddLinkCount()
+	address := evd.Data.(string)
+	o.GetLogger().Infoln("Client Connection Open:", address)
 }
 
 func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
 	address := evd.Data.(string)
 	AddressProxy.RemoveByAddress(address)
+	o.GetLogger().Infoln("Client Connection Close:", address)
 	o.StatusDetail.RemoveLinkCount()
 }
 

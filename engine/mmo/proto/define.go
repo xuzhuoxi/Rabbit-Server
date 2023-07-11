@@ -7,7 +7,6 @@ package proto
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
-	"github.com/xuzhuoxi/infra-go/bytex"
 )
 
 const (
@@ -59,5 +58,3 @@ func GetVarId(entityType basis.EntityType) string {
 	}
 	return IdNone
 }
-
-var DataBlockHandler = bytex.NewDefaultDataBlockHandler()
