@@ -7,7 +7,6 @@ package extension
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 )
 
@@ -20,27 +19,15 @@ type originObj struct {
 	Data2 string
 }
 
-type paramHandler struct {
+type paramCodingHandler struct {
 }
 
-func (h *paramHandler) SetCodingHandler(handler encodingx.ICodingHandler) {
-	panic("implement me")
+func (c *paramCodingHandler) HandleEncode(data interface{}) []byte {
+	return nil
 }
 
-func (h *paramHandler) HandleRequestParam(data []byte) interface{} {
-	panic("implement me")
-}
-
-func (h *paramHandler) HandleRequestParams(data [][]byte) []interface{} {
-	panic("implement me")
-}
-
-func (h *paramHandler) HandleResponseParam(data interface{}) []byte {
-	panic("implement me")
-}
-
-func (h *paramHandler) HandleResponseParams(data []interface{}) [][]byte {
-	panic("implement me")
+func (c *paramCodingHandler) HandleDecode(bs []byte, data interface{}) error {
+	return nil
 }
 
 // RabbitDemoExtension
@@ -57,7 +44,7 @@ func (e *RabbitDemoExtension) InitExtension() error {
 	e.SetRequestHandler("N_0", e.onRequestNoneParam)
 	e.SetRequestHandlerBinary("B_0", e.onRequestBinary)
 	e.SetRequestHandlerString("J_0", e.onRequestJson)
-	e.SetRequestHandlerObject("Obj_0", e.onRequestObj, originObj{}, &paramHandler{})
+	e.SetRequestHandlerObject("Obj_0", e.onRequestObj, originObj{}, &paramCodingHandler{})
 	return nil
 }
 

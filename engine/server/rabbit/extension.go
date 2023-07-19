@@ -4,6 +4,7 @@
 package rabbit
 
 import (
+	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"github.com/xuzhuoxi/infra-go/timex"
@@ -68,7 +69,8 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 			tn := time.Now().UnixNano()
 			defer func() {
 				un := time.Now().UnixNano() - tn
-				m.Logger.Infoln(name, pid, un, timex.FormatUnixMilli(un/1e6, "5.999999ms")) //记录响应时间
+				m.Logger.Infoln(fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, UsedTime=%s",
+					name, pid, timex.FormatUnixMilli(un/1e6, "5.999999ms"))) //记录响应时间
 				m.StatusDetail.AddRespUnixNano(un)
 			}()
 			re.OnRequest(response, request)
