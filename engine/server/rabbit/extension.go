@@ -50,12 +50,15 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 	//m.Log.Infoln("ExtManager.onPack", senderAddress, msgData)
 	m.StatusDetail.AddReqCount()
 	name, pid, uid, data := m.ParseMessage(msgData)
-	extension, ok := m.Verify(name, pid, uid)
-	if !ok {
+	extension, rsCode := m.Verify(name, pid, uid)
+	if protox.CodeSuc != rsCode {
+		resp := m.GetRecycleResponse(extension, senderAddress, name, pid, uid, data)
+		resp.SetResultCode(rsCode)
+		resp.SendNoneResponse()
 		return false
 	}
 	// 参数处理
-	response, request := m.GenParams(extension, senderAddress, name, pid, uid, data)
+	response, request := m.GetRecycleParams(extension, senderAddress, name, pid, uid, data)
 	defer func() {
 		protox.DefaultRequestPool.Recycle(request)
 		protox.DefaultResponsePool.Recycle(response)
