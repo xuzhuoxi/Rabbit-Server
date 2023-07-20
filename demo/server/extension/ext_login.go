@@ -39,7 +39,7 @@ func (e *RabbitLoginExtension) DestroyExtension() error {
 }
 
 func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
-	password := string(req.RequestStringData()[0])
+	password := string(req.StringData()[0])
 	if e.check(req.ClientId(), password) {
 		rabbit.AddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
@@ -51,7 +51,7 @@ func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionStringRespon
 }
 
 func (e *RabbitLoginExtension) onRequestReLogin(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
-	password := req.RequestStringData()[0]
+	password := req.StringData()[0]
 	if e.check(req.ClientId(), password) {
 		rabbit.AddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
