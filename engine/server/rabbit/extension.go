@@ -52,7 +52,10 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 	name, pid, uid, data := m.ParseMessage(msgData)
 	extension, rsCode := m.Verify(name, pid, uid)
 	if protox.CodeSuc != rsCode {
-		resp := m.GetRecycleResponse(extension, senderAddress, name, pid, uid, data)
+		resp := protox.DefaultResponsePool.GetInstance()
+		defer protox.DefaultResponsePool.Recycle(resp)
+		resp.SetHeader(name, pid, uid, senderAddress)
+		resp.SetSockSender(m.SockSender)
 		resp.SetResultCode(rsCode)
 		resp.SendNoneResponse()
 		return false
