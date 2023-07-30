@@ -65,7 +65,7 @@ func (o *RabbitServer) Init(cfg server.CfgRabbitServerItem) {
 	// 这里把Manager、SockServer、Container进行关联
 	o.ExtManager.InitManager(o.SockServer.GetPackHandlerContainer(), o.ExtContainer, o.SockServer)
 	o.ExtManager.SetLogger(o.GetLogger())
-	o.ExtManager.SetAddressProxy(AddressProxy)
+	o.ExtManager.SetAddressProxy(RabbitAddressProxy)
 }
 
 func (o *RabbitServer) initExtensions() {
@@ -158,7 +158,7 @@ func (o *RabbitServer) onConnOpened(evd *eventx.EventData) {
 
 func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
 	address := evd.Data.(string)
-	AddressProxy.RemoveByAddress(address)
+	RabbitAddressProxy.RemoveByAddress(address)
 	o.GetLogger().Infoln("Client Connection Close:", address)
 	o.StatusDetail.RemoveLinkCount()
 }

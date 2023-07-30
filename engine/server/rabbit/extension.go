@@ -47,7 +47,7 @@ func (m *RabbitExtensionManager) StopManager() {
 }
 
 func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress string, other interface{}) bool {
-	//m.Log.Infoln("ExtManager.onPack", senderAddress, msgData)
+	//m.Logger.Infoln("ExtManager.onPack", senderAddress, msgData)
 	m.StatusDetail.AddReqCount()
 	name, pid, uid, data := m.ParseMessage(msgData)
 	extension, rsCode := m.Verify(name, pid, uid)

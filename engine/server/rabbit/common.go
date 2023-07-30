@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	// AddressProxy uid与address的交叉映射
-	AddressProxy = netx.NewIAddressProxy()
+	// RabbitAddressProxy uid与address的交叉映射
+	RabbitAddressProxy = netx.NewIAddressProxyWithName("Rabbit")
 )
 
 const (

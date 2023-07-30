@@ -41,7 +41,7 @@ func (e *RabbitLoginExtension) DestroyExtension() error {
 func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
 	password := string(req.StringData()[0])
 	if e.check(req.ClientId(), password) {
-		rabbit.AddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
+		rabbit.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
 		resp.SendStringResponse("ok", "200")
 		e.GetLogger().Traceln("LoginExtension.onRequestLogin:", "Check Suc!", req.ProtoId(), req.ClientId(), password)
@@ -53,7 +53,7 @@ func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionStringRespon
 func (e *RabbitLoginExtension) onRequestReLogin(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
 	password := req.StringData()[0]
 	if e.check(req.ClientId(), password) {
-		rabbit.AddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
+		rabbit.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
 		resp.SendStringResponse("ok")
 		e.GetLogger().Traceln("LoginExtension.onRequestReLogin:", "Check Succ!", req.ProtoId(), req.ClientId(), password)
