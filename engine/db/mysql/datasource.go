@@ -29,6 +29,12 @@ var (
 
 type OnQuery func(rows *sql.Rows, err error)
 type OnUpdate func(rowLen int64, err error)
+type OnTrans func(err error)
+
+type SqlContext struct {
+	Query string
+	Args  []interface{}
+}
 
 func NewIDataSource(config CfgDataSourceItem) IDataSource {
 	return NewDataSource(config)
@@ -41,19 +47,27 @@ func NewDataSource(config CfgDataSourceItem) *DataSource {
 type IDataSource interface {
 	eventx.IEventDispatcher
 
+	// IsOpen 判断当前数据源是否已连接
 	IsOpen() bool
+	// GetMeta 取得当前数据源的元数据
 	GetMeta() DatabaseMeta
 
+	// Open 开始启用数据源连接
 	Open()
+	// Close 开始关闭数据源连接
 	Close()
 
+	// UpdateMeta 更新当前数据源的元数据信息
 	UpdateMeta()
 
-	Query(query string, onQuery OnQuery)
+	// SimpleQuery 执行简单sql语句查询
+	SimpleQuery(query string, onQuery OnQuery)
+	// Query 执行查询语句
+	Query(query string, onQuery OnQuery, args ...interface{})
+	// Update 执行更新语句
 	Update(query string, onUpdate OnUpdate, args ...interface{})
-	//LoadUserData(userId string)
-	//SaveUserData(userId string)
-	//SaveAllUserData()
+	// ExecTrans 执行事务
+	ExecTrans(sqlCtx []SqlContext, onTrans OnTrans)
 }
 
 type DataSource struct {
@@ -105,36 +119,75 @@ func (o *DataSource) UpdateMeta() {
 	o.queryTableMeta()
 }
 
-func (o *DataSource) Query(query string, onQuery OnQuery) {
+func (o *DataSource) SimpleQuery(query string, onQuery OnQuery) {
 	o.query(query, onQuery)
+}
+
+func (o *DataSource) Query(query string, onQuery OnQuery, args ...interface{}) {
+	stmt, err1 := o.Db.Prepare(query)
+	if err1 != nil {
+		err1 = errors.New(fmt.Sprintf("Prepare failed,%s", err1))
+		o.invokeOnQuery(onQuery, nil, err1)
+		return
+	}
+	defer stmt.Close()
+	rows, err2 := stmt.Query(args...) // 执行预编译语句，传入参数
+	if nil != rows {
+		defer rows.Close()
+	}
+	o.invokeOnQuery(onQuery, rows, err2)
 }
 
 func (o *DataSource) Update(query string, onUpdate OnUpdate, args ...interface{}) {
 	stmt, err1 := o.Db.Prepare(query)
 	if err1 != nil {
 		err1 = errors.New(fmt.Sprintf("Prepare failed,%s", err1))
-		onUpdate(0, err1)
+		o.invokeOnUpdate(onUpdate, 0, err1)
 		return
 	}
 	defer stmt.Close()
 	res, err2 := stmt.Exec(args...) // 执行预编译语句，传入参数
 	if err2 != nil {
 		err2 = errors.New(fmt.Sprintf("Exec failed,%s", err2))
-		if nil != onUpdate {
-			onUpdate(0, err2)
-		}
+		o.invokeOnUpdate(onUpdate, 0, err2)
 		return
 	}
 	row, err3 := res.RowsAffected() // 获取影响的行数
 	if err3 != nil {
 		err3 = errors.New(fmt.Sprintf("Rows affected failed,%s", err3))
-		if nil != onUpdate {
-			onUpdate(0, err3)
-		}
+		o.invokeOnUpdate(onUpdate, 0, err3)
 		return
 	}
-	if nil != onUpdate {
-		onUpdate(row, nil)
+	o.invokeOnUpdate(onUpdate, row, nil)
+}
+
+func (o *DataSource) ExecTrans(sqlCtx []SqlContext, onTrans OnTrans) {
+	if len(sqlCtx) == 0 {
+		o.invokeOnTrans(onTrans, nil)
+		return
+	}
+	tx, err1 := o.Db.Begin()
+	if err1 != nil {
+		o.invokeOnTrans(onTrans, err1)
+		return
+	}
+	for index := range sqlCtx {
+		stmt, err2 := tx.Prepare(sqlCtx[index].Query)
+		if err2 != nil {
+			tx.Rollback()
+			o.invokeOnTrans(onTrans, err2)
+			return
+		}
+		_, err2 = stmt.Exec(sqlCtx[index].Args...)
+		if err1 != nil {
+			tx.Rollback()
+			o.invokeOnTrans(onTrans, err2)
+			return
+		}
+	}
+	err1 = tx.Commit()
+	if err1 != nil {
+		o.invokeOnTrans(onTrans, err1)
 	}
 }
 
@@ -143,9 +196,28 @@ func (o *DataSource) query(query string, onQuery OnQuery) {
 	if nil != rows {
 		defer rows.Close()
 	}
-	if nil != onQuery {
-		onQuery(rows, err)
+	o.invokeOnQuery(onQuery, rows, err)
+}
+
+func (o *DataSource) invokeOnQuery(onQuery OnQuery, rows *sql.Rows, err error) {
+	if onQuery == nil {
+		return
 	}
+	onQuery(rows, err)
+}
+
+func (o *DataSource) invokeOnUpdate(onUpdate OnUpdate, rowLen int64, err error) {
+	if onUpdate == nil {
+		return
+	}
+	onUpdate(rowLen, err)
+}
+
+func (o *DataSource) invokeOnTrans(onTrans OnTrans, err error) {
+	if onTrans == nil {
+		return
+	}
+	onTrans(err)
 }
 
 func (o *DataSource) queryTableMeta() {

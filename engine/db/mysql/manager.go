@@ -19,14 +19,21 @@ func NewDataSourceManager() *DataSourceManager {
 
 type IDataSourceManager interface {
 	eventx.IEventDispatcher
+	// Init 通过一个配置文件的路径，初始化全部数据源
 	Init(cfgPath string) error
 
+	// OpenAll 打开全部数据源连接
 	OpenAll()
+	// UpdateMeta 更新元数据信息
 	UpdateMeta()
+	// CloseAll 关闭全部数据源连接
 	CloseAll()
 
+	// List 返回全部数据源的配置名称
 	List() []string
+	// GetDataSource 取得指定数据源
 	GetDataSource(dbName string) IDataSource
+	// GetDefaultDataSource 取得默认数据源
 	GetDefaultDataSource() IDataSource
 }
 
