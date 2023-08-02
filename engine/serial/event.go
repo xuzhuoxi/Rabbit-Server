@@ -4,9 +4,17 @@
 package serial
 
 const (
-	EventOnModuleStarted = "Observer:EventOnObserverStarted"
-	EventOnModuleStopped = "Observer:EventOnObserverStopped"
+	// EventOnModuleStarted
+	// Serial module start finish event
+	EventOnModuleStarted = "Serial-Module:EventOnObserverStarted"
+	// EventOnModuleStopped
+	// Serial module stop finish event
+	EventOnModuleStopped = "Serial-Module:EventOnObserverStopped"
 
-	EventOnManagerStarted = "Observer-Manager:EventOnManagerStarted"
-	EventOnManagerStopped = "Observer-Manager:EventOnManagerStopped"
+	// EventOnManagerStarted
+	// Serial manger start finish event
+	EventOnManagerStarted = "Serial-Manager:EventOnManagerStarted"
+	// EventOnManagerStopped
+	// Serial manger stop finish event
+	EventOnManagerStopped = "Serial-Manager:EventOnManagerStopped"
 )
