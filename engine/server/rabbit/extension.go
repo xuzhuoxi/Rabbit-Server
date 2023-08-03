@@ -55,7 +55,7 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 		resp := protox.DefaultResponsePool.GetInstance()
 		defer protox.DefaultResponsePool.Recycle(resp)
 		resp.SetHeader(name, pid, uid, senderAddress)
-		resp.SetSockSender(m.SockSender)
+		resp.(protox.IExtensionResponseSettings).SetSockSender(m.SockSender)
 		resp.SetResultCode(rsCode)
 		resp.SendNoneResponse()
 		return false
