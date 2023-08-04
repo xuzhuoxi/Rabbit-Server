@@ -14,6 +14,10 @@ func NewRabbitDemoExtension(Name string) server.IRabbitExtension {
 	return &RabbitDemoExtension{RabbitDemoExtensionSupport: NewRabbitDemoExtensionSupport(Name)}
 }
 
+func newOriginObj() interface{} {
+	return &originObj{}
+}
+
 type originObj struct {
 	Data  int
 	Data2 string
@@ -44,7 +48,7 @@ func (e *RabbitDemoExtension) InitExtension() error {
 	e.SetRequestHandler("N_0", e.onRequestNoneParam)
 	e.SetRequestHandlerBinary("B_0", e.onRequestBinary)
 	e.SetRequestHandlerString("J_0", e.onRequestJson)
-	e.SetRequestHandlerObject("Obj_0", e.onRequestObj, originObj{}, &paramCodingHandler{})
+	e.SetRequestHandlerObject("Obj_0", e.onRequestObj, newOriginObj, &paramCodingHandler{})
 	return nil
 }
 
@@ -64,15 +68,15 @@ func (e *RabbitDemoExtension) onRequestNoneParam(resp protox.IExtensionResponse,
 	e.GetLogger().Debugln("DemoExtension.onRequestNoneParam!", req, resp)
 }
 
-func (e *RabbitDemoExtension) onRequestBinary(resp protox.IExtensionBinaryResponse, req protox.IExtensionBinaryRequest) {
+func (e *RabbitDemoExtension) onRequestBinary(resp protox.IExtensionResponse, req protox.IExtensionBinaryRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestBinary!", req, resp)
 }
 
-func (e *RabbitDemoExtension) onRequestJson(resp protox.IExtensionStringResponse, req protox.IExtensionStringRequest) {
+func (e *RabbitDemoExtension) onRequestJson(resp protox.IExtensionResponse, req protox.IExtensionStringRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestJson!", req, resp)
 }
 
-func (e *RabbitDemoExtension) onRequestObj(resp protox.IExtensionObjectResponse, req protox.IExtensionObjectRequest) {
+func (e *RabbitDemoExtension) onRequestObj(resp protox.IExtensionResponse, req protox.IExtensionObjectRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestObj!", req, resp)
 }
 

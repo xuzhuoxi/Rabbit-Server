@@ -32,8 +32,12 @@ type OnUpdate func(rowLen int64, err error)
 type OnTrans func(err error)
 
 type SqlContext struct {
-	Query string
-	Args  []interface{}
+	Sql  string
+	Args []interface{}
+}
+
+func (o SqlContext) String() string {
+	return fmt.Sprintf("{Sql=%s, Args=[%s]}", o.Sql, fmt.Sprint(o.Args...))
 }
 
 func NewIDataSource(config CfgDataSourceItem) IDataSource {
@@ -172,7 +176,7 @@ func (o *DataSource) ExecTrans(sqlCtx []SqlContext, onTrans OnTrans) {
 		return
 	}
 	for index := range sqlCtx {
-		stmt, err2 := tx.Prepare(sqlCtx[index].Query)
+		stmt, err2 := tx.Prepare(sqlCtx[index].Sql)
 		if err2 != nil {
 			tx.Rollback()
 			InvokeOnTrans(onTrans, err2)
