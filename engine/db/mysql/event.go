@@ -5,7 +5,6 @@ package mysql
 
 const (
 	EventOnDataSourceOpened      = "DB:EventOnDataSourceOpened"
-	EventOnDataSourceQueried     = "DB:EventOnDataSourceQueried"
 	EventOnDataSourceMetaUpdated = "DB:EventOnDataSourceMetaUpdated"
 	EventOnDataSourceClosed      = "DB:EventOnDataSourceClosed"
 )
