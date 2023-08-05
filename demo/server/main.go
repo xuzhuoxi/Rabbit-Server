@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/demo/server/cmd"
 	_ "github.com/xuzhuoxi/Rabbit-Server/demo/server/extension"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/loader"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mgr"
 	_ "github.com/xuzhuoxi/Rabbit-Server/engine/server/rabbit"
 )
 
 func main() {
 	fmt.Println()
 	fmt.Println("Rabbit-Server:demo Start... ")
-	loader := loader.DefaultLoader
+	loader := mgr.DefaultManager
 	err := loader.LoadRabbitConfig("rabbit.yaml")
 	if nil != err {
 		panic(err)

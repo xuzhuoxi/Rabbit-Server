@@ -57,7 +57,7 @@ func (o *RabbitServer) Init(cfg server.CfgRabbitServerItem) {
 
 	// 设置SockServer信息
 	o.SockServer.SetName(o.Config.FromUser.Name)
-	o.SockServer.SetMax(100)
+	o.SockServer.SetMaxConn(100)
 	o.SockServer.SetLogger(o.GetLogger())
 	// 注入Extension
 	o.initExtensions()

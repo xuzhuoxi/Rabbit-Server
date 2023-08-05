@@ -1,7 +1,7 @@
-// Package loader
+// Package mgr
 // Create on 2023/6/14
 // @author xuzhuoxi
-package loader
+package mgr
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo"
@@ -11,14 +11,14 @@ import (
 )
 
 var (
-	DefaultLoader = NewRabbitLoader()
+	DefaultManager = NewRabbitManager()
 )
 
-func NewRabbitLoader() IRabbitLoader {
+func NewRabbitManager() IRabbitManager {
 	return &RabbitLoader{}
 }
 
-type IRabbitLoader interface {
+type IRabbitManager interface {
 	logx.ILoggerGetter
 	// LoadRabbitConfig 加载配置
 	LoadRabbitConfig(rootPath string) error
