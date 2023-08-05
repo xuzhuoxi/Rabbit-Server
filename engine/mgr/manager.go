@@ -15,7 +15,7 @@ var (
 )
 
 func NewRabbitManager() IRabbitManager {
-	return &RabbitLoader{}
+	return &RabbitManager{}
 }
 
 type IRabbitManager interface {
@@ -41,7 +41,7 @@ type IRabbitManager interface {
 	SaveServer(id string)
 }
 
-type RabbitLoader struct {
+type RabbitManager struct {
 	CfgRoot   *server.CfgRabbitRoot
 	CfgLog    *server.CfgRabbitLog
 	CfgServer *server.CfgRabbitServer
@@ -52,14 +52,14 @@ type RabbitLoader struct {
 	Servers    []server.IRabbitServer
 }
 
-func (o *RabbitLoader) GetLogger() logx.ILogger {
+func (o *RabbitManager) GetLogger() logx.ILogger {
 	if nil == o.CfgLog {
 		return o.LogManager.FindLogger(logx.DefaultLoggerName)
 	}
 	return o.LogManager.FindLogger(o.CfgLog.Default)
 }
 
-func (o *RabbitLoader) LoadRabbitConfig(rootPath string) error {
+func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
 	cfgRoot, err := server.LoadRabbitRootConfig(rootPath)
 	if nil != err {
 		return err
@@ -80,25 +80,25 @@ func (o *RabbitLoader) LoadRabbitConfig(rootPath string) error {
 	return nil
 }
 
-func (o *RabbitLoader) GetConfigs() (root server.CfgRabbitRoot, log server.CfgRabbitLog, server server.CfgRabbitServer, mmo config.MMOConfig) {
+func (o *RabbitManager) GetConfigs() (root server.CfgRabbitRoot, log server.CfgRabbitLog, server server.CfgRabbitServer, mmo config.MMOConfig) {
 	return *o.CfgRoot, *o.CfgLog, *o.CfgServer, *o.CfgMMO
 }
 
-func (o *RabbitLoader) InitLoggerManager() logx.ILoggerManager {
+func (o *RabbitManager) InitLoggerManager() logx.ILoggerManager {
 	o.initLogger()
 	return o.LogManager
 }
 
-func (o *RabbitLoader) InitServers() {
+func (o *RabbitManager) InitServers() {
 	o.initServers()
 }
 
-func (o *RabbitLoader) CreateMMOWorld() mmo.IMMOManager {
+func (o *RabbitManager) CreateMMOWorld() mmo.IMMOManager {
 	o.initMMOWorld()
 	return o.MMOManager
 }
 
-func (o *RabbitLoader) initLogger() {
+func (o *RabbitManager) initLogger() {
 	o.LogManager = logx.DefaultLoggerManager
 	if nil == o.CfgLog {
 		logger := logx.NewLogger()
@@ -112,7 +112,7 @@ func (o *RabbitLoader) initLogger() {
 	}
 }
 
-func (o *RabbitLoader) initServers() {
+func (o *RabbitManager) initServers() {
 	if o.CfgServer == nil || len(o.CfgServer.Servers) == 0 {
 		return
 	}
@@ -131,7 +131,7 @@ func (o *RabbitLoader) initServers() {
 	}
 }
 
-func (o *RabbitLoader) initMMOWorld() {
+func (o *RabbitManager) initMMOWorld() {
 	if o.CfgMMO == nil {
 		return
 	}
@@ -151,7 +151,7 @@ func (o *RabbitLoader) initMMOWorld() {
 	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.CfgMMO)
 }
 
-func (o *RabbitLoader) StartServer(id string) {
+func (o *RabbitManager) StartServer(id string) {
 	for _, s := range o.Servers {
 		if s.GetId() == id {
 			go s.Start()
@@ -159,7 +159,7 @@ func (o *RabbitLoader) StartServer(id string) {
 	}
 }
 
-func (o *RabbitLoader) StopServer(id string) {
+func (o *RabbitManager) StopServer(id string) {
 	for _, s := range o.Servers {
 		if s.GetId() == id {
 			s.Stop()
@@ -167,7 +167,7 @@ func (o *RabbitLoader) StopServer(id string) {
 	}
 }
 
-func (o *RabbitLoader) SaveServer(id string) {
+func (o *RabbitManager) SaveServer(id string) {
 	for _, s := range o.Servers {
 		if s.GetId() == id {
 			s.Save()
@@ -175,19 +175,19 @@ func (o *RabbitLoader) SaveServer(id string) {
 	}
 }
 
-func (o *RabbitLoader) StartServers() {
+func (o *RabbitManager) StartServers() {
 	for _, s := range o.Servers {
 		go s.Start()
 	}
 }
 
-func (o *RabbitLoader) StopServers() {
+func (o *RabbitManager) StopServers() {
 	for index := len(o.Servers) - 1; index >= 0; index -= 1 {
 		o.Servers[index].Stop()
 	}
 }
 
-func (o *RabbitLoader) SaveServers() {
+func (o *RabbitManager) SaveServers() {
 	for _, s := range o.Servers {
 		s.Save()
 	}

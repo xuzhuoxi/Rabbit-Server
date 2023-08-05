@@ -9,7 +9,6 @@ import (
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
-	"github.com/xuzhuoxi/infra-go/netx/tcpx"
 	"net/http"
 	"time"
 )
@@ -24,9 +23,7 @@ func NewIRabbitServer() server.IRabbitServer {
 
 func NewRabbitServer() *RabbitServer {
 	container := NewRabbitExtensionContainer()
-	sockServer := tcpx.NewTCPServer()
 	rs := &RabbitServer{
-		SockServer:   sockServer,
 		ExtContainer: container,
 	}
 	return rs
@@ -36,7 +33,7 @@ type RabbitServer struct {
 	eventx.EventDispatcher
 	logx.LoggerSupport
 	Config       server.CfgRabbitServerItem
-	SockServer   tcpx.ITCPServer
+	SockServer   netx.ISockEventServer
 	ExtContainer server.IRabbitExtensionContainer
 	ExtManager   server.IRabbitExtensionManager
 	StatusDetail *ServerStatusDetail
@@ -56,6 +53,11 @@ func (o *RabbitServer) Init(cfg server.CfgRabbitServerItem) {
 	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
 
 	// 设置SockServer信息
+	server, err := netx.ParseSockNetwork(o.Config.FromUser.Network).NewServer()
+	if nil != err {
+		panic(err)
+	}
+	o.SockServer = server.(netx.ISockEventServer)
 	o.SockServer.SetName(o.Config.FromUser.Name)
 	o.SockServer.SetMaxConn(100)
 	o.SockServer.SetLogger(o.GetLogger())
