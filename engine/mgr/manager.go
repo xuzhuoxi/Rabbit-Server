@@ -8,6 +8,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/logx"
+	"sync"
 )
 
 var (
@@ -15,7 +16,7 @@ var (
 )
 
 func NewRabbitManager() IRabbitManager {
-	return &RabbitManager{}
+	return &RabbitManager{ConnManager: &RabbitConnManager{}}
 }
 
 type IRabbitManager interface {
@@ -39,6 +40,8 @@ type IRabbitManager interface {
 	StartServer(id string)
 	StopServer(id string)
 	SaveServer(id string)
+
+	GetConnManager() IRabbitConnManager
 }
 
 type RabbitManager struct {
@@ -47,9 +50,16 @@ type RabbitManager struct {
 	CfgServer *server.CfgRabbitServer
 	CfgMMO    *config.MMOConfig
 
-	LogManager logx.ILoggerManager
-	MMOManager mmo.IMMOManager
-	Servers    []server.IRabbitServer
+	LogManager  logx.ILoggerManager
+	MMOManager  mmo.IMMOManager
+	Servers     []server.IRabbitServer
+	ConnManager *RabbitConnManager
+
+	Lock sync.RWMutex
+}
+
+func (o *RabbitManager) GetConnManager() IRabbitConnManager {
+	return o.ConnManager
 }
 
 func (o *RabbitManager) GetLogger() logx.ILogger {
@@ -60,21 +70,21 @@ func (o *RabbitManager) GetLogger() logx.ILogger {
 }
 
 func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
-	cfgRoot, err := server.LoadRabbitRootConfig(rootPath)
-	if nil != err {
-		return err
+	cfgRoot, err1 := server.LoadRabbitRootConfig(rootPath)
+	if nil != err1 {
+		return err1
 	}
-	cfgLog, err := cfgRoot.LoadLogConfig()
-	if nil != err {
-		return err
+	cfgLog, err2 := cfgRoot.LoadLogConfig()
+	if nil != err2 {
+		return err2
 	}
-	cfgServer, err := cfgRoot.LoadServerConfig()
-	if nil != err {
-		return err
+	cfgServer, err3 := cfgRoot.LoadServerConfig()
+	if nil != err3 {
+		return err3
 	}
-	cfgMMO, err := cfgRoot.LoadMMOConfig()
-	if nil != err {
-		return err
+	cfgMMO, err4 := cfgRoot.LoadMMOConfig()
+	if nil != err4 {
+		return err4
 	}
 	o.CfgRoot, o.CfgLog, o.CfgServer, o.CfgMMO = cfgRoot, cfgLog, cfgServer, cfgMMO
 	return nil
@@ -128,6 +138,9 @@ func (o *RabbitManager) initServers() {
 			s.SetLogger(o.LogManager.FindLogger(cfgServerItem.LogRef))
 		}
 		s.Init(cfgServerItem)
+		if connSet, ok := s.GetConnSet(); ok {
+			o.ConnManager.AddConnSet(s.GetName(), connSet)
+		}
 	}
 }
 

@@ -39,6 +39,10 @@ type RabbitServer struct {
 	StatusDetail *ServerStatusDetail
 }
 
+func (o *RabbitServer) GetConnSet() (set netx.IServerConnSet, ok bool) {
+	return o.SockServer, o.SockServer != nil
+}
+
 func (o *RabbitServer) GetId() string {
 	return o.Config.Id
 }

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"github.com/xuzhuoxi/infra-go/logx"
+	"github.com/xuzhuoxi/infra-go/netx"
 	"sync"
 )
 
@@ -13,6 +14,7 @@ import (
 type IRabbitServer interface {
 	IRabbitServerInfo
 	IRabbitServerController
+	GetConnSet() (set netx.IServerConnSet, ok bool)
 }
 
 type IRabbitServerController interface {
