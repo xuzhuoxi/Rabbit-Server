@@ -1,5 +1,7 @@
 log: conf/log.yaml
-server: conf/server.yaml
-mmo: conf/mmo.yaml
-db: conf/mysql.yaml
 clock: conf/clock.yaml
+
+db: conf/mysql.yaml
+mmo: conf/mmo.yaml
+server: conf/server.yaml
+verify: conf/verify.yaml

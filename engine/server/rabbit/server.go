@@ -5,6 +5,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Home/core"
 	homeClient "github.com/xuzhuoxi/Rabbit-Home/core/client"
 	"github.com/xuzhuoxi/Rabbit-Home/core/home"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/logx"
@@ -32,7 +33,7 @@ func NewRabbitServer() *RabbitServer {
 type RabbitServer struct {
 	eventx.EventDispatcher
 	logx.LoggerSupport
-	Config       server.CfgRabbitServerItem
+	Config       config.CfgRabbitServerItem
 	SockServer   netx.ISockEventServer
 	ExtContainer server.IRabbitExtensionContainer
 	ExtManager   server.IRabbitExtensionManager
@@ -43,6 +44,10 @@ func (o *RabbitServer) GetConnSet() (set netx.IServerConnSet, ok bool) {
 	return o.SockServer, o.SockServer != nil
 }
 
+func (o *RabbitServer) GetExtensionManager() (mgr server.IRabbitExtensionManager, ok bool) {
+	return o.ExtManager, o.ExtManager != nil
+}
+
 func (o *RabbitServer) GetId() string {
 	return o.Config.Id
 }
@@ -51,7 +56,7 @@ func (o *RabbitServer) GetName() string {
 	return o.Config.Name
 }
 
-func (o *RabbitServer) Init(cfg server.CfgRabbitServerItem) {
+func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	o.Config = cfg
 	o.StatusDetail = NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
 	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
@@ -75,7 +80,12 @@ func (o *RabbitServer) Init(cfg server.CfgRabbitServerItem) {
 }
 
 func (o *RabbitServer) initExtensions() {
-	list := o.Config.Extension.Extensions()
+	var list []string
+	if o.Config.Extension.All {
+		list = server.GetAllExtensions()
+	} else {
+		list = o.Config.Extension.List
+	}
 	if len(list) == 0 {
 		return
 	}

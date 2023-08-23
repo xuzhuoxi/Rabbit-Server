@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
@@ -15,10 +16,11 @@ type IRabbitServer interface {
 	IRabbitServerInfo
 	IRabbitServerController
 	GetConnSet() (set netx.IServerConnSet, ok bool)
+	GetExtensionManager() (mgr IRabbitExtensionManager, ok bool)
 }
 
 type IRabbitServerController interface {
-	Init(cfg CfgRabbitServerItem)
+	Init(cfg config.CfgRabbitServerItem)
 	Start()
 	Stop()
 	Restart()
@@ -39,7 +41,10 @@ type IRabbitExtension interface {
 }
 type FuncNewRabbitExtension func(name string) IRabbitExtension
 type IRabbitExtensionContainer = protox.IProtocolExtensionContainer
-type IRabbitExtensionManager = protox.IExtensionManager
+type IRabbitExtensionManager interface {
+	protox.IExtensionManager
+	SetCustomVerify(reqVerify protox.IReqVerify)
+}
 
 // Register ---
 
@@ -57,6 +62,8 @@ var (
 	extList   = make([]metaExtension, 0, 0)
 	lock      sync.RWMutex
 )
+
+// Register Server ---
 
 func NewRabbitServer(name string) (server IRabbitServer, err error) {
 	lock.RLock()
@@ -86,6 +93,8 @@ func RegisterRabbitServer(name string, server FuncNewRabbitServer) {
 func RegisterRabbitServerDefault(server FuncNewRabbitServer) {
 	RegisterRabbitServer(NameRabbitServer, server)
 }
+
+// Register Extension ---
 
 func GetAllExtensions() []string {
 	if len(extList) == 0 {

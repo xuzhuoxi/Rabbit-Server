@@ -4,9 +4,9 @@
 package mgr
 
 import (
+	"github.com/xuzhuoxi/Rabbit-Server/engine/clock"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/clock"
 	"github.com/xuzhuoxi/infra-go/logx"
 )
 

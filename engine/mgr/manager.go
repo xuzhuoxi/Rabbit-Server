@@ -4,10 +4,11 @@
 package mgr
 
 import (
+	"github.com/xuzhuoxi/Rabbit-Server/engine"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/clock"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/clock"
+	mmoConfig "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/infra-go/logx"
 )
 
@@ -26,7 +27,8 @@ type IRabbitInitManager interface {
 	// LoadRabbitConfig 加载配置
 	LoadRabbitConfig(rootPath string) error
 	// GetConfigs 取加载好的配置信息
-	GetConfigs() (root server.CfgRabbitRoot, log server.CfgRabbitLog, server server.CfgRabbitServer, mmo config.MMOConfig)
+	GetConfigs() (root server.CfgRabbitRoot, log config.CfgRabbitLog, clock config.CfgClock,
+		mmo mmoConfig.MMOConfig, server config.CfgRabbitServer, verify config.CfgVerifyRoot)
 
 	// InitLoggerManager 初始化Log管理器
 	InitLoggerManager() logx.ILoggerManager
@@ -41,25 +43,28 @@ type IRabbitInitManager interface {
 type IRabbitManager interface {
 	logx.ILoggerGetter
 	GetInitManager() IRabbitInitManager
+
 	GetLogManager() logx.ILoggerManager
+	GetClockManger() clock.IRabbitClockManager
+	GetMMOManger() mmo.IMMOManager
 	GetServerManager() IRabbitServerManager
 	GetConnManager() IRabbitConnManager
-	GetMMOManger() mmo.IMMOManager
-	GetClockManger() clock.IRabbitClockManager
 }
 
 type RabbitManager struct {
 	CfgRoot   *server.CfgRabbitRoot
-	CfgLog    *server.CfgRabbitLog
-	CfgServer *server.CfgRabbitServer
-	CfgMMO    *config.MMOConfig
-	CfgClock  *server.CfgClock
+	CfgLog    *config.CfgRabbitLog
+	CfgClock  *config.CfgClock
+	CfgMMO    *mmoConfig.MMOConfig
+	CfgServer *config.CfgRabbitServer
+	CfgVerify *config.CfgVerifyRoot
 
-	LogManager    logx.ILoggerManager
+	LogManager   logx.ILoggerManager
+	ClockManager clock.IRabbitClockManager
+
+	MMOManager    mmo.IMMOManager
 	ServerManager *serverMgr
 	ConnManager   *RabbitConnManager
-	MMOManager    mmo.IMMOManager
-	ClockManager  clock.IRabbitClockManager
 }
 
 func (o *RabbitManager) GetInitManager() IRabbitInitManager {
@@ -70,20 +75,20 @@ func (o *RabbitManager) GetLogManager() logx.ILoggerManager {
 	return o.LogManager
 }
 
-func (o *RabbitManager) GetServerManager() IRabbitServerManager {
-	return o.ServerManager
+func (o *RabbitManager) GetClockManger() clock.IRabbitClockManager {
+	return o.ClockManager
 }
 
 func (o *RabbitManager) GetMMOManger() mmo.IMMOManager {
 	return o.MMOManager
 }
 
-func (o *RabbitManager) GetConnManager() IRabbitConnManager {
-	return o.ConnManager
+func (o *RabbitManager) GetServerManager() IRabbitServerManager {
+	return o.ServerManager
 }
 
-func (o *RabbitManager) GetClockManger() clock.IRabbitClockManager {
-	return o.ClockManager
+func (o *RabbitManager) GetConnManager() IRabbitConnManager {
+	return o.ConnManager
 }
 
 func (o *RabbitManager) GetLogger() logx.ILogger {
@@ -104,7 +109,7 @@ func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
 	if nil != err2 {
 		return err2
 	}
-	cfgServer, err3 := cfgRoot.LoadServerConfig()
+	cfgClock, err3 := cfgRoot.LoadClockConfig()
 	if nil != err3 {
 		return err3
 	}
@@ -112,16 +117,21 @@ func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
 	if nil != err4 {
 		return err4
 	}
-	cfgClock, err5 := cfgRoot.LoadClockConfig()
+	cfgServer, err5 := cfgRoot.LoadServerConfig()
 	if nil != err5 {
 		return err5
 	}
-	o.CfgRoot, o.CfgLog, o.CfgServer, o.CfgMMO, o.CfgClock = cfgRoot, cfgLog, cfgServer, cfgMMO, cfgClock
+	cfgVerify, err6 := cfgRoot.LoadVerifyConfig()
+	if nil != err6 {
+		return err6
+	}
+	o.CfgRoot, o.CfgLog, o.CfgClock, o.CfgMMO, o.CfgServer, o.CfgVerify = cfgRoot, cfgLog, cfgClock, cfgMMO, cfgServer, cfgVerify
 	return nil
 }
 
-func (o *RabbitManager) GetConfigs() (root server.CfgRabbitRoot, log server.CfgRabbitLog, server server.CfgRabbitServer, mmo config.MMOConfig) {
-	return *o.CfgRoot, *o.CfgLog, *o.CfgServer, *o.CfgMMO
+func (o *RabbitManager) GetConfigs() (root server.CfgRabbitRoot, log config.CfgRabbitLog, clock config.CfgClock,
+	mmo mmoConfig.MMOConfig, server config.CfgRabbitServer, verify config.CfgVerifyRoot) {
+	return *o.CfgRoot, *o.CfgLog, *o.CfgClock, *o.CfgMMO, *o.CfgServer, *o.CfgVerify
 }
 
 func (o *RabbitManager) InitLoggerManager() logx.ILoggerManager {
