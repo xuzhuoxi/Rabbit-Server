@@ -7,8 +7,8 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/clock"
 	"github.com/xuzhuoxi/infra-go/logx"
-	"sync"
 )
 
 var (
@@ -16,11 +16,13 @@ var (
 )
 
 func NewRabbitManager() IRabbitManager {
-	return &RabbitManager{ConnManager: &RabbitConnManager{}}
+	return &RabbitManager{
+		ConnManager:   &RabbitConnManager{},
+		ServerManager: &serverMgr{},
+	}
 }
 
-type IRabbitManager interface {
-	logx.ILoggerGetter
+type IRabbitInitManager interface {
 	// LoadRabbitConfig 加载配置
 	LoadRabbitConfig(rootPath string) error
 	// GetConfigs 取加载好的配置信息
@@ -32,16 +34,18 @@ type IRabbitManager interface {
 	InitServers()
 	// CreateMMOWorld 创建MMO世界
 	CreateMMOWorld() mmo.IMMOManager
+	// InitClockManager 初始化时钟管理器
+	InitClockManager()
+}
 
-	StartServers()
-	StopServers()
-	SaveServers()
-
-	StartServer(id string)
-	StopServer(id string)
-	SaveServer(id string)
-
+type IRabbitManager interface {
+	logx.ILoggerGetter
+	GetInitManager() IRabbitInitManager
+	GetLogManager() logx.ILoggerManager
+	GetServerManager() IRabbitServerManager
 	GetConnManager() IRabbitConnManager
+	GetMMOManger() mmo.IMMOManager
+	GetClockManger() clock.IRabbitClockManager
 }
 
 type RabbitManager struct {
@@ -49,17 +53,37 @@ type RabbitManager struct {
 	CfgLog    *server.CfgRabbitLog
 	CfgServer *server.CfgRabbitServer
 	CfgMMO    *config.MMOConfig
+	CfgClock  *server.CfgClock
 
-	LogManager  logx.ILoggerManager
-	MMOManager  mmo.IMMOManager
-	Servers     []server.IRabbitServer
-	ConnManager *RabbitConnManager
+	LogManager    logx.ILoggerManager
+	ServerManager *serverMgr
+	ConnManager   *RabbitConnManager
+	MMOManager    mmo.IMMOManager
+	ClockManager  clock.IRabbitClockManager
+}
 
-	Lock sync.RWMutex
+func (o *RabbitManager) GetInitManager() IRabbitInitManager {
+	return o
+}
+
+func (o *RabbitManager) GetLogManager() logx.ILoggerManager {
+	return o.LogManager
+}
+
+func (o *RabbitManager) GetServerManager() IRabbitServerManager {
+	return o.ServerManager
+}
+
+func (o *RabbitManager) GetMMOManger() mmo.IMMOManager {
+	return o.MMOManager
 }
 
 func (o *RabbitManager) GetConnManager() IRabbitConnManager {
 	return o.ConnManager
+}
+
+func (o *RabbitManager) GetClockManger() clock.IRabbitClockManager {
+	return o.ClockManager
 }
 
 func (o *RabbitManager) GetLogger() logx.ILogger {
@@ -68,6 +92,8 @@ func (o *RabbitManager) GetLogger() logx.ILogger {
 	}
 	return o.LogManager.FindLogger(o.CfgLog.Default)
 }
+
+// IRabbitInitManager ---------- ---------- ---------- ----------
 
 func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
 	cfgRoot, err1 := server.LoadRabbitRootConfig(rootPath)
@@ -86,7 +112,11 @@ func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
 	if nil != err4 {
 		return err4
 	}
-	o.CfgRoot, o.CfgLog, o.CfgServer, o.CfgMMO = cfgRoot, cfgLog, cfgServer, cfgMMO
+	cfgClock, err5 := cfgRoot.LoadClockConfig()
+	if nil != err5 {
+		return err5
+	}
+	o.CfgRoot, o.CfgLog, o.CfgServer, o.CfgMMO, o.CfgClock = cfgRoot, cfgLog, cfgServer, cfgMMO, cfgClock
 	return nil
 }
 
@@ -108,100 +138,6 @@ func (o *RabbitManager) CreateMMOWorld() mmo.IMMOManager {
 	return o.MMOManager
 }
 
-func (o *RabbitManager) initLogger() {
-	o.LogManager = logx.DefaultLoggerManager
-	if nil == o.CfgLog {
-		logger := logx.NewLogger()
-		o.LogManager.RegisterLogger(logx.DefaultLoggerName, logger)
-		o.LogManager.SetDefault(logx.DefaultLoggerName)
-	} else {
-		for _, log := range o.CfgLog.Logs {
-			o.LogManager.GenLogger(log.Name, log.Conf)
-		}
-		o.LogManager.SetDefault(o.CfgLog.Default)
-	}
-}
-
-func (o *RabbitManager) initServers() {
-	if o.CfgServer == nil || len(o.CfgServer.Servers) == 0 {
-		return
-	}
-	for _, cfgServerItem := range o.CfgServer.Servers {
-		s, err := server.NewRabbitServer(cfgServerItem.Name)
-		if nil != err {
-			panic(err)
-		}
-		o.Servers = append(o.Servers, s)
-		if cfgServerItem.LogRef == "" {
-			s.SetLogger(o.LogManager.GetDefaultLogger())
-		} else {
-			s.SetLogger(o.LogManager.FindLogger(cfgServerItem.LogRef))
-		}
-		s.Init(cfgServerItem)
-		if connSet, ok := s.GetConnSet(); ok {
-			o.ConnManager.AddConnSet(s.GetName(), connSet)
-		}
-	}
-}
-
-func (o *RabbitManager) initMMOWorld() {
-	if o.CfgMMO == nil {
-		return
-	}
-	o.MMOManager = mmo.NewMMOManager()
-	o.MMOManager.InitManager()
-	if nil == o.CfgMMO.Log && len(o.CfgMMO.LogRef) == 0 {
-		o.MMOManager.SetLogger(o.LogManager.GetDefaultLogger())
-	} else {
-		if o.CfgMMO.Log != nil {
-			logger := logx.NewLogger()
-			logger.SetConfig(o.CfgMMO.Log.ToLogConfig())
-			o.MMOManager.SetLogger(logger)
-		} else {
-			o.MMOManager.SetLogger(o.LogManager.FindLogger(o.CfgMMO.LogRef))
-		}
-	}
-	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.CfgMMO)
-}
-
-func (o *RabbitManager) StartServer(id string) {
-	for _, s := range o.Servers {
-		if s.GetId() == id {
-			go s.Start()
-		}
-	}
-}
-
-func (o *RabbitManager) StopServer(id string) {
-	for _, s := range o.Servers {
-		if s.GetId() == id {
-			s.Stop()
-		}
-	}
-}
-
-func (o *RabbitManager) SaveServer(id string) {
-	for _, s := range o.Servers {
-		if s.GetId() == id {
-			s.Save()
-		}
-	}
-}
-
-func (o *RabbitManager) StartServers() {
-	for _, s := range o.Servers {
-		go s.Start()
-	}
-}
-
-func (o *RabbitManager) StopServers() {
-	for index := len(o.Servers) - 1; index >= 0; index -= 1 {
-		o.Servers[index].Stop()
-	}
-}
-
-func (o *RabbitManager) SaveServers() {
-	for _, s := range o.Servers {
-		s.Save()
-	}
+func (o *RabbitManager) InitClockManager() {
+	o.initClockManager()
 }

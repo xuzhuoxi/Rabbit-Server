@@ -29,14 +29,18 @@ var (
 
 type OnQuery func(rows *sql.Rows, err error)
 type OnUpdate func(rowLen int64, err error)
-type OnTrans func(err error)
+type OnTransCtx func(ctx *SqlCtx, index int)
+type OnTransCommit func(err error)
 
-type SqlContext struct {
-	Sql  string
-	Args []interface{}
+type SqlCtx struct {
+	Sql     string
+	Args    []interface{}
+	IsQuery bool
+	Result  sql.Result
+	Rows    *sql.Rows
 }
 
-func (o SqlContext) String() string {
+func (o SqlCtx) String() string {
 	return fmt.Sprintf("{Sql=%s, Args=[%s]}", o.Sql, fmt.Sprint(o.Args...))
 }
 
@@ -71,7 +75,7 @@ type IDataSource interface {
 	// Update 执行更新语句
 	Update(query string, onUpdate OnUpdate, args ...interface{})
 	// ExecTrans 执行事务
-	ExecTrans(sqlCtx []SqlContext, onTrans OnTrans)
+	ExecTrans(sqlCtx []*SqlCtx, onTransCtx OnTransCtx, onTransCommit OnTransCommit) (err error)
 }
 
 type DataSource struct {
@@ -124,138 +128,17 @@ func (o *DataSource) UpdateMeta() {
 }
 
 func (o *DataSource) SimpleQuery(query string, onQuery OnQuery) {
-	o.query(query, onQuery)
+	o.simpleQuery(query, onQuery)
 }
 
 func (o *DataSource) Query(query string, onQuery OnQuery, args ...interface{}) {
-	stmt, err1 := o.Db.Prepare(query)
-	if err1 != nil {
-		err1 = errors.New(fmt.Sprintf("Prepare failed,%s", err1))
-		InvokeOnQuery(onQuery, nil, err1)
-		return
-	}
-	defer stmt.Close()
-	rows, err2 := stmt.Query(args...) // 执行预编译语句，传入参数
-	if nil != rows {
-		defer rows.Close()
-	}
-	InvokeOnQuery(onQuery, rows, err2)
+	o.query(query, onQuery, args...)
 }
 
 func (o *DataSource) Update(query string, onUpdate OnUpdate, args ...interface{}) {
-	stmt, err1 := o.Db.Prepare(query)
-	if err1 != nil {
-		err1 = errors.New(fmt.Sprintf("Prepare failed,%s", err1))
-		InvokeOnUpdate(onUpdate, 0, err1)
-		return
-	}
-	defer stmt.Close()
-	res, err2 := stmt.Exec(args...) // 执行预编译语句，传入参数
-	if err2 != nil {
-		err2 = errors.New(fmt.Sprintf("Exec failed,%s", err2))
-		InvokeOnUpdate(onUpdate, 0, err2)
-		return
-	}
-	row, err3 := res.RowsAffected() // 获取影响的行数
-	if err3 != nil {
-		err3 = errors.New(fmt.Sprintf("Rows affected failed,%s", err3))
-		InvokeOnUpdate(onUpdate, 0, err3)
-		return
-	}
-	InvokeOnUpdate(onUpdate, row, nil)
+	o.update(query, onUpdate, args...)
 }
 
-func (o *DataSource) ExecTrans(sqlCtx []SqlContext, onTrans OnTrans) {
-	if len(sqlCtx) == 0 {
-		InvokeOnTrans(onTrans, nil)
-		return
-	}
-	tx, err1 := o.Db.Begin()
-	if err1 != nil {
-		InvokeOnTrans(onTrans, err1)
-		return
-	}
-	for index := range sqlCtx {
-		stmt, err2 := tx.Prepare(sqlCtx[index].Sql)
-		if err2 != nil {
-			tx.Rollback()
-			InvokeOnTrans(onTrans, err2)
-			return
-		}
-		_, err2 = stmt.Exec(sqlCtx[index].Args...)
-		if err1 != nil {
-			tx.Rollback()
-			InvokeOnTrans(onTrans, err2)
-			return
-		}
-	}
-	err1 = tx.Commit()
-	if err1 != nil {
-		InvokeOnTrans(onTrans, err1)
-	}
-}
-
-func (o *DataSource) query(query string, onQuery OnQuery) {
-	rows, err := o.Db.Query(query)
-	if nil != rows {
-		defer rows.Close()
-	}
-	InvokeOnQuery(onQuery, rows, err)
-}
-
-func (o *DataSource) queryTableMeta() {
-	query := fmt.Sprintf(QueryTableMeta, o.Config.Schema)
-	o.query(query, o.onTableMeta)
-}
-
-func (o *DataSource) onTableMeta(rows *sql.Rows, err error) {
-	if nil != err {
-		o.DispatchEvent(EventOnDataSourceMetaUpdated, o, err)
-		return
-	}
-	var tables []TableMeta
-	for rows.Next() {
-		meta := TableMeta{TableSchema: o.Config.Schema}
-		err1 := rows.Scan(&meta.TableName, &meta.AvgRowLen,
-			&meta.DataLen, &meta.MaxDataLen, &meta.IndexLen)
-		if nil != err1 {
-			o.DispatchEvent(EventOnDataSourceMetaUpdated, o, err1)
-			return
-		}
-		tables = append(tables, meta)
-	}
-	o.Meta = DatabaseMeta{SchemaName: o.Config.Schema, Tables: tables}
-	o.queryColumnMeta()
-}
-
-func (o *DataSource) queryColumnMeta() {
-	query := fmt.Sprintf(QueryColumnMeta, o.Config.Schema)
-	o.query(query, o.onColumnMeta)
-}
-
-func (o *DataSource) onColumnMeta(rows *sql.Rows, err error) {
-	if nil != err {
-		o.DispatchEvent(EventOnDataSourceMetaUpdated, o, err)
-		return
-	}
-	var columns []ColMeta
-	for rows.Next() {
-		meta := ColMeta{TableSchema: o.Config.Schema}
-		err := rows.Scan(&meta.TableName, &meta.ColName,
-			&meta.Position, &meta.Nullable, &meta.DataType, &meta.ColKey)
-		if nil != err {
-			o.DispatchEvent(EventOnDataSourceMetaUpdated, o, err)
-			return
-		}
-		columns = append(columns, meta)
-	}
-	index := 0
-	//fmt.Println("Column Size:", len(columns))
-	for idxC := range columns {
-		if columns[idxC].TableName != o.Meta.Tables[index].TableName {
-			index += 1
-		}
-		o.Meta.Tables[index].Columns = append(o.Meta.Tables[index].Columns, columns[idxC])
-	}
-	o.DispatchEvent(EventOnDataSourceMetaUpdated, o, nil)
+func (o *DataSource) ExecTrans(sqlCtx []*SqlCtx, onTransCtx OnTransCtx, onTransCommit OnTransCommit) (err error) {
+	return o.execTrans(sqlCtx, onTransCtx, onTransCommit)
 }

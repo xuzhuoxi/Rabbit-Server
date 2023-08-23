@@ -19,9 +19,16 @@ func InvokeOnUpdate(onUpdate OnUpdate, rowLen int64, err error) {
 	onUpdate(rowLen, err)
 }
 
-func InvokeOnTrans(onTrans OnTrans, err error) {
-	if onTrans == nil {
+func InvokeOnTransCtx(onTransCtx OnTransCtx, ctx *SqlCtx, index int) {
+	if onTransCtx == nil {
 		return
 	}
-	onTrans(err)
+	onTransCtx(ctx, index)
+}
+
+func InvokeOnTransCommit(onTransCommit OnTransCommit, err error) {
+	if onTransCommit == nil {
+		return
+	}
+	onTransCommit(err)
 }

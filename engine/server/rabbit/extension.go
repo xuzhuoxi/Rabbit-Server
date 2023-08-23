@@ -76,7 +76,7 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 			defer func() {
 				un := time.Now().UnixNano() - tn
 				m.Logger.Infoln(fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, UsedTime=%s",
-					name, pid, timex.FormatUnixMilli(un/1e6, "5.999999ms"))) //记录响应时间
+					name, pid, timex.FormatMillisLocal(un/1e6, "5.999999ms"))) //记录响应时间
 				m.StatusDetail.AddRespUnixNano(un)
 			}()
 			re.OnRequest(response, request)

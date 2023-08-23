@@ -11,6 +11,19 @@ import (
 	"time"
 )
 
+const (
+	GameZeroLayout  = "2006-01-02 15:04:05"
+	DailyZeroLayout = "15h04m05s"
+)
+
+type CfgClock struct {
+	// IANA time zone, https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+	// 例如：Asia/Shanghai
+	GameLocation string `yaml:"game_loc"`
+	GameZero     string `yaml:"game_zero"`  // 格式为 GameZeroLayout
+	DailyZero    string `yaml:"daily_zero"` // 格式为 DailyZeroLayout
+}
+
 type CfgNet struct {
 	Name    string `yaml:"name"`
 	Network string `yaml:"network"`
@@ -64,6 +77,7 @@ type CfgRabbitRoot struct {
 	ServerPath string `yaml:"server,omitempty"`
 	MMOPath    string `yaml:"mmo,omitempty"`
 	DbPath     string `yaml:"db,omitempty"`
+	ClockPath  string `yaml:"clock,omitempty"`
 }
 
 func (o CfgRabbitRoot) LoadLogConfig() (conf *CfgRabbitLog, err error) {
@@ -98,6 +112,19 @@ func (o CfgRabbitRoot) LoadMMOConfig() (conf *config.MMOConfig, err error) {
 	}
 	filePath := utils.FixFilePath(o.MMOPath)
 	conf = &config.MMOConfig{}
+	err = utils.UnmarshalFromYaml(filePath, conf)
+	if nil != err {
+		return nil, err
+	}
+	return
+}
+
+func (o CfgRabbitRoot) LoadClockConfig() (conf *CfgClock, err error) {
+	if o.ClockPath == "" {
+		return nil, nil
+	}
+	filePath := utils.FixFilePath(o.ClockPath)
+	conf = &CfgClock{}
 	err = utils.UnmarshalFromYaml(filePath, conf)
 	if nil != err {
 		return nil, err
