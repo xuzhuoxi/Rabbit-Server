@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-03.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-03-03.
+// @author xuzhuoxi
 package entity
 
 import (
@@ -29,43 +28,43 @@ type VariableSupport struct {
 	mu   sync.RWMutex
 }
 
-func (s *VariableSupport) Vars() encodingx.IKeyValue {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return s.vars
+func (o *VariableSupport) Vars() encodingx.IKeyValue {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	return o.vars
 }
 
-func (s *VariableSupport) SetVar(key string, value interface{}) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if diff, ok := s.vars.Set(key, value); ok {
-		s.DispatchEvent(basis.EventVariableChanged, s.currentTarget, diff)
+func (o *VariableSupport) SetVar(key string, value interface{}) {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	if diff, ok := o.vars.Set(key, value); ok {
+		o.DispatchEvent(basis.EventVariableChanged, o.currentTarget, diff)
 	}
 }
 
-func (s *VariableSupport) SetVars(kv encodingx.IKeyValue) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	diff := s.vars.Merge(kv)
+func (o *VariableSupport) SetVars(kv encodingx.IKeyValue) {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	diff := o.vars.Merge(kv)
 	if nil != diff {
-		s.DispatchEvent(basis.EventVariableChanged, s.currentTarget, diff)
+		o.DispatchEvent(basis.EventVariableChanged, o.currentTarget, diff)
 	}
 }
 
-func (s *VariableSupport) GetVar(key string) (interface{}, bool) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return s.vars.Get(key)
+func (o *VariableSupport) GetVar(key string) (interface{}, bool) {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	return o.vars.Get(key)
 }
 
-func (s *VariableSupport) CheckVar(key string) bool {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return s.vars.Check(key)
+func (o *VariableSupport) CheckVar(key string) bool {
+	o.mu.RLock()
+	defer o.mu.RUnlock()
+	return o.vars.Check(key)
 }
 
-func (s *VariableSupport) RemoveVar(key string) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.vars.Delete(key)
+func (o *VariableSupport) RemoveVar(key string) {
+	o.mu.Lock()
+	defer o.mu.Unlock()
+	o.vars.Delete(key)
 }

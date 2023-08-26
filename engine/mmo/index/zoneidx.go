@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-09.
-//@author xuzhuoxi
-//
+// Package index
+// Created by xuzhuoxi
+// on 2019-03-09.
+// @author xuzhuoxi
 package index
 
 import (
@@ -21,30 +20,30 @@ type ZoneIndex struct {
 	EntityIndex
 }
 
-func (i *ZoneIndex) CheckZone(zoneId string) bool {
-	return i.EntityIndex.Check(zoneId)
+func (o *ZoneIndex) CheckZone(zoneId string) bool {
+	return o.EntityIndex.Check(zoneId)
 }
 
-func (i *ZoneIndex) GetZone(zoneId string) basis.IZoneEntity {
-	entity := i.EntityIndex.Get(zoneId)
+func (o *ZoneIndex) GetZone(zoneId string) basis.IZoneEntity {
+	entity := o.EntityIndex.Get(zoneId)
 	if nil != entity {
 		return entity.(basis.IZoneEntity)
 	}
 	return nil
 }
 
-func (i *ZoneIndex) AddZone(zone basis.IZoneEntity) error {
-	return i.EntityIndex.Add(zone)
+func (o *ZoneIndex) AddZone(zone basis.IZoneEntity) error {
+	return o.EntityIndex.Add(zone)
 }
 
-func (i *ZoneIndex) RemoveZone(zoneId string) (basis.IZoneEntity, error) {
-	c, err := i.EntityIndex.Remove(zoneId)
+func (o *ZoneIndex) RemoveZone(zoneId string) (basis.IZoneEntity, error) {
+	c, err := o.EntityIndex.Remove(zoneId)
 	if nil != c {
 		return c.(basis.IZoneEntity), err
 	}
 	return nil, err
 }
 
-func (i *ZoneIndex) UpdateZone(zone basis.IZoneEntity) error {
-	return i.EntityIndex.Update(zone)
+func (o *ZoneIndex) UpdateZone(zone basis.IZoneEntity) error {
+	return o.EntityIndex.Update(zone)
 }

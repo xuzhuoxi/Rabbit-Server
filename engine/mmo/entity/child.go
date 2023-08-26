@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-02-18.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-02-18.
+// @author xuzhuoxi
 package entity
 
 import (
@@ -23,26 +22,26 @@ type EntityChildSupport struct {
 	oMu   sync.RWMutex
 }
 
-func (s *EntityChildSupport) GetParent() string {
-	s.oMu.RLock()
-	defer s.oMu.RUnlock()
-	return s.Owner
+func (o *EntityChildSupport) GetParent() string {
+	o.oMu.RLock()
+	defer o.oMu.RUnlock()
+	return o.Owner
 }
 
-func (s *EntityChildSupport) NoneParent() bool {
-	s.oMu.RLock()
-	defer s.oMu.RUnlock()
-	return s.Owner == ""
+func (o *EntityChildSupport) NoneParent() bool {
+	o.oMu.RLock()
+	defer o.oMu.RUnlock()
+	return o.Owner == ""
 }
 
-func (s *EntityChildSupport) SetParent(parentId string) {
-	s.oMu.Lock()
-	defer s.oMu.Unlock()
-	s.Owner = parentId
+func (o *EntityChildSupport) SetParent(parentId string) {
+	o.oMu.Lock()
+	defer o.oMu.Unlock()
+	o.Owner = parentId
 }
 
-func (s *EntityChildSupport) ClearParent() {
-	s.oMu.Lock()
-	defer s.oMu.Unlock()
-	s.Owner = ""
+func (o *EntityChildSupport) ClearParent() {
+	o.oMu.Lock()
+	defer o.oMu.Unlock()
+	o.Owner = ""
 }

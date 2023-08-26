@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-02-18.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-02-18.
+// @author xuzhuoxi
 package entity
 
 import "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
@@ -28,23 +27,23 @@ type ZoneEntity struct {
 	VariableSupport
 }
 
-func (e *ZoneEntity) UID() string {
-	return e.ZoneId
+func (o *ZoneEntity) UID() string {
+	return o.ZoneId
 }
 
-func (e *ZoneEntity) NickName() string {
-	return e.ZoneName
+func (o *ZoneEntity) NickName() string {
+	return o.ZoneName
 }
 
-func (e *ZoneEntity) EntityType() basis.EntityType {
+func (o *ZoneEntity) EntityType() basis.EntityType {
 	return basis.EntityZone
 }
 
-func (e *ZoneEntity) InitEntity() {
-	e.EntityChildSupport = *NewEntityChildSupport()
-	e.ListEntityContainer = *NewListEntityContainer(0)
+func (o *ZoneEntity) InitEntity() {
+	o.EntityChildSupport = *NewEntityChildSupport()
+	o.ListEntityContainer = *NewListEntityContainer(0)
 	//e.RoomGroup = NewEntityListGroup(EntityRoom)
-	e.VariableSupport = *NewVariableSupport(e)
+	o.VariableSupport = *NewVariableSupport(o)
 }
 
 //func (e *ZoneEntity) RoomList() []string {

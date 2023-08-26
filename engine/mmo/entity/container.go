@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-14.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-03-14.
+// @author xuzhuoxi
 package entity
 
 import (
@@ -36,102 +35,102 @@ type MapEntityContainer struct {
 	containerMu sync.RWMutex
 }
 
-func (c *MapEntityContainer) NumChildren() int {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	return len(c.entities)
+func (o *MapEntityContainer) NumChildren() int {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	return len(o.entities)
 }
 
-func (c *MapEntityContainer) Full() bool {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	return c.isFull()
+func (o *MapEntityContainer) Full() bool {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	return o.isFull()
 }
 
-func (c *MapEntityContainer) Contains(entity basis.IEntity) (isContains bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	_, isContains = c.entities[entity.UID()]
+func (o *MapEntityContainer) Contains(entity basis.IEntity) (isContains bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	_, isContains = o.entities[entity.UID()]
 	return
 }
 
-func (c *MapEntityContainer) ContainsById(entityId string) (isContains bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	_, isContains = c.entities[entityId]
+func (o *MapEntityContainer) ContainsById(entityId string) (isContains bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	_, isContains = o.entities[entityId]
 	return
 }
 
-func (c *MapEntityContainer) GetChildById(entityId string) (entity basis.IEntity, ok bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	entity, ok = c.entities[entityId]
+func (o *MapEntityContainer) GetChildById(entityId string) (entity basis.IEntity, ok bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	entity, ok = o.entities[entityId]
 	return
 }
 
-func (c *MapEntityContainer) ReplaceChildInto(entity basis.IEntity) error {
-	c.containerMu.Lock()
-	defer c.containerMu.Unlock()
+func (o *MapEntityContainer) ReplaceChildInto(entity basis.IEntity) error {
+	o.containerMu.Lock()
+	defer o.containerMu.Unlock()
 	if nil == entity {
 		return errors.New("Entity is nil. ")
 	}
-	if c.isFull() {
+	if o.isFull() {
 		return errors.New("Container is full ")
 	}
-	c.entities[entity.UID()] = entity
+	o.entities[entity.UID()] = entity
 	return nil
 }
 
-func (c *MapEntityContainer) AddChild(entity basis.IEntity) error {
-	c.containerMu.Lock()
-	defer c.containerMu.Unlock()
+func (o *MapEntityContainer) AddChild(entity basis.IEntity) error {
+	o.containerMu.Lock()
+	defer o.containerMu.Unlock()
 	if nil == entity {
 		return errors.New("Entity is nil. ")
 	}
 	id := entity.UID()
-	_, isContains := c.entities[id]
+	_, isContains := o.entities[id]
 	if isContains {
 		return errors.New(fmt.Sprintf("Entity(%s) is already in the container", id))
 	}
-	if c.isFull() {
+	if o.isFull() {
 		return errors.New("Container is full ")
 	}
-	c.entities[id] = entity
+	o.entities[id] = entity
 	return nil
 }
 
-func (c *MapEntityContainer) RemoveChild(entity basis.IEntity) error {
-	c.containerMu.Lock()
-	defer c.containerMu.Unlock()
+func (o *MapEntityContainer) RemoveChild(entity basis.IEntity) error {
+	o.containerMu.Lock()
+	defer o.containerMu.Unlock()
 	if nil == entity {
 		return errors.New("Entity is nil. ")
 	}
 	id := entity.UID()
-	_, isContains := c.entities[id]
+	_, isContains := o.entities[id]
 	if !isContains {
 		return errors.New(fmt.Sprintf("Entity(%s) does not exist in the container", id))
 	}
-	delete(c.entities, id)
+	delete(o.entities, id)
 	return nil
 }
 
-func (c *MapEntityContainer) RemoveChildById(entityId string) (entity basis.IEntity, ok bool) {
-	c.containerMu.Lock()
-	defer c.containerMu.Unlock()
-	entity, ok = c.entities[entityId]
+func (o *MapEntityContainer) RemoveChildById(entityId string) (entity basis.IEntity, ok bool) {
+	o.containerMu.Lock()
+	defer o.containerMu.Unlock()
+	entity, ok = o.entities[entityId]
 	if ok {
-		delete(c.entities, entityId)
+		delete(o.entities, entityId)
 	}
 	return
 }
 
-func (c *MapEntityContainer) ForEachChild(each func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool)) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	if 0 == len(c.entities) {
+func (o *MapEntityContainer) ForEachChild(each func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool)) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	if 0 == len(o.entities) {
 		return
 	}
-	for _, entity := range c.entities {
+	for _, entity := range o.entities {
 		child := entity
 		interruptCurrent, interruptRecurse := each(child)
 		if interruptCurrent {
@@ -146,14 +145,14 @@ func (c *MapEntityContainer) ForEachChild(each func(child basis.IEntity) (interr
 	}
 }
 
-func (c *MapEntityContainer) ForEachChildByType(entityType basis.EntityType, each func(child basis.IEntity), recurse bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	if 0 == len(c.entities) {
+func (o *MapEntityContainer) ForEachChildByType(entityType basis.EntityType, each func(child basis.IEntity), recurse bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	if 0 == len(o.entities) {
 		return
 	}
 	if recurse {
-		for _, entity := range c.entities {
+		for _, entity := range o.entities {
 			if entity.EntityType() != entityType {
 				continue
 			}
@@ -164,7 +163,7 @@ func (c *MapEntityContainer) ForEachChildByType(entityType basis.EntityType, eac
 			}
 		}
 	} else {
-		for _, entity := range c.entities {
+		for _, entity := range o.entities {
 			if entity.EntityType() != entityType {
 				continue
 			}
@@ -174,8 +173,8 @@ func (c *MapEntityContainer) ForEachChildByType(entityType basis.EntityType, eac
 	}
 }
 
-func (c *MapEntityContainer) isFull() bool {
-	return c.maxCount > 0 && c.maxCount <= len(c.entities)
+func (o *MapEntityContainer) isFull() bool {
+	return o.maxCount > 0 && o.maxCount <= len(o.entities)
 }
 
 //--------------------
@@ -186,113 +185,113 @@ type ListEntityContainer struct {
 	containerMu sync.RWMutex
 }
 
-func (c *ListEntityContainer) NumChildren() int {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	return len(c.entities)
+func (o *ListEntityContainer) NumChildren() int {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	return len(o.entities)
 }
 
-func (c *ListEntityContainer) Full() bool {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	return c.isFull()
+func (o *ListEntityContainer) Full() bool {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	return o.isFull()
 }
 
-func (c *ListEntityContainer) Contains(entity basis.IEntity) (isContains bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
+func (o *ListEntityContainer) Contains(entity basis.IEntity) (isContains bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
 	if nil == entity {
 		return false
 	}
-	e, _, ok := c.contains(entity.UID())
+	e, _, ok := o.contains(entity.UID())
 	if ok {
 		return basis.EntityEqual(e, entity)
 	}
 	return false
 }
 
-func (c *ListEntityContainer) ContainsById(entityId string) (isContains bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	_, _, isContains = c.contains(entityId)
+func (o *ListEntityContainer) ContainsById(entityId string) (isContains bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	_, _, isContains = o.contains(entityId)
 	return
 }
 
-func (c *ListEntityContainer) GetChildById(entityId string) (entity basis.IEntity, ok bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	entity, _, ok = c.contains(entityId)
+func (o *ListEntityContainer) GetChildById(entityId string) (entity basis.IEntity, ok bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	entity, _, ok = o.contains(entityId)
 	return
 }
 
-func (c *ListEntityContainer) ReplaceChildInto(entity basis.IEntity) error {
-	c.containerMu.Lock()
-	defer c.containerMu.Unlock()
+func (o *ListEntityContainer) ReplaceChildInto(entity basis.IEntity) error {
+	o.containerMu.Lock()
+	defer o.containerMu.Unlock()
 	if nil == entity {
 		return errors.New("Entity is nil. ")
 	}
 	id := entity.UID()
-	_, index, isContains := c.contains(id)
+	_, index, isContains := o.contains(id)
 	if isContains {
-		c.entities[index] = entity
+		o.entities[index] = entity
 	} else {
-		if c.isFull() {
+		if o.isFull() {
 			return errors.New("Container is full ")
 		}
-		c.entities = append(c.entities, entity)
+		o.entities = append(o.entities, entity)
 	}
 	return nil
 }
 
-func (c *ListEntityContainer) AddChild(entity basis.IEntity) error {
-	c.containerMu.Lock()
-	defer c.containerMu.Unlock()
+func (o *ListEntityContainer) AddChild(entity basis.IEntity) error {
+	o.containerMu.Lock()
+	defer o.containerMu.Unlock()
 	if nil == entity {
 		return errors.New("Entity is nil. ")
 	}
 	id := entity.UID()
-	_, _, isContains := c.contains(id)
+	_, _, isContains := o.contains(id)
 	if isContains {
 		return errors.New(fmt.Sprintf("Entity(%s) is already in the container", id))
 	}
-	if c.isFull() {
+	if o.isFull() {
 		return errors.New("Container is full ")
 	}
-	c.entities = append(c.entities, entity)
+	o.entities = append(o.entities, entity)
 	return nil
 }
 
-func (c *ListEntityContainer) RemoveChild(entity basis.IEntity) error {
-	c.containerMu.Lock()
-	defer c.containerMu.Unlock()
+func (o *ListEntityContainer) RemoveChild(entity basis.IEntity) error {
+	o.containerMu.Lock()
+	defer o.containerMu.Unlock()
 	if nil == entity {
 		return errors.New("Entity is nil. ")
 	}
 	id := entity.UID()
-	_, index, isContains := c.contains(id)
+	_, index, isContains := o.contains(id)
 	if !isContains {
 		return errors.New(fmt.Sprintf("Entity(%s) does not exist in the container", id))
 	}
-	c.entities = append(c.entities[:index], c.entities[index+1:]...)
+	o.entities = append(o.entities[:index], o.entities[index+1:]...)
 	return nil
 }
 
-func (c *ListEntityContainer) RemoveChildById(entityId string) (entity basis.IEntity, ok bool) {
+func (o *ListEntityContainer) RemoveChildById(entityId string) (entity basis.IEntity, ok bool) {
 	var index int
-	entity, index, ok = c.contains(entityId)
+	entity, index, ok = o.contains(entityId)
 	if ok {
-		c.entities = append(c.entities[:index], c.entities[index+1:]...)
+		o.entities = append(o.entities[:index], o.entities[index+1:]...)
 	}
 	return
 }
 
-func (c *ListEntityContainer) ForEachChild(each func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool)) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	if 0 == len(c.entities) {
+func (o *ListEntityContainer) ForEachChild(each func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool)) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	if 0 == len(o.entities) {
 		return
 	}
-	for _, entity := range c.entities {
+	for _, entity := range o.entities {
 		child := entity
 		interruptCurrent, interruptRecurse := each(child)
 		if interruptCurrent {
@@ -307,14 +306,14 @@ func (c *ListEntityContainer) ForEachChild(each func(child basis.IEntity) (inter
 	}
 }
 
-func (c *ListEntityContainer) ForEachChildByType(entityType basis.EntityType, each func(child basis.IEntity), recurse bool) {
-	c.containerMu.RLock()
-	defer c.containerMu.RUnlock()
-	if 0 == len(c.entities) {
+func (o *ListEntityContainer) ForEachChildByType(entityType basis.EntityType, each func(child basis.IEntity), recurse bool) {
+	o.containerMu.RLock()
+	defer o.containerMu.RUnlock()
+	if 0 == len(o.entities) {
 		return
 	}
 	if recurse {
-		for _, entity := range c.entities {
+		for _, entity := range o.entities {
 			if entity.EntityType() != entityType {
 				continue
 			}
@@ -325,7 +324,7 @@ func (c *ListEntityContainer) ForEachChildByType(entityType basis.EntityType, ea
 			}
 		}
 	} else {
-		for _, entity := range c.entities {
+		for _, entity := range o.entities {
 			if entity.EntityType() != entityType {
 				continue
 			}
@@ -335,10 +334,10 @@ func (c *ListEntityContainer) ForEachChildByType(entityType basis.EntityType, ea
 	}
 }
 
-func (c *ListEntityContainer) contains(entityId string) (entity basis.IEntity, index int, isContains bool) {
-	for index = 0; index < len(c.entities); index++ {
-		if c.entities[index].UID() == entityId {
-			entity = c.entities[index]
+func (o *ListEntityContainer) contains(entityId string) (entity basis.IEntity, index int, isContains bool) {
+	for index = 0; index < len(o.entities); index++ {
+		if o.entities[index].UID() == entityId {
+			entity = o.entities[index]
 			isContains = true
 			return
 		}
@@ -346,6 +345,6 @@ func (c *ListEntityContainer) contains(entityId string) (entity basis.IEntity, i
 	return nil, -1, false
 }
 
-func (c *ListEntityContainer) isFull() bool {
-	return c.maxCount > 0 && c.maxCount <= len(c.entities)
+func (o *ListEntityContainer) isFull() bool {
+	return o.maxCount > 0 && o.maxCount <= len(o.entities)
 }

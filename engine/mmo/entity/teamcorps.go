@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-02-18.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-02-18.
+// @author xuzhuoxi
 package entity
 
 import "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
@@ -25,22 +24,22 @@ type TeamCorpsEntity struct {
 	VariableSupport
 }
 
-func (e *TeamCorpsEntity) UID() string {
-	return e.CorpsId
+func (o *TeamCorpsEntity) UID() string {
+	return o.CorpsId
 }
 
-func (e *TeamCorpsEntity) NickName() string {
-	return e.CorpsName
+func (o *TeamCorpsEntity) NickName() string {
+	return o.CorpsName
 }
 
-func (e *TeamCorpsEntity) EntityType() basis.EntityType {
+func (o *TeamCorpsEntity) EntityType() basis.EntityType {
 	return basis.EntityTeamCorps
 }
 
-func (e *TeamCorpsEntity) InitEntity() {
-	e.ListEntityContainer = *NewListEntityContainer(0)
+func (o *TeamCorpsEntity) InitEntity() {
+	o.ListEntityContainer = *NewListEntityContainer(0)
 	//e.TeamGroup = NewEntityListGroup(EntityTeam)
-	e.VariableSupport = *NewVariableSupport(e)
+	o.VariableSupport = *NewVariableSupport(o)
 }
 
 //func (e *TeamCorpsEntity) TeamList() []string {

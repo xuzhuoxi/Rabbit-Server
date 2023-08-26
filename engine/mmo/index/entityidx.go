@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-17.
-//@author xuzhuoxi
-//
+// Package index
+// Created by xuzhuoxi
+// on 2019-03-17.
+// @author xuzhuoxi
 package index
 
 import (
@@ -27,70 +26,70 @@ type EntityIndex struct {
 	entityMu   sync.RWMutex
 }
 
-func (i *EntityIndex) EntityType() basis.EntityType {
-	return i.entityType
+func (o *EntityIndex) EntityType() basis.EntityType {
+	return o.entityType
 }
 
-func (i *EntityIndex) Check(id string) bool {
-	i.entityMu.RLock()
-	defer i.entityMu.RUnlock()
-	return i.check(id)
+func (o *EntityIndex) Check(id string) bool {
+	o.entityMu.RLock()
+	defer o.entityMu.RUnlock()
+	return o.check(id)
 }
 
-func (i *EntityIndex) check(id string) bool {
-	_, ok := i.entityMap[id]
+func (o *EntityIndex) check(id string) bool {
+	_, ok := o.entityMap[id]
 	return ok
 }
 
-func (i *EntityIndex) Get(id string) basis.IEntity {
-	i.entityMu.RLock()
-	defer i.entityMu.RUnlock()
-	return i.entityMap[id]
+func (o *EntityIndex) Get(id string) basis.IEntity {
+	o.entityMu.RLock()
+	defer o.entityMu.RUnlock()
+	return o.entityMap[id]
 }
 
-func (i *EntityIndex) Add(entity basis.IEntity) error {
-	i.entityMu.Lock()
-	defer i.entityMu.Unlock()
+func (o *EntityIndex) Add(entity basis.IEntity) error {
+	o.entityMu.Lock()
+	defer o.entityMu.Unlock()
 	if nil == entity {
 		//return errors.New(i.indexName + ".Add Error: entity is nil")
-		return errors.New(fmt.Sprintf("%s.Add Error: entity is nil", i.indexName))
+		return errors.New(fmt.Sprintf("%s.Add Error: entity is nil", o.indexName))
 	}
-	if !i.entityType.Include(entity.EntityType()) {
+	if !o.entityType.Include(entity.EntityType()) {
 		//return errors.New(i.indexName + ".Add Error: Type is not included")
-		return errors.New(fmt.Sprintf("%s.Add Error: Type is not included", i.indexName))
+		return errors.New(fmt.Sprintf("%s.Add Error: Type is not included", o.indexName))
 	}
 	id := entity.UID()
-	if i.check(id) {
+	if o.check(id) {
 		//return errors.New(i.indexName + ".Add Error: Id(" + id + ") Duplicate")
-		return errors.New(fmt.Sprintf("%s.Add Error: Id(%s) Duplicate", i.indexName, id))
+		return errors.New(fmt.Sprintf("%s.Add Error: Id(%s) Duplicate", o.indexName, id))
 	}
-	i.entityMap[id] = entity
+	o.entityMap[id] = entity
 	return nil
 }
 
-func (i *EntityIndex) Remove(id string) (basis.IEntity, error) {
-	i.entityMu.Lock()
-	defer i.entityMu.Unlock()
-	e, ok := i.entityMap[id]
+func (o *EntityIndex) Remove(id string) (basis.IEntity, error) {
+	o.entityMu.Lock()
+	defer o.entityMu.Unlock()
+	e, ok := o.entityMap[id]
 	if ok {
-		delete(i.entityMap, id)
+		delete(o.entityMap, id)
 		return e, nil
 	}
 	//return nil, errors.New(i.indexName + ".Remove Error: No Entity(" + id + ")")
-	return nil, errors.New(fmt.Sprintf("%s.Remove Error: No Entity(%s)", i.indexName, id))
+	return nil, errors.New(fmt.Sprintf("%s.Remove Error: No Entity(%s)", o.indexName, id))
 }
 
-func (i *EntityIndex) Update(entity basis.IEntity) error {
-	i.entityMu.Lock()
-	defer i.entityMu.Unlock()
+func (o *EntityIndex) Update(entity basis.IEntity) error {
+	o.entityMu.Lock()
+	defer o.entityMu.Unlock()
 	if nil == entity {
 		//return errors.New(i.indexName + ".Update Error: entity is nil")
-		return errors.New(fmt.Sprintf("%s.Update Error: entity is nil", i.indexName))
+		return errors.New(fmt.Sprintf("%s.Update Error: entity is nil", o.indexName))
 	}
-	if !i.entityType.Include(entity.EntityType()) {
+	if !o.entityType.Include(entity.EntityType()) {
 		//return errors.New(i.indexName + ".Update Error: Type is not included")
-		return errors.New(fmt.Sprintf("%s.Update Error: Type is not included", i.indexName))
+		return errors.New(fmt.Sprintf("%s.Update Error: Type is not included", o.indexName))
 	}
-	i.entityMap[entity.UID()] = entity
+	o.entityMap[entity.UID()] = entity
 	return nil
 }

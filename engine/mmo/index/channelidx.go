@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-09.
-//@author xuzhuoxi
-//
+// Package index
+// Created by xuzhuoxi
+// on 2019-03-09.
+// @author xuzhuoxi
 package index
 
 import (
@@ -21,30 +20,30 @@ type ChannelIndex struct {
 	EntityIndex
 }
 
-func (i *ChannelIndex) CheckChannel(chanId string) bool {
-	return i.EntityIndex.Check(chanId)
+func (o *ChannelIndex) CheckChannel(chanId string) bool {
+	return o.EntityIndex.Check(chanId)
 }
 
-func (i *ChannelIndex) GetChannel(chanId string) basis.IChannelEntity {
-	entity := i.EntityIndex.Get(chanId)
+func (o *ChannelIndex) GetChannel(chanId string) basis.IChannelEntity {
+	entity := o.EntityIndex.Get(chanId)
 	if nil != entity {
 		return entity.(basis.IChannelEntity)
 	}
 	return nil
 }
 
-func (i *ChannelIndex) AddChannel(channel basis.IChannelEntity) error {
-	return i.EntityIndex.Add(channel)
+func (o *ChannelIndex) AddChannel(channel basis.IChannelEntity) error {
+	return o.EntityIndex.Add(channel)
 }
 
-func (i *ChannelIndex) RemoveChannel(chanId string) (basis.IChannelEntity, error) {
-	c, err := i.EntityIndex.Remove(chanId)
+func (o *ChannelIndex) RemoveChannel(chanId string) (basis.IChannelEntity, error) {
+	c, err := o.EntityIndex.Remove(chanId)
 	if nil != c {
 		return c.(basis.IChannelEntity), err
 	}
 	return nil, err
 }
 
-func (i *ChannelIndex) UpdateChannel(channel basis.IChannelEntity) error {
-	return i.EntityIndex.Update(channel)
+func (o *ChannelIndex) UpdateChannel(channel basis.IChannelEntity) error {
+	return o.EntityIndex.Update(channel)
 }

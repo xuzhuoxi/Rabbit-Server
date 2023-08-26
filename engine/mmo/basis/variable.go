@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-14.
-//@author xuzhuoxi
-//
+// Package basis
+// Created by xuzhuoxi
+// on 2019-03-14.
+// @author xuzhuoxi
 package basis
 
 import (
@@ -18,7 +17,7 @@ func NewVarSet() encodingx.IKeyValue {
 	return encodingx.NewCodingMap()
 }
 
-//变量列表
+// IVariableSupport 变量列表
 type IVariableSupport interface {
 	eventx.IEventDispatcher
 	SetVar(key string, value interface{})

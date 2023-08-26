@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-09.
-//@author xuzhuoxi
-//
+// Package basis
+// Created by xuzhuoxi
+// on 2019-03-09.
+// @author xuzhuoxi
 package basis
 
 import (
@@ -31,18 +30,18 @@ func GetTeamCorpsId() string {
 }
 
 type ITeamControl interface {
-	//队长
+	// Leader 队长
 	Leader() string
-	//用户列表
+	// MemberList 用户列表
 	MemberList() []string
-	//检查用户
+	// ContainMember 检查用户
 	ContainMember(memberId string) bool
-	//加入用户,进行唯一性检查
+	// AcceptMember 加入用户,进行唯一性检查
 	AcceptMember(memberId string) error
-	//从组中移除用户
+	// DropMember 从组中移除用户
 	DropMember(memberId string) error
-	//从组中移除用户
+	// RiseLeader 从组中移除用户
 	RiseLeader(memberId string) error
-	//解散队伍
+	// DisbandTeam 解散队伍
 	DisbandTeam() error
 }

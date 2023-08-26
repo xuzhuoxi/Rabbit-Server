@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-09.
-//@author xuzhuoxi
-//
+// Package index
+// Created by xuzhuoxi
+// on 2019-03-09.
+// @author xuzhuoxi
 package index
 
 import (
@@ -21,30 +20,30 @@ type TeamCorpsIndex struct {
 	EntityIndex
 }
 
-func (i *TeamCorpsIndex) CheckCorps(corpsId string) bool {
-	return i.EntityIndex.Check(corpsId)
+func (o *TeamCorpsIndex) CheckCorps(corpsId string) bool {
+	return o.EntityIndex.Check(corpsId)
 }
 
-func (i *TeamCorpsIndex) GetCorps(corpsId string) basis.ITeamCorpsEntity {
-	entity := i.EntityIndex.Get(corpsId)
+func (o *TeamCorpsIndex) GetCorps(corpsId string) basis.ITeamCorpsEntity {
+	entity := o.EntityIndex.Get(corpsId)
 	if nil != entity {
 		return entity.(basis.ITeamCorpsEntity)
 	}
 	return nil
 }
 
-func (i *TeamCorpsIndex) AddCorps(corps basis.ITeamCorpsEntity) error {
-	return i.EntityIndex.Add(corps)
+func (o *TeamCorpsIndex) AddCorps(corps basis.ITeamCorpsEntity) error {
+	return o.EntityIndex.Add(corps)
 }
 
-func (i *TeamCorpsIndex) RemoveCorps(corpsId string) (basis.ITeamCorpsEntity, error) {
-	c, err := i.EntityIndex.Remove(corpsId)
+func (o *TeamCorpsIndex) RemoveCorps(corpsId string) (basis.ITeamCorpsEntity, error) {
+	c, err := o.EntityIndex.Remove(corpsId)
 	if nil != c {
 		return c.(basis.ITeamCorpsEntity), err
 	}
 	return nil, err
 }
 
-func (i *TeamCorpsIndex) UpdateCorps(corps basis.ITeamCorpsEntity) error {
-	return i.EntityIndex.Update(corps)
+func (o *TeamCorpsIndex) UpdateCorps(corps basis.ITeamCorpsEntity) error {
+	return o.EntityIndex.Update(corps)
 }

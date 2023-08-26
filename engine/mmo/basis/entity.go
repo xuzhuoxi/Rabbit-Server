@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-14.
-//@author xuzhuoxi
-//
+// Package basis
+// Created by xuzhuoxi
+// on 2019-03-14.
+// @author xuzhuoxi
 package basis
 
 type EntityType uint16
@@ -29,25 +28,25 @@ func (t EntityType) Include(check EntityType) bool {
 }
 
 type IEntity interface {
-	//唯一标识
+	// UID 唯一标识
 	UID() string
-	//昵称，显示使用
+	// NickName 昵称，显示使用
 	NickName() string
-	//实体类型
+	// EntityType 实体类型
 	EntityType() EntityType
 }
 
 type IInitEntity interface {
-	//初始化实体
+	// InitEntity 初始化实体
 	InitEntity()
 }
 
 type IDestroyEntity interface {
-	//释放实体
+	// DestroyEntity 释放实体
 	DestroyEntity()
 }
 
-//世界实体
+// IWorldEntity 世界实体
 type IWorldEntity interface {
 	IEntity
 	IInitEntity
@@ -57,7 +56,7 @@ type IWorldEntity interface {
 	IVariableSupport
 }
 
-//区域实体
+// IZoneEntity 区域实体
 type IZoneEntity interface {
 	IEntity
 	IEntityChild
@@ -68,7 +67,7 @@ type IZoneEntity interface {
 	IVariableSupport
 }
 
-//兵团实体
+// ITeamCorpsEntity 兵团实体
 type ITeamCorpsEntity interface {
 	IEntity
 	IEntityChild
@@ -79,7 +78,7 @@ type ITeamCorpsEntity interface {
 	IVariableSupport
 }
 
-//房间实体
+// IRoomEntity 房间实体
 type IRoomEntity interface {
 	IEntity
 	IInitEntity
@@ -90,7 +89,7 @@ type IRoomEntity interface {
 	IVariableSupport
 }
 
-//队伍实体
+// ITeamEntity 队伍实体
 type ITeamEntity interface {
 	IEntity
 	IInitEntity
@@ -101,14 +100,14 @@ type ITeamEntity interface {
 	//ITeamControl
 }
 
-//用户实体
+// IUserEntity 用户实体
 type IUserEntity interface {
 	IEntity
 	IInitEntity
 	IDestroyEntity
 	IUserSubscriber
 	IVariableSupport
-	//用户名
+	// UserName 用户名
 	UserName() string
 
 	GetLocation() (idType EntityType, id string)
@@ -122,7 +121,7 @@ type IUserEntity interface {
 	SetPosition(pos XYZ)
 }
 
-//频道实体
+// IChannelEntity 频道实体
 type IChannelEntity interface {
 	IEntity
 	IInitEntity

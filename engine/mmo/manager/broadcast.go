@@ -23,26 +23,26 @@ type IBroadcastManager interface {
 
 	//以下为基础方法------
 
-	//广播整个实体
-	//target为环境实体
-	//source可以为nil，当不为nil时会进行黑名单过滤，和本身过滤
+	// BroadcastEntity 广播整个实体
+	// target为环境实体
+	// source可以为nil，当不为nil时会进行黑名单过滤，和本身过滤
 	BroadcastEntity(source basis.IUserEntity, target basis.IEntity, handler func(entity basis.IUserEntity)) error
-	//广播部分用户
-	//targets为用户实体IUserEntity的UID集合
-	//source可以为nil，当不为nil时会进行黑名单过滤，和本身过滤
+	// BroadcastUsers 广播部分用户
+	// targets为用户实体IUserEntity的UID集合
+	// source可以为nil，当不为nil时会进行黑名单过滤，和本身过滤
 	BroadcastUsers(source basis.IUserEntity, targets []string, handler func(entity basis.IUserEntity)) error
-	//设置附近值
+	// SetNearDistance 设置附近值
 	SetNearDistance(distance float64)
-	//广播当前用户所在区域
-	//source不能为nil
+	// BroadcastCurrent 广播当前用户所在区域
+	// source不能为nil
 	BroadcastCurrent(source basis.IUserEntity, excludeBlack bool, handler func(entity basis.IUserEntity)) error
 	//以下为业务型方法------
 
-	//环境实体变量更新
+	// NotifyEnvVars 环境实体变量更新
 	NotifyEnvVars(varTarget basis.IEntity, vars encodingx.IKeyValue)
-	//用户实体变量更新
+	// NotifyUserVars 用户实体变量更新
 	NotifyUserVars(source basis.IUserEntity, vars encodingx.IKeyValue)
-	//用户实体变量更新
+	// NotifyUserVarsCurrent 用户实体变量更新
 	NotifyUserVarsCurrent(source basis.IUserEntity, vars encodingx.IKeyValue)
 }
 
@@ -65,33 +65,33 @@ type BroadcastManager struct {
 	distance     float64
 }
 
-func (m *BroadcastManager) InitManager() {
+func (o *BroadcastManager) InitManager() {
 	return
 }
 
-func (m *BroadcastManager) DisposeManager() {
+func (o *BroadcastManager) DisposeManager() {
 	return
 }
 
-func (m *BroadcastManager) SetLogger(logger logx.ILogger) {
-	m.logger = logger
+func (o *BroadcastManager) SetLogger(logger logx.ILogger) {
+	o.logger = logger
 }
 
-func (m *BroadcastManager) SetSockServer(server netx.ISockServer) {
-	m.broadcastMu.Lock()
-	defer m.broadcastMu.Unlock()
-	m.sockServer = server
+func (o *BroadcastManager) SetSockServer(server netx.ISockServer) {
+	o.broadcastMu.Lock()
+	defer o.broadcastMu.Unlock()
+	o.sockServer = server
 }
 
-func (m *BroadcastManager) SetAddressProxy(addressProxy netx.IAddressProxy) {
-	m.broadcastMu.Lock()
-	defer m.broadcastMu.Unlock()
-	m.addressProxy = addressProxy
+func (o *BroadcastManager) SetAddressProxy(addressProxy netx.IAddressProxy) {
+	o.broadcastMu.Lock()
+	defer o.broadcastMu.Unlock()
+	o.addressProxy = addressProxy
 }
 
-func (m *BroadcastManager) BroadcastEntity(source basis.IUserEntity, target basis.IEntity, handler func(entity basis.IUserEntity)) error {
-	m.broadcastMu.RLock()
-	defer m.broadcastMu.RUnlock()
+func (o *BroadcastManager) BroadcastEntity(source basis.IUserEntity, target basis.IEntity, handler func(entity basis.IUserEntity)) error {
+	o.broadcastMu.RLock()
+	defer o.broadcastMu.RUnlock()
 	if nil == target {
 		return errors.New(fmt.Sprintf("Target is nil. "))
 	}
@@ -123,13 +123,13 @@ func (m *BroadcastManager) BroadcastEntity(source basis.IUserEntity, target basi
 	return nil
 }
 
-func (m *BroadcastManager) BroadcastUsers(source basis.IUserEntity, targets []string, handler func(entity basis.IUserEntity)) error {
-	m.broadcastMu.RLock()
-	defer m.broadcastMu.RUnlock()
+func (o *BroadcastManager) BroadcastUsers(source basis.IUserEntity, targets []string, handler func(entity basis.IUserEntity)) error {
+	o.broadcastMu.RLock()
+	defer o.broadcastMu.RUnlock()
 	if len(targets) == 0 {
 		return errors.New("Targets's len is 0")
 	}
-	userIndex := m.entityMgr.UserIndex()
+	userIndex := o.entityMgr.UserIndex()
 	for _, targetId := range targets {
 		if targetUser := userIndex.GetUser(targetId); nil != targetUser { //目标用户存在
 			if nil != source {
@@ -146,20 +146,20 @@ func (m *BroadcastManager) BroadcastUsers(source basis.IUserEntity, targets []st
 	return nil
 }
 
-func (m *BroadcastManager) SetNearDistance(distance float64) {
-	m.broadcastMu.Lock()
-	defer m.broadcastMu.Unlock()
-	m.distance = distance
+func (o *BroadcastManager) SetNearDistance(distance float64) {
+	o.broadcastMu.Lock()
+	defer o.broadcastMu.Unlock()
+	o.distance = distance
 }
 
-func (m *BroadcastManager) BroadcastCurrent(source basis.IUserEntity, excludeBlack bool, handler func(entity basis.IUserEntity)) error {
-	m.broadcastMu.RLock()
-	defer m.broadcastMu.RUnlock()
+func (o *BroadcastManager) BroadcastCurrent(source basis.IUserEntity, excludeBlack bool, handler func(entity basis.IUserEntity)) error {
+	o.broadcastMu.RLock()
+	defer o.broadcastMu.RUnlock()
 	if nil == source {
 		return errors.New(fmt.Sprintf("Source is nil. "))
 	}
 	idType, id := source.GetLocation()
-	if parentEntity, ok := m.entityMgr.GetEntity(idType, id); ok {
+	if parentEntity, ok := o.entityMgr.GetEntity(idType, id); ok {
 		if ec, ok2 := parentEntity.(basis.IEntityContainer); ok2 {
 			ec.ForEachChildByType(basis.EntityUser, func(child basis.IEntity) {
 				if checkSame(source, child) { //本身
@@ -169,7 +169,7 @@ func (m *BroadcastManager) BroadcastCurrent(source basis.IUserEntity, excludeBla
 					if excludeBlack && checkBlack(source, userChild) { //黑名单
 						return
 					}
-					if !basis.NearXYZ(source.GetPosition(), userChild.GetPosition(), m.distance) { //位置不相近
+					if !basis.NearXYZ(source.GetPosition(), userChild.GetPosition(), o.distance) { //位置不相近
 						return
 					}
 					handler(userChild)
@@ -182,13 +182,13 @@ func (m *BroadcastManager) BroadcastCurrent(source basis.IUserEntity, excludeBla
 
 //-----------------------------
 
-func (m *BroadcastManager) NotifyEnvVars(varTarget basis.IEntity, vars encodingx.IKeyValue) {
+func (o *BroadcastManager) NotifyEnvVars(varTarget basis.IEntity, vars encodingx.IKeyValue) {
 }
 
-func (m *BroadcastManager) NotifyUserVars(source basis.IUserEntity, vars encodingx.IKeyValue) {
+func (o *BroadcastManager) NotifyUserVars(source basis.IUserEntity, vars encodingx.IKeyValue) {
 }
 
-func (m *BroadcastManager) NotifyUserVarsCurrent(source basis.IUserEntity, vars encodingx.IKeyValue) {
+func (o *BroadcastManager) NotifyUserVarsCurrent(source basis.IUserEntity, vars encodingx.IKeyValue) {
 }
 
 //-----------------------------

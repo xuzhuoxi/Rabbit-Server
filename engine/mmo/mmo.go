@@ -40,64 +40,64 @@ type MMOManager struct {
 	logger    logx.ILogger
 }
 
-func (m *MMOManager) InitManager() {
-	if nil != m.entityMgr {
+func (o *MMOManager) InitManager() {
+	if nil != o.entityMgr {
 		return
 	}
-	m.entityMgr = manager.NewIEntityManager()
-	m.entityMgr.InitManager()
-	m.userMgr = manager.NewIUserManager(m.entityMgr)
-	m.userMgr.InitManager()
-	m.bcMgr = manager.NewIBroadcastManager(m.entityMgr, nil, nil)
-	m.bcMgr.InitManager()
-	m.varMgr = manager.NewIVariableManager(m.entityMgr, m.bcMgr)
-	m.varMgr.InitManager()
-	m.SetLogger(m.logger)
+	o.entityMgr = manager.NewIEntityManager()
+	o.entityMgr.InitManager()
+	o.userMgr = manager.NewIUserManager(o.entityMgr)
+	o.userMgr.InitManager()
+	o.bcMgr = manager.NewIBroadcastManager(o.entityMgr, nil, nil)
+	o.bcMgr.InitManager()
+	o.varMgr = manager.NewIVariableManager(o.entityMgr, o.bcMgr)
+	o.varMgr.InitManager()
+	o.SetLogger(o.logger)
 }
 
-func (m *MMOManager) DisposeManager() {
-	m.varMgr.DisposeManager()
-	m.bcMgr.DisposeManager()
-	m.userMgr.DisposeManager()
-	m.entityMgr.DisposeManager()
+func (o *MMOManager) DisposeManager() {
+	o.varMgr.DisposeManager()
+	o.bcMgr.DisposeManager()
+	o.userMgr.DisposeManager()
+	o.entityMgr.DisposeManager()
 }
 
-func (m *MMOManager) SetSockServer(server netx.ISockServer) {
-	if nil != m.bcMgr {
-		m.bcMgr.SetSockServer(server)
+func (o *MMOManager) SetSockServer(server netx.ISockServer) {
+	if nil != o.bcMgr {
+		o.bcMgr.SetSockServer(server)
 	}
 }
 
-func (m *MMOManager) SetAddressProxy(proxy netx.IAddressProxy) {
-	if nil != m.bcMgr {
-		m.bcMgr.SetAddressProxy(proxy)
+func (o *MMOManager) SetAddressProxy(proxy netx.IAddressProxy) {
+	if nil != o.bcMgr {
+		o.bcMgr.SetAddressProxy(proxy)
 	}
 }
 
-func (m *MMOManager) SetLogger(logger logx.ILogger) {
-	m.logger = logger
-	if nil != m.entityMgr {
-		m.entityMgr.SetLogger(logger)
+func (o *MMOManager) SetLogger(logger logx.ILogger) {
+	o.logger = logger
+	if nil != o.entityMgr {
+		o.entityMgr.SetLogger(logger)
 	}
-	if nil != m.userMgr {
-		m.userMgr.SetLogger(logger)
+	if nil != o.userMgr {
+		o.userMgr.SetLogger(logger)
 	}
-	if nil != m.bcMgr {
-		m.bcMgr.SetLogger(logger)
+	if nil != o.bcMgr {
+		o.bcMgr.SetLogger(logger)
 	}
-	if nil != m.varMgr {
-		m.varMgr.SetLogger(logger)
+	if nil != o.varMgr {
+		o.varMgr.SetLogger(logger)
 	}
 }
 
-func (m *MMOManager) GetEntityManager() manager.IEntityManager {
-	return m.entityMgr
+func (o *MMOManager) GetEntityManager() manager.IEntityManager {
+	return o.entityMgr
 }
 
-func (m *MMOManager) GetUserManager() manager.IUserManager {
-	return m.userMgr
+func (o *MMOManager) GetUserManager() manager.IUserManager {
+	return o.userMgr
 }
 
-func (m *MMOManager) GetBroadcastManager() manager.IBroadcastManager {
-	return m.bcMgr
+func (o *MMOManager) GetBroadcastManager() manager.IBroadcastManager {
+	return o.bcMgr
 }

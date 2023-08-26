@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-02-19.
-//@author xuzhuoxi
-//
+// Package basis
+// Created by xuzhuoxi
+// on 2019-02-19.
+// @author xuzhuoxi
 package basis
 
 type XY struct {
@@ -20,16 +19,16 @@ func (xyz XYZ) XY() XY {
 	return XY{X: xyz.X, Y: xyz.Y}
 }
 
-//判断两点是否相近
-//用于转发附近消息
+// NearXY 判断两点是否相近
+// 用于转发附近消息
 func NearXY(pos1 XY, pos2 XY, distance float64) bool {
 	x12 := pos1.X - pos2.X
 	y12 := pos1.Y - pos2.Y
 	return (x12*x12 + y12*y12) <= distance*distance
 }
 
-//判断两点是否相近
-//用于转发附近消息
+// NearXYZ 判断两点是否相近
+// 用于转发附近消息
 func NearXYZ(pos1 XYZ, pos2 XYZ, distance float64) bool {
 	x12 := pos1.X - pos2.X
 	y12 := pos1.Y - pos2.Y

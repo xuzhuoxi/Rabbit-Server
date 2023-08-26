@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-08.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-03-08.
+// @author xuzhuoxi
 package entity
 
 import (
@@ -18,7 +17,7 @@ func NewTeamEntity(teamId string, teamName string, maxMember int) *TeamEntity {
 	return &TeamEntity{TeamId: teamId, TeamName: teamName, MaxMember: maxMember}
 }
 
-//常规房间
+// TeamEntity 常规房间
 type TeamEntity struct {
 	TeamId    string
 	TeamName  string
@@ -32,23 +31,23 @@ type TeamEntity struct {
 	teamMu sync.RWMutex
 }
 
-func (e *TeamEntity) UID() string {
-	return e.TeamId
+func (o *TeamEntity) UID() string {
+	return o.TeamId
 }
 
-func (e *TeamEntity) NickName() string {
-	return e.TeamName
+func (o *TeamEntity) NickName() string {
+	return o.TeamName
 }
 
-func (e *TeamEntity) EntityType() basis.EntityType {
+func (o *TeamEntity) EntityType() basis.EntityType {
 	return basis.EntityTeam
 }
 
-func (e *TeamEntity) InitEntity() {
-	e.EntityChildSupport = *NewEntityChildSupport()
-	e.ListEntityContainer = *NewListEntityContainer(e.MaxMember)
+func (o *TeamEntity) InitEntity() {
+	o.EntityChildSupport = *NewEntityChildSupport()
+	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
 	//e.UserGroup = NewEntityListGroup(EntityUser)
-	e.VariableSupport = *NewVariableSupport(e)
+	o.VariableSupport = *NewVariableSupport(o)
 }
 
 //func (e *TeamEntity) Leader() string {

@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-16.
-//@author xuzhuoxi
-//
+// Package basis
+// Created by xuzhuoxi
+// on 2019-03-16.
+// @author xuzhuoxi
 package basis
 
 import "github.com/xuzhuoxi/infra-go/logx"

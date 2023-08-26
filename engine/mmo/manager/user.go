@@ -15,11 +15,11 @@ import (
 
 type IUserManager interface {
 	basis.IManagerBase
-	//加入世界
+	// EnterWorld 加入世界
 	EnterWorld(user basis.IUserEntity, roomId string) error
-	//离开世界
+	// ExitWorld 离开世界
 	ExitWorld(userId string) error
-	//在世界转移
+	// Transfer 在世界转移
 	Transfer(userId string, toRoomId string) error
 }
 
@@ -39,33 +39,33 @@ type UserManager struct {
 	transferMu sync.RWMutex
 }
 
-func (w *UserManager) InitManager() {
+func (o *UserManager) InitManager() {
 	return
 }
 
-func (w *UserManager) DisposeManager() {
+func (o *UserManager) DisposeManager() {
 	return
 }
 
-func (m *UserManager) SetLogger(logger logx.ILogger) {
-	m.logger = logger
+func (o *UserManager) SetLogger(logger logx.ILogger) {
+	o.logger = logger
 }
 
-func (w *UserManager) EnterWorld(user basis.IUserEntity, roomId string) error {
-	w.transferMu.Lock()
-	defer w.transferMu.Unlock()
+func (o *UserManager) EnterWorld(user basis.IUserEntity, roomId string) error {
+	o.transferMu.Lock()
+	defer o.transferMu.Unlock()
 	if nil == user {
 		return errors.New("WorldManager.EnterWorld Error: user is nil")
 	}
-	roomIndex := w.entityMgr.RoomIndex()
-	userIndex := w.entityMgr.UserIndex()
+	roomIndex := o.entityMgr.RoomIndex()
+	userIndex := o.entityMgr.UserIndex()
 	if !roomIndex.CheckRoom(roomId) {
 		return errors.New("WorldManager.EnterWorld Error: Room(" + roomId + ") does not exist")
 	}
 	userId := user.UID()
 	if userIndex.CheckUser(userId) {
 		oldUser := userIndex.GetUser(userId)
-		w.exitCurrentRoom(oldUser)
+		o.exitCurrentRoom(oldUser)
 	}
 	userIndex.UpdateUser(user)
 	room := roomIndex.GetRoom(roomId)
@@ -74,14 +74,14 @@ func (w *UserManager) EnterWorld(user basis.IUserEntity, roomId string) error {
 	return nil
 }
 
-func (w *UserManager) ExitWorld(userId string) error {
-	w.transferMu.Lock()
-	defer w.transferMu.Unlock()
-	userIndex := w.entityMgr.UserIndex()
+func (o *UserManager) ExitWorld(userId string) error {
+	o.transferMu.Lock()
+	defer o.transferMu.Unlock()
+	userIndex := o.entityMgr.UserIndex()
 	if "" == userId || userIndex.CheckUser(userId) {
 		return errors.New("WorldManager.ExitWorld Error: User() does not exist")
 	}
-	roomIndex := w.entityMgr.RoomIndex()
+	roomIndex := o.entityMgr.RoomIndex()
 	user := userIndex.GetUser(userId)
 	_, roomId := user.GetLocation()
 	if room := roomIndex.GetRoom(roomId); nil != room {
@@ -91,14 +91,14 @@ func (w *UserManager) ExitWorld(userId string) error {
 	return nil
 }
 
-func (w *UserManager) Transfer(userId string, toRoomId string) error {
-	w.transferMu.Lock()
-	defer w.transferMu.Unlock()
-	userIndex := w.entityMgr.UserIndex()
+func (o *UserManager) Transfer(userId string, toRoomId string) error {
+	o.transferMu.Lock()
+	defer o.transferMu.Unlock()
+	userIndex := o.entityMgr.UserIndex()
 	if "" == userId || !userIndex.CheckUser(userId) {
 		return errors.New(fmt.Sprintf("EnterWorld Error: user(%s) does not exist", userId))
 	}
-	roomIndex := w.entityMgr.RoomIndex()
+	roomIndex := o.entityMgr.RoomIndex()
 	if "" == toRoomId || !roomIndex.CheckRoom(toRoomId) {
 		return errors.New(fmt.Sprintf("EnterWorld Error: Target room(%s) does not exist", toRoomId))
 	}
@@ -107,16 +107,16 @@ func (w *UserManager) Transfer(userId string, toRoomId string) error {
 	if roomId == toRoomId {
 		return errors.New(fmt.Sprintf("EnterWorld Error: user(%s) already in the room(%s)", userId, toRoomId))
 	}
-	w.exitCurrentRoom(user)
+	o.exitCurrentRoom(user)
 	toRoom := roomIndex.GetRoom(toRoomId)
 	toRoom.AddChild(user)
 	user.SetLocation(basis.EntityRoom, roomId)
 	return nil
 }
 
-func (w *UserManager) exitCurrentRoom(user basis.IUserEntity) error {
+func (o *UserManager) exitCurrentRoom(user basis.IUserEntity) error {
 	_, roomId := user.GetLocation()
-	roomIndex := w.entityMgr.RoomIndex()
+	roomIndex := o.entityMgr.RoomIndex()
 	if "" == roomId || !roomIndex.CheckRoom(roomId) {
 		return errors.New("WorldManager.exitCurrentRoom Error: room is nil")
 	}

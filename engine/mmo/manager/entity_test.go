@@ -1,8 +1,6 @@
-//
-//Created by xuzhuoxi
-//on 2019-06-10.
-//@author xuzhuoxi
-//
+// Created by xuzhuoxi
+// on 2019-06-10.
+// @author xuzhuoxi
 package manager
 
 import (

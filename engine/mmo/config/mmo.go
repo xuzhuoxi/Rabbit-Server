@@ -20,7 +20,7 @@ import (
 type MMOConfig struct {
 	Entities     *CfgMMOEntities `json:"entities" yaml:"entities"`
 	Relations    *CfgRelations   `json:"relations" yaml:"relations"`
-	DefaultWorld string          `json:"default"yaml:"default"`
+	DefaultWorld string          `json:"default" yaml:"default"`
 	Log          *logx.CfgLog    `json:"log,omitempty" yaml:"log,omitempty"`
 	LogRef       string          `json:"log_ref,omitempty" yaml:"log_ref,omitempty"`
 }

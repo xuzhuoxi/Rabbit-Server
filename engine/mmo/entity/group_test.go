@@ -1,8 +1,6 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-08.
-//@author xuzhuoxi
-//
+// Created by xuzhuoxi
+// on 2019-03-08.
+// @author xuzhuoxi
 package entity
 
 import (

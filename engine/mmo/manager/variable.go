@@ -32,28 +32,28 @@ type VariableManager struct {
 	logger    logx.ILogger
 }
 
-func (m *VariableManager) InitManager() {
-	m.entityMgr.AddEventListener(basis.EventVariableChanged, m.onEntityVar)
+func (o *VariableManager) InitManager() {
+	o.entityMgr.AddEventListener(basis.EventVariableChanged, o.onEntityVar)
 }
 
-func (m *VariableManager) DisposeManager() {
-	m.entityMgr.RemoveEventListener(basis.EventVariableChanged, m.onEntityVar)
+func (o *VariableManager) DisposeManager() {
+	o.entityMgr.RemoveEventListener(basis.EventVariableChanged, o.onEntityVar)
 }
 
-func (m *VariableManager) SetLogger(logger logx.ILogger) {
-	m.logger = logger
+func (o *VariableManager) SetLogger(logger logx.ILogger) {
+	o.logger = logger
 }
 
-func (m *VariableManager) onEntityVar(evd *eventx.EventData) {
+func (o *VariableManager) onEntityVar(evd *eventx.EventData) {
 	data := evd.Data.([]interface{})
 	currentTarget := data[0].(basis.IEntity)
 	varSet := data[1].(encodingx.IKeyValue)
-	if nil != m.logger {
-		m.logger.Traceln("onEntityVar", currentTarget.UID(), varSet)
+	if nil != o.logger {
+		o.logger.Traceln("onEntityVar", currentTarget.UID(), varSet)
 	}
 	if currentTarget.EntityType() == basis.EntityUser {
-		m.bcMgr.NotifyUserVars(currentTarget.(basis.IUserEntity), varSet)
+		o.bcMgr.NotifyUserVars(currentTarget.(basis.IUserEntity), varSet)
 	} else {
-		m.bcMgr.NotifyEnvVars(currentTarget, varSet)
+		o.bcMgr.NotifyEnvVars(currentTarget, varSet)
 	}
 }

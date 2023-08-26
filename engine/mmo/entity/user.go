@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-02-18.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-02-18.
+// @author xuzhuoxi
 package entity
 
 import (
@@ -39,97 +38,97 @@ type UserEntity struct {
 	VariableSupport
 }
 
-func (e *UserEntity) UID() string {
-	return e.Uid
+func (o *UserEntity) UID() string {
+	return o.Uid
 }
 
-func (e *UserEntity) UserName() string {
-	return e.Name
+func (o *UserEntity) UserName() string {
+	return o.Name
 }
 
-func (e *UserEntity) NickName() string {
-	return e.Nick
+func (o *UserEntity) NickName() string {
+	return o.Nick
 }
 
-func (e *UserEntity) EntityType() basis.EntityType {
+func (o *UserEntity) EntityType() basis.EntityType {
 	return basis.EntityUser
 }
 
-func (e *UserEntity) InitEntity() {
-	e.UserSubscriber = *NewUserSubscriber()
-	e.VariableSupport = *NewVariableSupport(e)
+func (o *UserEntity) InitEntity() {
+	o.UserSubscriber = *NewUserSubscriber()
+	o.VariableSupport = *NewVariableSupport(o)
 }
 
-func (e *UserEntity) DestroyEntity() {
+func (o *UserEntity) DestroyEntity() {
 }
 
-func (e *UserEntity) GetLocation() (idType basis.EntityType, id string) {
-	e.locMu.RLock()
-	defer e.locMu.RUnlock()
-	return e.LocType, e.LocId
+func (o *UserEntity) GetLocation() (idType basis.EntityType, id string) {
+	o.locMu.RLock()
+	defer o.locMu.RUnlock()
+	return o.LocType, o.LocId
 }
 
-func (e *UserEntity) SetLocation(idType basis.EntityType, id string) {
-	e.locMu.Lock()
-	defer e.locMu.Unlock()
-	if idType != e.LocType {
-		e.LocType = idType
+func (o *UserEntity) SetLocation(idType basis.EntityType, id string) {
+	o.locMu.Lock()
+	defer o.locMu.Unlock()
+	if idType != o.LocType {
+		o.LocType = idType
 	}
-	if id != e.LocId {
-		e.UserSubscriber.RemoveWhite(e.LocId)
-		e.LocId = id
-		e.UserSubscriber.AddWhite(e.LocId)
+	if id != o.LocId {
+		o.UserSubscriber.RemoveWhite(o.LocId)
+		o.LocId = id
+		o.UserSubscriber.AddWhite(o.LocId)
 	}
 }
 
 //---------------------------------
 
-func (e *UserEntity) GetTeamInfo() (teamId string, corpsId string) {
-	e.teamMu.RLock()
-	defer e.teamMu.RUnlock()
-	return e.TeamId, e.CorpsId
+func (o *UserEntity) GetTeamInfo() (teamId string, corpsId string) {
+	o.teamMu.RLock()
+	defer o.teamMu.RUnlock()
+	return o.TeamId, o.CorpsId
 }
 
-func (e *UserEntity) SetTeamInfo(teamId string, corpsId string) {
-	e.teamMu.Lock()
-	defer e.teamMu.Unlock()
-	if e.TeamId != teamId {
-		e.TeamId = teamId
+func (o *UserEntity) SetTeamInfo(teamId string, corpsId string) {
+	o.teamMu.Lock()
+	defer o.teamMu.Unlock()
+	if o.TeamId != teamId {
+		o.TeamId = teamId
 	}
-	if e.CorpsId != corpsId {
-		e.CorpsId = corpsId
-	}
-}
-
-func (e *UserEntity) SetCorps(corpsId string) {
-	e.teamMu.Lock()
-	defer e.teamMu.Unlock()
-	if e.CorpsId != corpsId || e.TeamId == "" {
-		e.CorpsId = corpsId
+	if o.CorpsId != corpsId {
+		o.CorpsId = corpsId
 	}
 }
 
-func (e *UserEntity) SetTeam(teamId string) {
-	e.teamMu.Lock()
-	defer e.teamMu.Unlock()
-	if e.TeamId != teamId {
-		e.TeamId = teamId
+func (o *UserEntity) SetCorps(corpsId string) {
+	o.teamMu.Lock()
+	defer o.teamMu.Unlock()
+	if o.CorpsId != corpsId || o.TeamId == "" {
+		o.CorpsId = corpsId
+	}
+}
+
+func (o *UserEntity) SetTeam(teamId string) {
+	o.teamMu.Lock()
+	defer o.teamMu.Unlock()
+	if o.TeamId != teamId {
+		o.TeamId = teamId
 		if teamId == "" { //没有队伍，不能回防兵团中
-			e.CorpsId = ""
+			o.CorpsId = ""
 		}
 	}
 }
 
 //---------------------------------
 
-func (e *UserEntity) GetPosition() basis.XYZ {
-	e.posMu.RLock()
-	defer e.posMu.RUnlock()
-	return e.Pos
+func (o *UserEntity) GetPosition() basis.XYZ {
+	o.posMu.RLock()
+	defer o.posMu.RUnlock()
+	return o.Pos
 }
 
-func (e *UserEntity) SetPosition(pos basis.XYZ) {
-	e.posMu.Lock()
-	defer e.posMu.Unlock()
-	e.Pos = pos
+func (o *UserEntity) SetPosition(pos basis.XYZ) {
+	o.posMu.Lock()
+	defer o.posMu.Unlock()
+	o.Pos = pos
 }

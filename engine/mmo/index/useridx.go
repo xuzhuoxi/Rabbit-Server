@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-09.
-//@author xuzhuoxi
-//
+// Package index
+// Created by xuzhuoxi
+// on 2019-03-09.
+// @author xuzhuoxi
 package index
 
 import (
@@ -21,30 +20,30 @@ type UserIndex struct {
 	EntityIndex
 }
 
-func (i *UserIndex) CheckUser(userId string) bool {
-	return i.EntityIndex.Check(userId)
+func (o *UserIndex) CheckUser(userId string) bool {
+	return o.EntityIndex.Check(userId)
 }
 
-func (i *UserIndex) GetUser(userId string) basis.IUserEntity {
-	entity := i.EntityIndex.Get(userId)
+func (o *UserIndex) GetUser(userId string) basis.IUserEntity {
+	entity := o.EntityIndex.Get(userId)
 	if nil != entity {
 		return entity.(basis.IUserEntity)
 	}
 	return nil
 }
 
-func (i *UserIndex) AddUser(user basis.IUserEntity) error {
-	return i.EntityIndex.Add(user)
+func (o *UserIndex) AddUser(user basis.IUserEntity) error {
+	return o.EntityIndex.Add(user)
 }
 
-func (i *UserIndex) RemoveUser(userId string) (basis.IUserEntity, error) {
-	c, err := i.EntityIndex.Remove(userId)
+func (o *UserIndex) RemoveUser(userId string) (basis.IUserEntity, error) {
+	c, err := o.EntityIndex.Remove(userId)
 	if nil != c {
 		return c.(basis.IUserEntity), err
 	}
 	return nil, err
 }
 
-func (i *UserIndex) UpdateUser(user basis.IUserEntity) error {
-	return i.EntityIndex.Update(user)
+func (o *UserIndex) UpdateUser(user basis.IUserEntity) error {
+	return o.EntityIndex.Update(user)
 }

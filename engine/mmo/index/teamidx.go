@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-08.
-//@author xuzhuoxi
-//
+// Package index
+// Created by xuzhuoxi
+// on 2019-03-08.
+// @author xuzhuoxi
 package index
 
 import (
@@ -21,30 +20,30 @@ type TeamIndex struct {
 	EntityIndex
 }
 
-func (i *TeamIndex) CheckTeam(teamId string) bool {
-	return i.EntityIndex.Check(teamId)
+func (o *TeamIndex) CheckTeam(teamId string) bool {
+	return o.EntityIndex.Check(teamId)
 }
 
-func (i *TeamIndex) GetTeam(teamId string) basis.ITeamEntity {
-	entity := i.EntityIndex.Get(teamId)
+func (o *TeamIndex) GetTeam(teamId string) basis.ITeamEntity {
+	entity := o.EntityIndex.Get(teamId)
 	if nil != entity {
 		return entity.(basis.ITeamEntity)
 	}
 	return nil
 }
 
-func (i *TeamIndex) AddTeam(team basis.ITeamEntity) error {
-	return i.EntityIndex.Add(team)
+func (o *TeamIndex) AddTeam(team basis.ITeamEntity) error {
+	return o.EntityIndex.Add(team)
 }
 
-func (i *TeamIndex) RemoveTeam(teamId string) (basis.ITeamEntity, error) {
-	c, err := i.EntityIndex.Remove(teamId)
+func (o *TeamIndex) RemoveTeam(teamId string) (basis.ITeamEntity, error) {
+	c, err := o.EntityIndex.Remove(teamId)
 	if nil != c {
 		return c.(basis.ITeamEntity), err
 	}
 	return nil, err
 }
 
-func (i *TeamIndex) UpdateTeam(team basis.ITeamEntity) error {
-	return i.EntityIndex.Update(team)
+func (o *TeamIndex) UpdateTeam(team basis.ITeamEntity) error {
+	return o.EntityIndex.Update(team)
 }

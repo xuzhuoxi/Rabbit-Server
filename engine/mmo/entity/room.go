@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-02-18.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-02-18.
+// @author xuzhuoxi
 package entity
 
 import "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
@@ -30,7 +29,7 @@ type RoomConfig struct {
 	MaxMember int
 }
 
-//范围广播房间，适用于mmo大型场景
+// AOBRoomEntity 范围广播房间，适用于mmo大型场景
 type AOBRoomEntity struct {
 	RoomEntity
 }
@@ -39,7 +38,7 @@ func (e *AOBRoomEntity) Broadcast(speaker string, handler func(receiver string))
 	panic("+++++++++++++++++++")
 }
 
-//常规房间
+// RoomEntity 常规房间
 type RoomEntity struct {
 	RoomId    string
 	RoomName  string
@@ -51,23 +50,23 @@ type RoomEntity struct {
 	VariableSupport
 }
 
-func (e *RoomEntity) UID() string {
-	return e.RoomId
+func (o *RoomEntity) UID() string {
+	return o.RoomId
 }
 
-func (e *RoomEntity) NickName() string {
-	return e.RoomName
+func (o *RoomEntity) NickName() string {
+	return o.RoomName
 }
 
-func (e *RoomEntity) EntityType() basis.EntityType {
+func (o *RoomEntity) EntityType() basis.EntityType {
 	return basis.EntityRoom
 }
 
-func (e *RoomEntity) InitEntity() {
-	e.EntityChildSupport = *NewEntityChildSupport()
-	e.ListEntityContainer = *NewListEntityContainer(e.MaxMember)
+func (o *RoomEntity) InitEntity() {
+	o.EntityChildSupport = *NewEntityChildSupport()
+	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
 	//e.UserGroup = NewEntityListGroup(EntityUser)
-	e.VariableSupport = *NewVariableSupport(e)
+	o.VariableSupport = *NewVariableSupport(o)
 }
 
 //func (e *RoomEntity) UserList() []string {

@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-09.
-//@author xuzhuoxi
-//
+// Package index
+// Created by xuzhuoxi
+// on 2019-03-09.
+// @author xuzhuoxi
 package index
 
 import (
@@ -21,30 +20,30 @@ type RoomIndex struct {
 	EntityIndex
 }
 
-func (i *RoomIndex) CheckRoom(roomId string) bool {
-	return i.EntityIndex.Check(roomId)
+func (o *RoomIndex) CheckRoom(roomId string) bool {
+	return o.EntityIndex.Check(roomId)
 }
 
-func (i *RoomIndex) GetRoom(roomId string) basis.IRoomEntity {
-	entity := i.EntityIndex.Get(roomId)
+func (o *RoomIndex) GetRoom(roomId string) basis.IRoomEntity {
+	entity := o.EntityIndex.Get(roomId)
 	if nil != entity {
 		return entity.(basis.IRoomEntity)
 	}
 	return nil
 }
 
-func (i *RoomIndex) AddRoom(room basis.IRoomEntity) error {
-	return i.EntityIndex.Add(room)
+func (o *RoomIndex) AddRoom(room basis.IRoomEntity) error {
+	return o.EntityIndex.Add(room)
 }
 
-func (i *RoomIndex) RemoveRoom(roomId string) (basis.IRoomEntity, error) {
-	c, err := i.EntityIndex.Remove(roomId)
+func (o *RoomIndex) RemoveRoom(roomId string) (basis.IRoomEntity, error) {
+	c, err := o.EntityIndex.Remove(roomId)
 	if nil != c {
 		return c.(basis.IRoomEntity), err
 	}
 	return nil, err
 }
 
-func (i *RoomIndex) UpdateRoom(room basis.IRoomEntity) error {
-	return i.EntityIndex.Update(room)
+func (o *RoomIndex) UpdateRoom(room basis.IRoomEntity) error {
+	return o.EntityIndex.Update(room)
 }

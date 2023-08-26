@@ -1,8 +1,7 @@
-//
-//Created by xuzhuoxi
-//on 2019-03-07.
-//@author xuzhuoxi
-//
+// Package entity
+// Created by xuzhuoxi
+// on 2019-03-07.
+// @author xuzhuoxi
 package entity
 
 import "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
@@ -34,46 +33,46 @@ type UserSubscriber struct {
 	UserWhiteList
 }
 
-func (c *UserSubscriber) OnActive(targetId string) bool {
-	return c.OnWhite(targetId) && !c.OnBlack(targetId)
+func (o *UserSubscriber) OnActive(targetId string) bool {
+	return o.OnWhite(targetId) && !o.OnBlack(targetId)
 }
 
 type UserWhiteList struct {
 	whiteGroup basis.IEntityGroup
 }
 
-func (c *UserWhiteList) Whites() []string {
-	return c.whiteGroup.Entities()
+func (o *UserWhiteList) Whites() []string {
+	return o.whiteGroup.Entities()
 }
 
-func (c *UserWhiteList) AddWhite(targetId string) error {
-	return c.whiteGroup.Accept(targetId)
+func (o *UserWhiteList) AddWhite(targetId string) error {
+	return o.whiteGroup.Accept(targetId)
 }
 
-func (c *UserWhiteList) RemoveWhite(targetId string) error {
-	return c.whiteGroup.Drop(targetId)
+func (o *UserWhiteList) RemoveWhite(targetId string) error {
+	return o.whiteGroup.Drop(targetId)
 }
 
-func (c *UserWhiteList) OnWhite(targetId string) bool {
-	return c.whiteGroup.ContainEntity(targetId)
+func (o *UserWhiteList) OnWhite(targetId string) bool {
+	return o.whiteGroup.ContainEntity(targetId)
 }
 
 type UserBlackList struct {
 	blackGroup basis.IEntityGroup
 }
 
-func (c *UserBlackList) Blacks() []string {
-	return c.blackGroup.Entities()
+func (o *UserBlackList) Blacks() []string {
+	return o.blackGroup.Entities()
 }
 
-func (c *UserBlackList) AddBlack(targetId string) error {
-	return c.blackGroup.Accept(targetId)
+func (o *UserBlackList) AddBlack(targetId string) error {
+	return o.blackGroup.Accept(targetId)
 }
 
-func (c *UserBlackList) RemoveBlack(targetId string) error {
-	return c.blackGroup.Drop(targetId)
+func (o *UserBlackList) RemoveBlack(targetId string) error {
+	return o.blackGroup.Drop(targetId)
 }
 
-func (c *UserBlackList) OnBlack(targetId string) bool {
-	return c.blackGroup.ContainEntity(targetId)
+func (o *UserBlackList) OnBlack(targetId string) bool {
+	return o.blackGroup.ContainEntity(targetId)
 }
