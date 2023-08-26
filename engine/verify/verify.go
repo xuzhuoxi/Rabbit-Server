@@ -4,7 +4,6 @@
 package verify
 
 import (
-	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"sync"
@@ -59,7 +58,7 @@ func (o *RabbitVerify) Verify(name string, pid string, uid string) (rsCode int32
 		log.SetStamp(nowStamp)
 		return protox.CodeSuc
 	}
-	fmt.Println("RabbitVerify.Verify", name, pid, uid, found, log.ReqStamps)
+	//fmt.Println("RabbitVerify.Verify", name, pid, uid, found, log.ReqStamps)
 	if found.MinFreqVal > 0 && (nowStamp-log.ReqStamps[len(log.ReqStamps)-1]) < int64(found.MinFreqVal) {
 		log.ReplaceStamp(nowStamp)
 		return protox.CodeFreq

@@ -58,6 +58,8 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 		resp.(protox.IExtensionResponseSettings).SetSockSender(m.SockSender)
 		resp.SetResultCode(rsCode)
 		resp.SendNoneResponse()
+		m.Logger.Warnln(fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, FailCode=%d",
+			name, pid, rsCode)) // 记录失败日志
 		return false
 	}
 	// 参数处理
@@ -76,7 +78,7 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 			defer func() {
 				un := time.Now().UnixNano() - tn
 				m.Logger.Infoln(fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, UsedTime=%s",
-					name, pid, timex.FormatMillisLocal(un/1e6, "5.999999ms"))) //记录响应时间
+					name, pid, timex.FormatMillisLocal(un/1e6, "5.999999ms"))) // 记录响应时间
 				m.StatusDetail.AddRespUnixNano(un)
 			}()
 			re.OnRequest(response, request)
