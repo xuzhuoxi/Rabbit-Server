@@ -75,9 +75,9 @@ func (o *UserEntity) SetLocation(idType basis.EntityType, id string) {
 		o.LocType = idType
 	}
 	if id != o.LocId {
-		o.UserSubscriber.RemoveWhite(o.LocId)
+		_ = o.UserSubscriber.RemoveWhite(o.LocId)
 		o.LocId = id
-		o.UserSubscriber.AddWhite(o.LocId)
+		_ = o.UserSubscriber.AddWhite(o.LocId)
 	}
 }
 
