@@ -66,5 +66,8 @@ func (o *VariableSupport) CheckVar(key string) bool {
 func (o *VariableSupport) RemoveVar(key string) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
-	o.vars.Delete(key)
+	_, ok := o.vars.Delete(key)
+	if ok {
+		o.DispatchEvent(basis.EventEntityVarDeleted, o.currentTarget, key)
+	}
 }

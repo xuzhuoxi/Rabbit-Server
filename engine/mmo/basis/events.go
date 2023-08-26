@@ -7,8 +7,13 @@ package basis
 import "github.com/xuzhuoxi/infra-go/encodingx"
 
 const (
-	EventEntityVarChanged  = "Entity-VariableChanged"
+	EventEntityVarChanged = "Entity-VariableChanged"
+	EventEntityVarDeleted = "Entity-VariableDeleted"
+)
+
+const (
 	EventManagerVarChanged = "Manager-VariableChanged"
+	EventManagerVarDeleted = "Manager-VariableDeleted"
 )
 
 type ManagerVarEventData struct {

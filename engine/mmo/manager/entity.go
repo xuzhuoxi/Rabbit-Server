@@ -291,21 +291,29 @@ func (o *EntityManager) CreateChannel(chanId string, chanName string) (basis.ICh
 func (o *EntityManager) addEntityEventListener(entity basis.IEntity) {
 	if dispatcher, ok := entity.(basis.IVariableSupport); ok {
 		dispatcher.AddEventListener(basis.EventEntityVarChanged, o.onEntityVar)
+		dispatcher.AddEventListener(basis.EventEntityVarDeleted, o.onEntityVarDel)
 	}
 }
 
 func (o *EntityManager) removeEntityEventListener(entity basis.IEntity) {
 	if dispatcher, ok := entity.(basis.IVariableSupport); ok {
+		dispatcher.RemoveEventListener(basis.EventEntityVarDeleted, o.onEntityVarDel)
 		dispatcher.RemoveEventListener(basis.EventEntityVarChanged, o.onEntityVar)
 	}
 }
 
-//事件转发
+//事件转发: 变量更新
 func (o *EntityManager) onEntityVar(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
 	o.DispatchEvent(basis.EventManagerVarChanged, o, basis.ManagerVarEventData{
 		Entity: evd.CurrentTarget.(basis.IEntity),
-		Data:   evd.Data.(encodingx.IKeyValue)}) //[0]为实体目标，[1]为变量
+		Data:   evd.Data.(encodingx.IKeyValue)})
+}
+
+//事件转发: 变量删除
+func (o *EntityManager) onEntityVarDel(evd *eventx.EventData) {
+	evd.StopImmediatePropagation()
+	o.DispatchEvent(basis.EventManagerVarDeleted, o, evd.Data) // key
 }
 
 //----------------------------
