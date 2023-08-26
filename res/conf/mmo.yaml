@@ -60,5 +60,5 @@ relations:
         - zone: 'z22'
           rooms: [ 'r221', 'r222' ]
 
-default: 'w0'
+default: 'w1'
 log_ref: 'log_mmo'

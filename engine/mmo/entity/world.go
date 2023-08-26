@@ -2,6 +2,7 @@
 // Created by xuzhuoxi
 // on 2019-02-18.
 // @author xuzhuoxi
+//
 package entity
 
 import "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
@@ -19,22 +20,22 @@ type WorldEntity struct {
 	VariableSupport
 }
 
-func (o *WorldEntity) UID() string {
-	return o.WorldId
+func (w *WorldEntity) UID() string {
+	return w.WorldId
 }
 
-func (o *WorldEntity) NickName() string {
-	return o.WorldName
+func (w *WorldEntity) NickName() string {
+	return w.WorldName
 }
 
-func (o *WorldEntity) EntityType() basis.EntityType {
+func (w *WorldEntity) EntityType() basis.EntityType {
 	return basis.EntityWorld
 }
 
-func (o *WorldEntity) InitEntity() {
-	o.ListEntityContainer = *NewListEntityContainer(0)
+func (w *WorldEntity) InitEntity() {
+	w.ListEntityContainer = *NewListEntityContainer(0)
 	//w.ZoneGroup = NewEntityListGroup(EntityZone)
-	o.VariableSupport = *NewVariableSupport(o)
+	w.VariableSupport = *NewVariableSupport(w)
 }
 
 //func (w *WorldEntity) ZoneList() []string {

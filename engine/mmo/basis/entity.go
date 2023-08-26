@@ -4,6 +4,8 @@
 // @author xuzhuoxi
 package basis
 
+import "strings"
+
 type EntityType uint16
 
 const (
@@ -19,12 +21,40 @@ const (
 	EntityAll  EntityType = EntityWorld | EntityZone | EntityRoom | EntityUser | EntityTeamCorps | EntityTeam | EntityChannel
 )
 
-func (t EntityType) Match(check EntityType) bool {
-	return t&check > 0
+var (
+	entityNames = make(map[EntityType]string)
+	entities    = []EntityType{EntityWorld, EntityZone, EntityRoom, EntityUser, EntityTeamCorps, EntityTeam, EntityChannel}
+)
+
+func init() {
+	entityNames[EntityWorld] = "World"
+	entityNames[EntityZone] = "Zone"
+	entityNames[EntityRoom] = "Room"
+	entityNames[EntityUser] = "User"
+	entityNames[EntityTeamCorps] = "TeamCorps"
+	entityNames[EntityTeam] = "Team"
+	entityNames[EntityChannel] = "Channel"
 }
 
-func (t EntityType) Include(check EntityType) bool {
-	return t&check == check
+func (o EntityType) String() string {
+	var names []string
+	for _, t := range entities {
+		if o.Match(t) {
+			names = append(names, entityNames[t])
+		}
+	}
+	if len(names) == 0 {
+		return "None"
+	}
+	return strings.Join(names, "|")
+}
+
+func (o EntityType) Match(check EntityType) bool {
+	return o&check > 0
+}
+
+func (o EntityType) Include(check EntityType) bool {
+	return o&check == check
 }
 
 type IEntity interface {

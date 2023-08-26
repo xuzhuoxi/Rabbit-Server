@@ -33,11 +33,11 @@ type VariableManager struct {
 }
 
 func (o *VariableManager) InitManager() {
-	o.entityMgr.AddEventListener(basis.EventVariableChanged, o.onEntityVar)
+	o.entityMgr.AddEventListener(basis.EventEntityVarChanged, o.onEntityVar)
 }
 
 func (o *VariableManager) DisposeManager() {
-	o.entityMgr.RemoveEventListener(basis.EventVariableChanged, o.onEntityVar)
+	o.entityMgr.RemoveEventListener(basis.EventEntityVarChanged, o.onEntityVar)
 }
 
 func (o *VariableManager) SetLogger(logger logx.ILogger) {

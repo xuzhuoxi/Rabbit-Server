@@ -9,10 +9,6 @@ import (
 	"github.com/xuzhuoxi/infra-go/eventx"
 )
 
-const (
-	EventVariableChanged = "EventVariableChanged"
-)
-
 func NewVarSet() encodingx.IKeyValue {
 	return encodingx.NewCodingMap()
 }

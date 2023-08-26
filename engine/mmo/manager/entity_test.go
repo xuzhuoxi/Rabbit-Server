@@ -22,7 +22,10 @@ func TestEntityManager_ConstructWorld(t *testing.T) {
 	}
 	fmt.Println(cfg)
 	eMgr := NewIEntityManager()
-	eMgr.ConstructWorldDefault(cfg)
+	_, err1 := eMgr.ConstructWorldDefault(cfg)
+	if nil != err1 {
+		t.Fatal(err1)
+	}
 	eMgr.World().ForEachChild(func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool) {
 		logx.Traceln(child.UID(), child.(basis.IEntityChild).GetParent())
 		return

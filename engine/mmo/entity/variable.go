@@ -38,7 +38,7 @@ func (o *VariableSupport) SetVar(key string, value interface{}) {
 	o.mu.Lock()
 	defer o.mu.Unlock()
 	if diff, ok := o.vars.Set(key, value); ok {
-		o.DispatchEvent(basis.EventVariableChanged, o.currentTarget, diff)
+		o.DispatchEvent(basis.EventEntityVarChanged, o.currentTarget, diff)
 	}
 }
 
@@ -47,7 +47,7 @@ func (o *VariableSupport) SetVars(kv encodingx.IKeyValue) {
 	defer o.mu.Unlock()
 	diff := o.vars.Merge(kv)
 	if nil != diff {
-		o.DispatchEvent(basis.EventVariableChanged, o.currentTarget, diff)
+		o.DispatchEvent(basis.EventEntityVarChanged, o.currentTarget, diff)
 	}
 }
 

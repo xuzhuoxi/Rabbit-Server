@@ -12,6 +12,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/entity"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/index"
+	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"sync"
@@ -68,9 +69,9 @@ type IEntityManager interface {
 	basis.IManagerBase
 
 	World() basis.IWorldEntity
-	ConstructWorlds(cfg *config.MMOConfig)
-	ConstructWorld(cfg *config.MMOConfig, worldId string)
-	ConstructWorldDefault(cfg *config.MMOConfig)
+	ConstructWorlds(cfg *config.MMOConfig) error
+	ConstructWorld(cfg *config.MMOConfig, worldId string) (world basis.IWorldEntity, err error)
+	ConstructWorldDefault(cfg *config.MMOConfig) (world basis.IWorldEntity, err error)
 }
 
 func NewIEntityManager() IEntityManager {
@@ -124,34 +125,71 @@ func (o *EntityManager) SetLogger(logger logx.ILogger) {
 	o.logger = logger
 }
 
-func (o *EntityManager) ConstructWorlds(cfg *config.MMOConfig) {
+func (o *EntityManager) ConstructWorlds(cfg *config.MMOConfig) error {
 	if cfg.Relations == nil || len(cfg.Relations.Relations) == 0 {
-		return
+		return nil
 	}
 	for index := range cfg.Relations.Relations {
-		o.ConstructWorld(cfg, cfg.Relations.Relations[index].WorldId)
+		_, err := o.ConstructWorld(cfg, cfg.Relations.Relations[index].WorldId)
+		if nil != err {
+			return err
+		}
 	}
+	return nil
 }
 
-func (o *EntityManager) ConstructWorldDefault(cfg *config.MMOConfig) {
-	o.ConstructWorld(cfg, cfg.DefaultWorld)
+func (o *EntityManager) ConstructWorldDefault(cfg *config.MMOConfig) (world basis.IWorldEntity, err error) {
+	return o.ConstructWorld(cfg, cfg.DefaultWorld)
 }
 
-func (o *EntityManager) ConstructWorld(cfg *config.MMOConfig, worldId string) {
+func (o *EntityManager) ConstructWorld(cfg *config.MMOConfig, worldId string) (world basis.IWorldEntity, err error) {
 	if relation, ok := cfg.Relations.GetWorldRelation(worldId); ok {
-		o.logger.Infoln("ConstructWorld:", worldId, cfg)
-		worldEntity, _ := cfg.Entities.FindWorld(worldId)
-		world, _ := o.CreateWorld(worldEntity.Id, worldEntity.Name, true)
+		o.logger.Infoln("Start Construct World:", worldId, cfg)
+		worldEntity, ok1 := cfg.Entities.FindWorld(worldId)
+		if !ok1 {
+			err = errors.New("Construct World Fail: " + worldId + " not configured.")
+			o.logger.Warnln(err)
+			return
+		}
+		newWorld, err1 := o.CreateWorld(worldEntity.Id, worldEntity.Name, true)
+		if nil != err1 {
+			err = err1
+			o.logger.Warnln(err)
+			return
+		}
 		for _, zoneCfg := range relation.Zones {
-			z, _ := cfg.Entities.FindZone(zoneCfg.ZoneId)
-			zone, _ := o.CreateZoneAt(z.Id, z.Name, world)
+			z, ok2 := cfg.Entities.FindZone(zoneCfg.ZoneId)
+			if !ok2 {
+				err = errors.New("Construct Zone Fail: " + zoneCfg.ZoneId + " not configured.")
+				o.logger.Warnln(err)
+				return
+			}
+			zone, err2 := o.CreateZoneAt(z.Id, z.Name, newWorld)
+			if nil != err2 {
+				err = err2
+				o.logger.Warnln(err)
+				return
+			}
 			for _, roomId := range zoneCfg.Rooms {
-				r, _ := cfg.Entities.FindRoom(roomId)
-				o.CreateRoomAt(r.Id, r.Name, zone)
+				r, ok3 := cfg.Entities.FindRoom(roomId)
+				if !ok3 {
+					err = errors.New("Construct Room Fail: " + roomId + " not configured.")
+					o.logger.Warnln(err)
+					return
+				}
+				_, err3 := o.CreateRoomAt(r.Id, r.Name, zone)
+				if nil != err3 {
+					err = err3
+					o.logger.Warnln(err)
+					return
+				}
 			}
 		}
-
+		world = newWorld
+		o.logger.Infoln("Finish Construct World:", newWorld.UID())
+		return
 	}
+	return nil, errors.New("No World Relation: " + worldId)
 }
 
 func (o *EntityManager) CreateWorld(worldId string, worldName string, asRoot bool) (basis.IWorldEntity, error) {
@@ -252,20 +290,22 @@ func (o *EntityManager) CreateChannel(chanId string, chanName string) (basis.ICh
 
 func (o *EntityManager) addEntityEventListener(entity basis.IEntity) {
 	if dispatcher, ok := entity.(basis.IVariableSupport); ok {
-		dispatcher.AddEventListener(basis.EventVariableChanged, o.onEntityVar)
+		dispatcher.AddEventListener(basis.EventEntityVarChanged, o.onEntityVar)
 	}
 }
 
 func (o *EntityManager) removeEntityEventListener(entity basis.IEntity) {
 	if dispatcher, ok := entity.(basis.IVariableSupport); ok {
-		dispatcher.RemoveEventListener(basis.EventVariableChanged, o.onEntityVar)
+		dispatcher.RemoveEventListener(basis.EventEntityVarChanged, o.onEntityVar)
 	}
 }
 
 //事件转发
 func (o *EntityManager) onEntityVar(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
-	o.DispatchEvent(evd.EventType, o, []interface{}{evd.CurrentTarget, evd.Data}) //[0]为实体目标，[1]为变量
+	o.DispatchEvent(basis.EventManagerVarChanged, o, basis.ManagerVarEventData{
+		Entity: evd.CurrentTarget.(basis.IEntity),
+		Data:   evd.Data.(encodingx.IKeyValue)}) //[0]为实体目标，[1]为变量
 }
 
 //----------------------------
