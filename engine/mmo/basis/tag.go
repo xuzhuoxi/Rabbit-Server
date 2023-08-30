@@ -9,4 +9,6 @@ type ITagsSupport interface {
 	AddTags(tags []string)
 	RemoveTag(tag string)
 	RemoveTags(tags []string)
+	ContainsTag(tag string) bool
+	ContainsTags(tags []string, and bool) bool
 }

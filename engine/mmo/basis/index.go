@@ -16,6 +16,8 @@ type IEntityIndex interface {
 	Remove(id string) (entity IEntity, err error)
 	// Update 更新
 	Update(entity IEntity) (err error)
+	// ForEachEntity 遍历全部实体
+	ForEachEntity(each func(entity IEntity))
 }
 
 // IRoomIndex 房间索引

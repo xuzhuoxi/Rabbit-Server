@@ -47,6 +47,28 @@ func (o *TagsSupport) RemoveTags(tags []string) {
 	}
 }
 
+func (o *TagsSupport) ContainsTag(tag string) bool {
+	return slicex.ContainsString(o.Tags, tag)
+}
+
+func (o *TagsSupport) ContainsTags(tags []string, and bool) bool {
+	if and {
+		for index := range tags {
+			if !slicex.ContainsString(o.Tags, tags[index]) {
+				return false
+			}
+		}
+		return true
+	} else {
+		for index := range tags {
+			if slicex.ContainsString(o.Tags, tags[index]) {
+				return true
+			}
+		}
+		return false
+	}
+}
+
 func (o *TagsSupport) addTag(tag string) {
 	if len(tag) == 0 {
 		return

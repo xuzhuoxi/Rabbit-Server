@@ -43,7 +43,6 @@ type IEntityFactory interface {
 }
 
 type IEntityIndexSet interface {
-	//ZoneIndex() basis.ITagIndex
 	RoomIndex() basis.IRoomIndex
 	UserIndex() basis.IUserIndex
 	TeamIndex() basis.ITeamIndex
@@ -53,11 +52,6 @@ type IEntityIndexSet interface {
 }
 
 type IEntityGetter interface {
-	//// GetWorld 获取区域实例
-	//GetWorld(worldId string) (world basis.IWorldEntity, ok bool)
-	//// GetZone 获取区域实例
-	//GetZone(zoneId string) (zone basis.IZoneEntity, ok bool)
-
 	// GetRoom 获取房间实例
 	GetRoom(roomId string) (room basis.IRoomEntity, ok bool)
 	// GetUser 获取用户实例
@@ -81,8 +75,6 @@ type IEntityManager interface {
 
 	// BuildEnv 构建MMO环境
 	BuildEnv(cfg *config.MMOConfig) error
-	//ConstructWorld(cfg *config.MMOConfig, worldId string) (world basis.IWorldEntity, err error)
-	//ConstructWorldDefault(cfg *config.MMOConfig) (world basis.IWorldEntity, err error)
 }
 
 func NewIEntityManager() IEntityManager {
@@ -91,9 +83,6 @@ func NewIEntityManager() IEntityManager {
 
 func NewEntityManager() IEntityManager {
 	rs := &EntityManager{logger: logx.DefaultLogger()}
-	//rs.worldIndex = index.NewIWorldIndex()
-	//rs.zoneIndex = index.NewIZoneIndex()
-
 	rs.roomIndex = index.NewIRoomIndex()
 	rs.userIndex = index.NewIUserIndex()
 	rs.teamIndex = index.NewITeamIndex()

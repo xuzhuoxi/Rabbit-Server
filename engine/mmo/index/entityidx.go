@@ -96,3 +96,14 @@ func (o *EntityIndex) Update(entity basis.IEntity) error {
 	o.entityMap[entity.UID()] = entity
 	return nil
 }
+
+func (o *EntityIndex) ForEachEntity(each func(entity basis.IEntity)) {
+	if nil == each {
+		return
+	}
+	o.indexLock.Lock()
+	defer o.indexLock.Unlock()
+	for _, entity := range o.entityMap {
+		each(entity)
+	}
+}

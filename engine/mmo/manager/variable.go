@@ -80,11 +80,6 @@ func (o *VariableManager) onEntityVar(evd *eventx.EventData) {
 	if nil != logger {
 		logger.Traceln("onEntityVar", eventEntity.UID(), key, value)
 	}
-	if eventEntity.EntityType() == basis.EntityUser {
-		o.bcMgr.NotifyUserVar(eventEntity.(basis.IUserEntity), key, value)
-	} else {
-		o.bcMgr.NotifyEnvVar(eventEntity, key, value)
-	}
 }
 
 func (o *VariableManager) onEntityVars(evd *eventx.EventData) {
@@ -94,10 +89,5 @@ func (o *VariableManager) onEntityVars(evd *eventx.EventData) {
 	logger := o.GetLogger()
 	if nil != logger {
 		logger.Traceln("onEntityVars", eventEntity.UID(), varSet)
-	}
-	if eventEntity.EntityType() == basis.EntityUser {
-		o.bcMgr.NotifyUserVars(eventEntity.(basis.IUserEntity), varSet)
-	} else {
-		o.bcMgr.NotifyEnvVars(eventEntity, varSet)
 	}
 }
