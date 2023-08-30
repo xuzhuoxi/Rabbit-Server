@@ -9,6 +9,11 @@ import (
 	"github.com/xuzhuoxi/infra-go/eventx"
 )
 
+const (
+	VarKeyUserNick = "nick"
+	VarKeyUserPos  = "pos"
+)
+
 func NewVarSet() encodingx.IKeyValue {
 	return encodingx.NewCodingMap()
 }
@@ -16,11 +21,10 @@ func NewVarSet() encodingx.IKeyValue {
 // IVariableSupport 变量列表
 type IVariableSupport interface {
 	eventx.IEventDispatcher
-	SetVar(key string, value interface{})
-	SetVars(kv encodingx.IKeyValue)
 	GetVar(key string) (interface{}, bool)
+	CheckVar(key string) bool
 	Vars() encodingx.IKeyValue
 
-	CheckVar(key string) bool
-	RemoveVar(key string)
+	SetVar(kv string, value interface{})
+	SetVars(kv encodingx.IKeyValue)
 }

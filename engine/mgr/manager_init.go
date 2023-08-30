@@ -65,7 +65,8 @@ func (o *RabbitManager) initMMOWorld() {
 			o.MMOManager.SetLogger(o.LogManager.FindLogger(o.CfgMMO.LogRef))
 		}
 	}
-	o.MMOManager.GetEntityManager().ConstructWorldDefault(o.CfgMMO)
+	o.MMOManager.GetEntityManager().BuildEnv(o.CfgMMO)
+	//fmt.Println(666)
 }
 
 func (o *RabbitManager) initClockManager() {

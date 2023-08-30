@@ -25,44 +25,25 @@ type MMOConfig struct {
 	LogRef       string          `json:"log_ref,omitempty" yaml:"log_ref,omitempty"`
 }
 
-func (o *MMOConfig) CheckEntity(entityId string) bool {
-	if len(entityId) == 0 {
-		return false
-	}
-	return o.Entities.ExistWorld(entityId) ||
-		o.Entities.ExistZone(entityId) ||
-		o.Entities.ExistRoom(entityId)
-}
-
-func (o *MMOConfig) HandleData() {
-	if err := o.Entities.CheckEntities(); err != nil {
-		panic(err)
-	}
-	if err := o.checkRelations(); nil != err {
-		panic(err)
-	}
-}
-
-func (o *MMOConfig) checkRelations() error {
-	if nil == o.Relations || len(o.Relations.Relations) == 0 {
-		return nil
-	}
-	for _, wr := range o.Relations.Relations {
-		if _, ok := o.Entities.FindWorld(wr.WorldId); !ok {
-			return errors.New(fmt.Sprintf("Relation Entity World[%s] Undefined!", wr.WorldId))
-		}
-		for _, zr := range wr.Zones {
-			if _, ok := o.Entities.FindZone(zr.ZoneId); !ok {
-				return errors.New(fmt.Sprintf("Relation Entity Zone[%s] Undefined!", zr.ZoneId))
-			}
-			for _, rId := range zr.Rooms {
-				if _, ok := o.Entities.FindRoom(rId); !ok {
-					return errors.New(fmt.Sprintf("Relation Entity Room[%s] Undefined!", rId))
-				}
-			}
-		}
+func (o *MMOConfig) CheckConfig() error {
+	err1 := o.Entities.CheckDuplicate()
+	if nil != err1 {
+		return err1
 	}
 	return nil
+}
+
+func (o *MMOConfig) MergeRelationToTags() {
+	for index, room := range o.Entities.Rooms {
+		zones := o.Relations.FindMyZones(room.Id)
+		if len(zones) > 0 {
+			o.Entities.Rooms[index].AppendTags(zones)
+		}
+		worlds := o.Relations.FindMyWorlds(room.Id)
+		if len(worlds) > 0 {
+			o.Entities.Rooms[index].AppendTags(worlds)
+		}
+	}
 }
 
 //------------------------------------------
@@ -100,7 +81,7 @@ func ParseByJsonContent(content []byte) (cfg *MMOConfig, err error) {
 	if nil != err {
 		return nil, err
 	}
-	cfg.HandleData()
+	cfg.MergeRelationToTags()
 	return cfg, nil
 }
 
@@ -121,6 +102,6 @@ func ParseByYamlContent(content []byte) (cfg *MMOConfig, err error) {
 	if nil != err {
 		return nil, err
 	}
-	cfg.HandleData()
+	cfg.MergeRelationToTags()
 	return cfg, nil
 }

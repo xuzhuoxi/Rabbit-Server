@@ -24,12 +24,9 @@ func (o *TeamIndex) CheckTeam(teamId string) bool {
 	return o.EntityIndex.Check(teamId)
 }
 
-func (o *TeamIndex) GetTeam(teamId string) basis.ITeamEntity {
-	entity := o.EntityIndex.Get(teamId)
-	if nil != entity {
-		return entity.(basis.ITeamEntity)
-	}
-	return nil
+func (o *TeamIndex) GetTeam(teamId string) (team basis.ITeamEntity, ok bool) {
+	team, ok = o.EntityIndex.Get(teamId).(basis.ITeamEntity)
+	return
 }
 
 func (o *TeamIndex) AddTeam(team basis.ITeamEntity) error {

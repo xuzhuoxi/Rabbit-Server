@@ -1,64 +1,56 @@
 entities:
-  worlds:
-    - id: 'w1'
-      name: '主世界'
-      max: 100
-    - id: 'w2'
-      name: '世界二'
-      max: 100
-  zones:
-    - id: 'z11'
-      name: '测试区-11'
-      max: 100
-    - id: 'z12'
-      name: '测试区-12'
-      max: 100
-    - id: 'z21'
-      name: '测试区-21'
-      max: 100
-    - id: 'z22'
-      name: '测试区-22'
-      max: 100
   rooms:
     - id: 'r111'
       name: '测试房间111'
-      max: 100
+      cap: 100
+      tags: [ 'main' ]
     - id: 'r112'
       name: '测试房间112'
-      max: 100
+      cap: 100
     - id: 'r121'
       name: '测试房间121'
-      max: 100
+      cap: 100
     - id: 'r122'
       name: '测试房间122'
-      max: 100
+      cap: 100
     - id: 'r211'
       name: '测试房间211'
-      max: 100
+      cap: 100
     - id: 'r212'
       name: '测试房间212'
-      max: 100
+      cap: 100
     - id: 'r221'
       name: '测试房间221'
-      max: 100
+      cap: 100
     - id: 'r222'
       name: '测试房间222'
-      max: 100
-
+      cap: 100
+    - id: 'other1'
+      name: '其它房间1'
+      cap: 100
+    - id: 'other2'
+      name: '其它房间2'
+      cap: 100
 relations:
+  zones:
+    - id: 'z11'
+      name: '测试区-11'
+      list: [ 'r111', 'r112' ]
+    - id: 'z12'
+      name: '测试区-12'
+      list: [ 'r121', 'r122' ]
+    - id: 'z21'
+      name: '测试区-21'
+      list: [ 'r211', 'r212' ]
+    - id: 'z22'
+      name: '测试区-22'
+      list: [ 'r221', 'r222' ]
   worlds:
-    - world: 'w1'
-      zones:
-        - zone: 'z11'
-          rooms: [ 'r111', 'r112' ]
-        - zone: 'z12'
-          rooms: [ 'r121', 'r122' ]
-    - world: 'w2'
-      zones:
-        - zone: 'z21'
-          rooms: [ 'r211', 'r212' ]
-        - zone: 'z22'
-          rooms: [ 'r221', 'r222' ]
-
+    - id: 'w1'
+      name: '主世界'
+      list: [ 'z11','z12','other1' ]
+    - id: 'w1'
+      name: '世界二'
+      list: [ 'z21','z22' ,'other2' ]
 default: 'w1'
 log_ref: 'log_mmo'

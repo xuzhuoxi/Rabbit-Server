@@ -9,120 +9,75 @@ import (
 	"github.com/xuzhuoxi/infra-go/slicex"
 )
 
-type EntityType = string
-
-const (
-	None  EntityType = "none"
-	World EntityType = "world"
-	Zone  EntityType = "zone"
-	Room  EntityType = "room"
-)
-
 type CfgMMOEntity struct {
-	Id      string `json:"id" yaml:"id"`
-	Name    string `json:"name" yaml:"name"`
-	MaxUser int    `json:"max" yaml:"max"`
+	Id   string   `json:"id" yaml:"id"`
+	Name string   `json:"name" yaml:"name"`
+	Cap  int      `json:"cap" yaml:"cap"`
+	Tags []string `json:"tags" yaml:"tags"`
+}
+
+func (o *CfgMMOEntity) AppendTag(tag string) bool {
+	if len(tag) == 0 || slicex.ContainsString(o.Tags, tag) {
+		return false
+	}
+	o.Tags = append(o.Tags, tag)
+	return true
+}
+
+func (o *CfgMMOEntity) AppendTags(tags []string) {
+	if len(tags) == 0 {
+		return
+	}
+	for index := range tags {
+		_ = o.AppendTag(tags[index])
+	}
 }
 
 type CfgMMOEntities struct {
-	Worlds []CfgMMOEntity `json:"worlds" yaml:"worlds"`
-	Zones  []CfgMMOEntity `json:"zones" yaml:"zones"`
-	Rooms  []CfgMMOEntity `json:"rooms" yaml:"rooms"`
+	Rooms []CfgMMOEntity `json:"rooms" yaml:"rooms"`
 }
 
 func (o *CfgMMOEntities) String() string {
-	return fmt.Sprintf("{World[%d], Zone[%d], Room[%d]}", len(o.Worlds), len(o.Zones), len(o.Rooms))
-}
-
-func (o *CfgMMOEntities) ExistWorld(worldId string) bool {
-	return o.checkEntities(o.Worlds, worldId)
-}
-
-func (o *CfgMMOEntities) ExistZone(zoneId string) bool {
-	return o.checkEntities(o.Zones, zoneId)
+	return fmt.Sprintf("{Room[%d]}", len(o.Rooms))
 }
 
 func (o *CfgMMOEntities) ExistRoom(roomId string) bool {
 	return o.checkEntities(o.Rooms, roomId)
 }
 
-func (o *CfgMMOEntities) FindWorld(worldId string) (world CfgMMOEntity, ok bool) {
-	if entity, ok := o.findEntity(o.Worlds, worldId); ok {
-		return entity, true
-	}
-	return
-}
-
-func (o *CfgMMOEntities) FindZone(zoneId string) (zone CfgMMOEntity, ok bool) {
-	if entity, ok := o.findEntity(o.Zones, zoneId); ok {
-		return entity, true
-	}
-	return
-}
-
 func (o *CfgMMOEntities) FindRoom(roomId string) (room CfgMMOEntity, ok bool) {
-	if entity, ok := o.findEntity(o.Rooms, roomId); ok {
-		return entity, true
+	if index := o.findEntityIndex(o.Rooms, roomId); index != -1 {
+		return o.Rooms[index], true
 	}
 	return
 }
 
-func (o *CfgMMOEntities) FindEntity(entityId string) (entity CfgMMOEntity, t EntityType, ok bool) {
-	if entity, ok := o.findEntity(o.Worlds, entityId); ok {
-		return entity, World, true
-	}
-	if entity, ok := o.findEntity(o.Zones, entityId); ok {
-		return entity, Zone, true
-	}
-	if entity, ok := o.findEntity(o.Rooms, entityId); ok {
-		return entity, Room, true
-	}
-	t = None
-	return
+func (o *CfgMMOEntities) FindRoomIndex(roomId string) int {
+	return o.findEntityIndex(o.Rooms, roomId)
 }
 
-func (o *CfgMMOEntities) CheckEntities() error {
-	var idArr []string
-	for _, world := range o.Worlds {
-		if slicex.ContainsString(idArr, world.Id) {
-			return errors.New("CfgMMOEntity duplicate definition at Id:" + world.Id)
+func (o *CfgMMOEntities) CheckDuplicate() error {
+	set := make(map[string]struct{})
+	for _, e := range o.Rooms {
+		if _, exist := set[e.Id]; exist {
+			return errors.New("Duplicate at Id:" + e.Id)
 		}
-		idArr = append(idArr, world.Id)
-	}
-	for _, zone := range o.Zones {
-		if slicex.ContainsString(idArr, zone.Id) {
-			return errors.New("CfgMMOEntity duplicate definition at Id:" + zone.Id)
-		}
-		idArr = append(idArr, zone.Id)
-	}
-	for _, room := range o.Rooms {
-		if slicex.ContainsString(idArr, room.Id) {
-			return errors.New("CfgMMOEntity duplicate definition at Id:" + room.Id)
-		}
-		idArr = append(idArr, room.Id)
+		set[e.Id] = struct{}{}
 	}
 	return nil
 }
 
 func (o *CfgMMOEntities) checkEntities(entities []CfgMMOEntity, entityId string) bool {
-	if len(entities) == 0 {
-		return false
-	}
-	for index := range entities {
-		if entities[index].Id == entityId {
-			return true
-		}
-	}
-	return false
+	return o.findEntityIndex(entities, entityId) != -1
 }
 
-func (o *CfgMMOEntities) findEntity(entities []CfgMMOEntity, entityId string) (entity CfgMMOEntity, ok bool) {
+func (o *CfgMMOEntities) findEntityIndex(entities []CfgMMOEntity, entityId string) (index int) {
 	if len(entities) == 0 {
-		return
+		return -1
 	}
 	for index := range entities {
 		if entities[index].Id == entityId {
-			return entities[index], true
+			return index
 		}
 	}
 	return

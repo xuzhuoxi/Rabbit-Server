@@ -17,8 +17,6 @@ const (
 const IdNone = ""
 
 const (
-	IdVarWorld     = "vw"
-	IdVarZone      = "vz"
 	IdVarRoom      = "vr"
 	IdVarUser      = "vu"
 	IdVarTeamCrops = "vtc"
@@ -27,8 +25,6 @@ const (
 )
 
 const (
-	IdChatWorld     = "cw"
-	IdChatZone      = "cz"
 	IdChatRoom      = "cr"
 	IdChatUser      = "cu"
 	IdChatTeamCrops = "ctc"
@@ -39,8 +35,6 @@ const (
 var et2var = make(map[basis.EntityType]string)
 
 func init() {
-	et2var[basis.EntityWorld] = IdVarWorld
-	et2var[basis.EntityZone] = IdVarZone
 	et2var[basis.EntityRoom] = IdVarRoom
 	et2var[basis.EntityUser] = IdVarUser
 	et2var[basis.EntityTeamCorps] = IdVarTeamCrops

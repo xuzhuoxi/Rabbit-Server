@@ -24,12 +24,9 @@ func (o *RoomIndex) CheckRoom(roomId string) bool {
 	return o.EntityIndex.Check(roomId)
 }
 
-func (o *RoomIndex) GetRoom(roomId string) basis.IRoomEntity {
-	entity := o.EntityIndex.Get(roomId)
-	if nil != entity {
-		return entity.(basis.IRoomEntity)
-	}
-	return nil
+func (o *RoomIndex) GetRoom(roomId string) (room basis.IRoomEntity, ok bool) {
+	room, ok = o.EntityIndex.Get(roomId).(basis.IRoomEntity)
+	return
 }
 
 func (o *RoomIndex) AddRoom(room basis.IRoomEntity) error {

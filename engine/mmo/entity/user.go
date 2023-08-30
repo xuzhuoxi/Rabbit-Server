@@ -9,30 +9,23 @@ import (
 	"sync"
 )
 
-func NewIUserEntity(userId string, userName string) basis.IUserEntity {
-	return NewUserEntity(userId, userName)
+func NewIUserEntity(userId string) basis.IUserEntity {
+	return NewUserEntity(userId)
 }
 
-func NewUserEntity(userId string, userName string) *UserEntity {
-	return &UserEntity{Uid: userId, Nick: userName}
+func NewUserEntity(userId string) *UserEntity {
+	return &UserEntity{Uid: userId}
 }
 
 type UserEntity struct {
-	Uid  string //用户标识，唯一，内部使用
-	Name string //用户名，唯一
-	Nick string //用户昵称
-	Addr string //用户历史或当前连接地址
+	Uid string //用户标识，唯一，内部使用
 
-	LocType basis.EntityType
-	LocId   string
-	locMu   sync.RWMutex
+	RoomId, nextRoomId string
+	roomLock           sync.RWMutex
 
 	CorpsId string
 	TeamId  string
 	teamMu  sync.RWMutex
-
-	Pos   basis.XYZ
-	posMu sync.RWMutex
 
 	UserSubscriber
 	VariableSupport
@@ -42,12 +35,8 @@ func (o *UserEntity) UID() string {
 	return o.Uid
 }
 
-func (o *UserEntity) UserName() string {
-	return o.Name
-}
-
-func (o *UserEntity) NickName() string {
-	return o.Nick
+func (o *UserEntity) Name() string {
+	return o.NickName()
 }
 
 func (o *UserEntity) EntityType() basis.EntityType {
@@ -62,22 +51,37 @@ func (o *UserEntity) InitEntity() {
 func (o *UserEntity) DestroyEntity() {
 }
 
-func (o *UserEntity) GetLocation() (idType basis.EntityType, id string) {
-	o.locMu.RLock()
-	defer o.locMu.RUnlock()
-	return o.LocType, o.LocId
+func (o *UserEntity) NickName() string {
+	nick, ok := o.GetVar(basis.VarKeyUserNick)
+	if !ok {
+		return ""
+	}
+	return nick.(string)
 }
 
-func (o *UserEntity) SetLocation(idType basis.EntityType, id string) {
-	o.locMu.Lock()
-	defer o.locMu.Unlock()
-	if idType != o.LocType {
-		o.LocType = idType
+func (o *UserEntity) GetRoomId() string {
+	o.roomLock.RLock()
+	defer o.roomLock.RUnlock()
+	return o.RoomId
+}
+
+func (o *UserEntity) SetNextRoom(roomId string) {
+	o.nextRoomId = roomId
+}
+
+func (o *UserEntity) ConfirmNextRoom(confirm bool) {
+	defer func() {
+		o.nextRoomId = ""
+	}()
+	if !confirm {
+		return
 	}
-	if id != o.LocId {
-		_ = o.UserSubscriber.RemoveWhite(o.LocId)
-		o.LocId = id
-		_ = o.UserSubscriber.AddWhite(o.LocId)
+	o.roomLock.Lock()
+	defer o.roomLock.Unlock()
+	if o.RoomId != o.nextRoomId {
+		_ = o.UserSubscriber.RemoveWhite(o.RoomId)
+		o.RoomId = o.nextRoomId
+		_ = o.UserSubscriber.AddWhite(o.RoomId)
 	}
 }
 
@@ -121,14 +125,14 @@ func (o *UserEntity) SetTeam(teamId string) {
 
 //---------------------------------
 
-func (o *UserEntity) GetPosition() basis.XYZ {
-	o.posMu.RLock()
-	defer o.posMu.RUnlock()
-	return o.Pos
+func (o *UserEntity) GetPosition() (pos basis.XYZ) {
+	val, ok := o.GetVar(basis.VarKeyUserPos)
+	if !ok {
+		return
+	}
+	return val.(basis.XYZ)
 }
 
 func (o *UserEntity) SetPosition(pos basis.XYZ) {
-	o.posMu.Lock()
-	defer o.posMu.Unlock()
-	o.Pos = pos
+	o.SetVar(basis.VarKeyUserPos, pos)
 }

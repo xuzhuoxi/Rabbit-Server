@@ -117,6 +117,7 @@ func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
 	if nil != err4 {
 		return err4
 	}
+	cfgMMO.MergeRelationToTags()
 	cfgServer, err5 := cfgRoot.LoadServerConfig()
 	if nil != err5 {
 		return err5

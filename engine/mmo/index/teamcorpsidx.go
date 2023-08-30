@@ -24,12 +24,9 @@ func (o *TeamCorpsIndex) CheckCorps(corpsId string) bool {
 	return o.EntityIndex.Check(corpsId)
 }
 
-func (o *TeamCorpsIndex) GetCorps(corpsId string) basis.ITeamCorpsEntity {
-	entity := o.EntityIndex.Get(corpsId)
-	if nil != entity {
-		return entity.(basis.ITeamCorpsEntity)
-	}
-	return nil
+func (o *TeamCorpsIndex) GetCorps(corpsId string) (corps basis.ITeamCorpsEntity, ok bool) {
+	corps, ok = o.EntityIndex.Get(corpsId).(basis.ITeamCorpsEntity)
+	return
 }
 
 func (o *TeamCorpsIndex) AddCorps(corps basis.ITeamCorpsEntity) error {

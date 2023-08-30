@@ -26,7 +26,7 @@ func TestEntityManager_ConstructWorld(t *testing.T) {
 	if nil != err1 {
 		t.Fatal(err1)
 	}
-	eMgr.World().ForEachChild(func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool) {
+	eMgr.DefaultWorld().ForEachChild(func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool) {
 		logx.Traceln(child.UID(), child.(basis.IEntityChild).GetParent())
 		return
 	})

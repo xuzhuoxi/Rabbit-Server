@@ -24,12 +24,9 @@ func (o *UserIndex) CheckUser(userId string) bool {
 	return o.EntityIndex.Check(userId)
 }
 
-func (o *UserIndex) GetUser(userId string) basis.IUserEntity {
-	entity := o.EntityIndex.Get(userId)
-	if nil != entity {
-		return entity.(basis.IUserEntity)
-	}
-	return nil
+func (o *UserIndex) GetUser(userId string) (user basis.IUserEntity, ok bool) {
+	user, ok = o.EntityIndex.Get(userId).(basis.IUserEntity)
+	return
 }
 
 func (o *UserIndex) AddUser(user basis.IUserEntity) error {

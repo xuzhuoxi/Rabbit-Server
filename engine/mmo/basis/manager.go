@@ -4,10 +4,7 @@
 // @author xuzhuoxi
 package basis
 
-import "github.com/xuzhuoxi/infra-go/logx"
-
 type IManagerBase interface {
-	logx.ILoggerSetter
 	InitManager()
 	DisposeManager()
 }

@@ -33,7 +33,7 @@ type EntityMapGroup struct {
 	entityType basis.EntityType
 	entityMap  map[string]*struct{}
 	max        int
-	entityMu   sync.RWMutex
+	mapLock    sync.RWMutex
 }
 
 func (o *EntityMapGroup) EntityType() basis.EntityType {
@@ -45,14 +45,14 @@ func (o *EntityMapGroup) MaxLen() int {
 }
 
 func (o *EntityMapGroup) Len() int {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.mapLock.RLock()
+	defer o.mapLock.RUnlock()
 	return len(o.entityMap)
 }
 
 func (o *EntityMapGroup) IsFull() bool {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.mapLock.RLock()
+	defer o.mapLock.RUnlock()
 	return o.isFull()
 }
 
@@ -61,8 +61,8 @@ func (o *EntityMapGroup) Entities() []string {
 }
 
 func (o *EntityMapGroup) CopyEntities() []string {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.mapLock.RLock()
+	defer o.mapLock.RUnlock()
 	var rs []string
 	for key, _ := range o.entityMap {
 		rs = append(rs, key)
@@ -71,15 +71,15 @@ func (o *EntityMapGroup) CopyEntities() []string {
 }
 
 func (o *EntityMapGroup) ContainEntity(entityId string) bool {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.mapLock.RLock()
+	defer o.mapLock.RUnlock()
 	_, ok := o.entityMap[entityId]
 	return ok
 }
 
 func (o *EntityMapGroup) Accept(entityId string) error {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.mapLock.Lock()
+	defer o.mapLock.Unlock()
 	_, ok := o.entityMap[entityId]
 	if ok {
 		return errors.New("EntityMapGroup.Accept Error: Entity(" + entityId + ") Duplicate")
@@ -92,8 +92,8 @@ func (o *EntityMapGroup) Accept(entityId string) error {
 }
 
 func (o *EntityMapGroup) AcceptMulti(entityId []string) (count int, err error) {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.mapLock.Lock()
+	defer o.mapLock.Unlock()
 	if len(entityId) == 0 {
 		return 0, errors.New("EntityMapGroup.AcceptMulti Error: len = 0")
 	}
@@ -110,8 +110,8 @@ func (o *EntityMapGroup) AcceptMulti(entityId []string) (count int, err error) {
 }
 
 func (o *EntityMapGroup) Drop(entityId string) error {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.mapLock.Lock()
+	defer o.mapLock.Unlock()
 	_, ok := o.entityMap[entityId]
 	if !ok {
 		return errors.New("EntityMapGroup.Drop Error: No Entity(" + entityId + ")")
@@ -121,8 +121,8 @@ func (o *EntityMapGroup) Drop(entityId string) error {
 }
 
 func (o *EntityMapGroup) DropMulti(entityId []string) (count int, err error) {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.mapLock.Lock()
+	defer o.mapLock.Unlock()
 	if len(entityId) == 0 {
 		return 0, errors.New("EntityMapGroup.DropMulti Error: len = 0")
 	}

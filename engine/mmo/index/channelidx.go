@@ -24,12 +24,9 @@ func (o *ChannelIndex) CheckChannel(chanId string) bool {
 	return o.EntityIndex.Check(chanId)
 }
 
-func (o *ChannelIndex) GetChannel(chanId string) basis.IChannelEntity {
-	entity := o.EntityIndex.Get(chanId)
-	if nil != entity {
-		return entity.(basis.IChannelEntity)
-	}
-	return nil
+func (o *ChannelIndex) GetChannel(chanId string) (channel basis.IChannelEntity, ok bool) {
+	channel, ok = o.EntityIndex.Get(chanId).(basis.IChannelEntity)
+	return
 }
 
 func (o *ChannelIndex) AddChannel(channel basis.IChannelEntity) error {

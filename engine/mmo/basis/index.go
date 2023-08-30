@@ -9,41 +9,13 @@ type IEntityIndex interface {
 	// Check 检查存在
 	Check(id string) bool
 	// Get 获取one
-	Get(id string) IEntity
+	Get(id string) (entity IEntity)
 	// Add 添加
-	Add(entity IEntity) error
+	Add(entity IEntity) (err error)
 	// Remove 从索引中移除
-	Remove(id string) (IEntity, error)
+	Remove(id string) (entity IEntity, err error)
 	// Update 更新
-	Update(entity IEntity) error
-}
-
-type IWorldIndex interface {
-	IEntityIndex
-	// CheckWorld 检查World是否存在
-	CheckWorld(worldId string) bool
-	// GetWorld 获取World
-	GetWorld(worldId string) IWorldEntity
-	// AddWorld 添加一个新World到索引中
-	AddWorld(world IWorldEntity) error
-	// RemoveWorld 从索引中移除一个World
-	RemoveWorld(worldId string) (IWorldEntity, error)
-	// UpdateWorld 更新一个新World到索引中
-	UpdateWorld(zone IWorldEntity) error
-}
-
-type IZoneIndex interface {
-	IEntityIndex
-	// CheckZone 检查Zone是否存在
-	CheckZone(zoneId string) bool
-	// GetZone 获取Zone
-	GetZone(zoneId string) IZoneEntity
-	// AddZone 添加一个新Zone到索引中
-	AddZone(zone IZoneEntity) error
-	// RemoveZone 从索引中移除一个Zone
-	RemoveZone(zoneId string) (IZoneEntity, error)
-	// UpdateZone 更新一个新Zone到索引中
-	UpdateZone(zone IZoneEntity) error
+	Update(entity IEntity) (err error)
 }
 
 // IRoomIndex 房间索引
@@ -52,7 +24,7 @@ type IRoomIndex interface {
 	// CheckRoom 检查Room是否存在
 	CheckRoom(roomId string) bool
 	// GetRoom 获取Room
-	GetRoom(roomId string) IRoomEntity
+	GetRoom(roomId string) (room IRoomEntity, ok bool)
 	// AddRoom 添加一个新Room到索引中
 	AddRoom(room IRoomEntity) error
 	// RemoveRoom 从索引中移除一个Room
@@ -66,7 +38,7 @@ type ITeamCorpsIndex interface {
 	// CheckCorps 检查Corps是否存在
 	CheckCorps(corpsId string) bool
 	// GetCorps 获取Corps
-	GetCorps(corpsId string) ITeamCorpsEntity
+	GetCorps(corpsId string) (corps ITeamCorpsEntity, ok bool)
 	// AddCorps 添加一个新Corps到索引中
 	AddCorps(corps ITeamCorpsEntity) error
 	// RemoveCorps 从索引中移除一个Corps
@@ -81,7 +53,7 @@ type ITeamIndex interface {
 	// CheckTeam 检查Team是否存在
 	CheckTeam(teamId string) bool
 	// GetTeam 获取Team
-	GetTeam(teamId string) ITeamEntity
+	GetTeam(teamId string) (team ITeamEntity, ok bool)
 	// AddTeam 添加一个新Team到索引中
 	AddTeam(team ITeamEntity) error
 	// RemoveTeam 从索引中移除一个Team
@@ -96,7 +68,7 @@ type IUserIndex interface {
 	// CheckUser 检查User是否存在
 	CheckUser(userId string) bool
 	// GetUser 获取User
-	GetUser(userId string) IUserEntity
+	GetUser(userId string) (user IUserEntity, ok bool)
 	// AddUser 添加一个新User到索引中
 	AddUser(user IUserEntity) error
 	// RemoveUser 从索引中移除一个User
@@ -111,7 +83,7 @@ type IChannelIndex interface {
 	// CheckChannel 检查Channel是否存在
 	CheckChannel(chanId string) bool
 	// GetChannel 获取Channel
-	GetChannel(chanId string) IChannelEntity
+	GetChannel(chanId string) (channel IChannelEntity, ok bool)
 	// AddChannel 从索引中增加一个Channel
 	AddChannel(channel IChannelEntity) error
 	// RemoveChannel 从索引中移除一个Channel

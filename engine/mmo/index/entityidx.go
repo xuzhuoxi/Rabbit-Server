@@ -23,7 +23,7 @@ type EntityIndex struct {
 	indexName  string
 	entityType basis.EntityType
 	entityMap  map[string]basis.IEntity
-	entityMu   sync.RWMutex
+	indexLock  sync.RWMutex
 }
 
 func (o *EntityIndex) EntityType() basis.EntityType {
@@ -31,8 +31,8 @@ func (o *EntityIndex) EntityType() basis.EntityType {
 }
 
 func (o *EntityIndex) Check(id string) bool {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.indexLock.RLock()
+	defer o.indexLock.RUnlock()
 	return o.check(id)
 }
 
@@ -42,14 +42,17 @@ func (o *EntityIndex) check(id string) bool {
 }
 
 func (o *EntityIndex) Get(id string) basis.IEntity {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.indexLock.RLock()
+	defer o.indexLock.RUnlock()
+	if !o.check(id) {
+		return nil
+	}
 	return o.entityMap[id]
 }
 
 func (o *EntityIndex) Add(entity basis.IEntity) error {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.indexLock.Lock()
+	defer o.indexLock.Unlock()
 	if nil == entity {
 		//return errors.New(i.indexName + ".Add Error: entity is nil")
 		return errors.New(fmt.Sprintf("%s.Add Error: entity is nil", o.indexName))
@@ -68,8 +71,8 @@ func (o *EntityIndex) Add(entity basis.IEntity) error {
 }
 
 func (o *EntityIndex) Remove(id string) (basis.IEntity, error) {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.indexLock.Lock()
+	defer o.indexLock.Unlock()
 	e, ok := o.entityMap[id]
 	if ok {
 		delete(o.entityMap, id)
@@ -80,8 +83,8 @@ func (o *EntityIndex) Remove(id string) (basis.IEntity, error) {
 }
 
 func (o *EntityIndex) Update(entity basis.IEntity) error {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.indexLock.Lock()
+	defer o.indexLock.Unlock()
 	if nil == entity {
 		//return errors.New(i.indexName + ".Update Error: entity is nil")
 		return errors.New(fmt.Sprintf("%s.Update Error: entity is nil", o.indexName))

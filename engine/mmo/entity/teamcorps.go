@@ -17,18 +17,18 @@ func NewTeamCorpsEntity(corpsId string, corpsName string) *TeamCorpsEntity {
 type TeamCorpsEntity struct {
 	CorpsId   string
 	CorpsName string
-	EntityChildSupport
-	ListEntityContainer
-
-	//TeamGroup *EntityListGroup
 	VariableSupport
+
+	//EntityChildSupport
+	//ListEntityContainer
+	//TeamGroup *EntityListGroup
 }
 
 func (o *TeamCorpsEntity) UID() string {
 	return o.CorpsId
 }
 
-func (o *TeamCorpsEntity) NickName() string {
+func (o *TeamCorpsEntity) Name() string {
 	return o.CorpsName
 }
 
@@ -37,7 +37,7 @@ func (o *TeamCorpsEntity) EntityType() basis.EntityType {
 }
 
 func (o *TeamCorpsEntity) InitEntity() {
-	o.ListEntityContainer = *NewListEntityContainer(0)
+	//o.ListEntityContainer = *NewListEntityContainer(0)
 	//e.TeamGroup = NewEntityListGroup(EntityTeam)
 	o.VariableSupport = *NewVariableSupport(o)
 }

@@ -4,16 +4,16 @@
 // @author xuzhuoxi
 package basis
 
-type IZoneGroup interface {
-	// ZoneList 区域列表
-	ZoneList() []string
-	// ContainZone 检查区域存在性
-	ContainZone(zoneId string) bool
-	// AddZone 添加区域
-	AddZone(zoneId string) error
-	// RemoveZone 移除区域
-	RemoveZone(zoneId string) error
-}
+//type IZoneGroup interface {
+//	// ZoneList 区域列表
+//	ZoneList() []string
+//	// ContainZone 检查区域存在性
+//	ContainZone(zoneId string) bool
+//	// AddZone 添加区域
+//	AddZone(zoneId string) error
+//	// RemoveZone 移除区域
+//	RemoveZone(zoneId string) error
+//}
 
 type ITeamGroup interface {
 	// TeamList 队伍列表

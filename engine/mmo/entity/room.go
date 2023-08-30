@@ -43,10 +43,8 @@ type RoomEntity struct {
 	RoomId    string
 	RoomName  string
 	MaxMember int
-	EntityChildSupport
 	ListEntityContainer
-
-	//UserGroup *EntityListGroup
+	TagsSupport
 	VariableSupport
 }
 
@@ -54,7 +52,7 @@ func (o *RoomEntity) UID() string {
 	return o.RoomId
 }
 
-func (o *RoomEntity) NickName() string {
+func (o *RoomEntity) Name() string {
 	return o.RoomName
 }
 
@@ -63,7 +61,6 @@ func (o *RoomEntity) EntityType() basis.EntityType {
 }
 
 func (o *RoomEntity) InitEntity() {
-	o.EntityChildSupport = *NewEntityChildSupport()
 	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
 	//e.UserGroup = NewEntityListGroup(EntityUser)
 	o.VariableSupport = *NewVariableSupport(o)

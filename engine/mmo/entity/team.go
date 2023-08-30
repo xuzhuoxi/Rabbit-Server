@@ -6,7 +6,6 @@ package entity
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
-	"sync"
 )
 
 func NewITeamEntity(teamId string, teamName string, maxMember int) basis.ITeamEntity {
@@ -22,20 +21,18 @@ type TeamEntity struct {
 	TeamId    string
 	TeamName  string
 	MaxMember int
-	EntityChildSupport
-	ListEntityContainer
-
-	//UserGroup *EntityListGroup
 	VariableSupport
 
-	teamMu sync.RWMutex
+	//EntityChildSupport
+	//ListEntityContainer
+	//TeamGroup *EntityListGroup
 }
 
 func (o *TeamEntity) UID() string {
 	return o.TeamId
 }
 
-func (o *TeamEntity) NickName() string {
+func (o *TeamEntity) Name() string {
 	return o.TeamName
 }
 
@@ -44,8 +41,8 @@ func (o *TeamEntity) EntityType() basis.EntityType {
 }
 
 func (o *TeamEntity) InitEntity() {
-	o.EntityChildSupport = *NewEntityChildSupport()
-	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
+	//o.EntityChildSupport = *NewEntityChildSupport()
+	//o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
 	//e.UserGroup = NewEntityListGroup(EntityUser)
 	o.VariableSupport = *NewVariableSupport(o)
 }

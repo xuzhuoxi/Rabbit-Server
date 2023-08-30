@@ -24,14 +24,15 @@ type ChannelEntity struct {
 	ChanId     string
 	ChanName   string
 	Subscriber []string
-	Mu         sync.RWMutex
+	Lock       sync.RWMutex
+	VariableSupport
 }
 
 func (o *ChannelEntity) UID() string {
 	return o.ChanId
 }
 
-func (o *ChannelEntity) NickName() string {
+func (o *ChannelEntity) Name() string {
 	return o.ChanName
 }
 
@@ -47,8 +48,8 @@ func (o *ChannelEntity) MyChannel() basis.IChannelEntity {
 }
 
 func (o *ChannelEntity) TouchChannel(subscriber string) {
-	o.Mu.Lock()
-	defer o.Mu.Unlock()
+	o.Lock.Lock()
+	defer o.Lock.Unlock()
 	if o.hasSubscriber(subscriber) {
 		return
 	}
@@ -56,8 +57,8 @@ func (o *ChannelEntity) TouchChannel(subscriber string) {
 }
 
 func (o *ChannelEntity) UnTouchChannel(subscriber string) {
-	o.Mu.Lock()
-	defer o.Mu.Unlock()
+	o.Lock.Lock()
+	defer o.Lock.Unlock()
 	index, ok := slicex.IndexString(o.Subscriber, subscriber)
 	if !ok {
 		return
@@ -66,8 +67,8 @@ func (o *ChannelEntity) UnTouchChannel(subscriber string) {
 }
 
 func (o *ChannelEntity) Broadcast(speaker string, handler func(receiver string)) int {
-	o.Mu.RLock()
-	defer o.Mu.RUnlock()
+	o.Lock.RLock()
+	defer o.Lock.RUnlock()
 	rs := len(o.Subscriber)
 	for _, r := range o.Subscriber {
 		if r == speaker {
@@ -79,8 +80,8 @@ func (o *ChannelEntity) Broadcast(speaker string, handler func(receiver string))
 }
 
 func (o *ChannelEntity) BroadcastSome(speaker string, receiver []string, handler func(receiver string)) int {
-	o.Mu.RLock()
-	defer o.Mu.RUnlock()
+	o.Lock.RLock()
+	defer o.Lock.RUnlock()
 	count := 0
 	for _, v := range o.Subscriber {
 		if _, ok := slicex.IndexString(receiver, v); ok && speaker != v {

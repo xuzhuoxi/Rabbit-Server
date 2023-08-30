@@ -33,7 +33,7 @@ func TestNewMMOManager(t *testing.T) {
 	if nil != err1 {
 		t.Fatal(err1)
 	}
-	eMgr.AddEventListener(basis.EventManagerVarChanged, onVarChanged)
+	eMgr.AddEventListener(basis.EventManagerVarsChanged, onVarChanged)
 	world.ForEachChild(func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool) {
 		go setVar(child, time.Duration(rand.Int63n(5)))
 		return
@@ -42,8 +42,8 @@ func TestNewMMOManager(t *testing.T) {
 }
 
 func onVarChanged(evd *eventx.EventData) {
-	varData := evd.Data.(basis.ManagerVarEventData)
-	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Data.Len())
+	varData := evd.Data.(basis.VarEventData)
+	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Update.Len())
 }
 
 func setVar(entity basis.IEntity, interval time.Duration) {

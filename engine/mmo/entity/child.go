@@ -19,29 +19,29 @@ func NewEntityChildSupport() *EntityChildSupport {
 
 type EntityChildSupport struct {
 	Owner string
-	oMu   sync.RWMutex
+	lock  sync.RWMutex
 }
 
 func (o *EntityChildSupport) GetParent() string {
-	o.oMu.RLock()
-	defer o.oMu.RUnlock()
+	o.lock.RLock()
+	defer o.lock.RUnlock()
 	return o.Owner
 }
 
-func (o *EntityChildSupport) NoneParent() bool {
-	o.oMu.RLock()
-	defer o.oMu.RUnlock()
+func (o *EntityChildSupport) IsNoneParent() bool {
+	o.lock.RLock()
+	defer o.lock.RUnlock()
 	return o.Owner == ""
 }
 
 func (o *EntityChildSupport) SetParent(parentId string) {
-	o.oMu.Lock()
-	defer o.oMu.Unlock()
+	o.lock.Lock()
+	defer o.lock.Unlock()
 	o.Owner = parentId
 }
 
 func (o *EntityChildSupport) ClearParent() {
-	o.oMu.Lock()
-	defer o.oMu.Unlock()
+	o.lock.Lock()
+	defer o.lock.Unlock()
 	o.Owner = ""
 }
