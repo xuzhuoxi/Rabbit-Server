@@ -65,19 +65,3 @@ func (o *RoomEntity) InitEntity() {
 	//e.UserGroup = NewEntityListGroup(EntityUser)
 	o.VariableSupport = *NewVariableSupport(o)
 }
-
-//func (e *RoomEntity) UserList() []string {
-//	return e.UserGroup.Entities()
-//}
-//
-//func (e *RoomEntity) ContainUser(userId string) bool {
-//	return e.UserGroup.ContainEntity(userId)
-//}
-//
-//func (e *RoomEntity) AcceptUser(userId string) error {
-//	return e.UserGroup.Accept(userId)
-//}
-//
-//func (e *RoomEntity) DropUser(userId string) error {
-//	return e.UserGroup.Drop(userId)
-//}

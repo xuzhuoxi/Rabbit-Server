@@ -18,11 +18,18 @@ type IEntityContainer interface {
 	GetChildById(childId string) (entity IEntity, ok bool)
 
 	// UpdateChild 更新子实体
-	UpdateChild(child IEntity) (old IEntity, err error)
+	// errNum=1: child=nil
+	// errNum=2: full
+	UpdateChild(child IEntity) (old IEntity, errNum int, err error)
 	// AddChild 添加子实体
-	AddChild(child IEntity) error
+	// errNum=1: child=nil
+	// errNum=2: exist
+	// errNum=3: full
+	AddChild(child IEntity) (errNum int, err error)
 	// RemoveChild 移除子实体
-	RemoveChild(child IEntity) error
+	// errNum=1: child=nil
+	// errNum=2: not exist
+	RemoveChild(child IEntity) (errNum int, err error)
 	// RemoveChildById 通过Id移除子实体
 	RemoveChildById(childId string) (child IEntity, ok bool)
 

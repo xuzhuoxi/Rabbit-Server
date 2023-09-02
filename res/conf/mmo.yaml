@@ -52,5 +52,5 @@ relations:
     - id: 'w1'
       name: '世界二'
       list: [ 'z21','z22' ,'other2' ]
-default: 'w1'
+default: [ 'r111' ]
 log_ref: 'log_mmo'

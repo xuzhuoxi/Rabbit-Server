@@ -7,6 +7,7 @@ package mmo
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/manager"
 	"github.com/xuzhuoxi/infra-go/logx"
 )
@@ -15,6 +16,8 @@ type IMMOManager interface {
 	basis.IManagerBase
 	logx.ILoggerSetter
 
+	GetConfig() config.MMOConfig
+	BuildEnv(cfg *config.MMOConfig) error
 	GetEntityManager() manager.IEntityManager
 	GetUserManager() manager.IUserManager
 	GetBroadcastManager() manager.IBroadcastManager
@@ -36,6 +39,7 @@ type MMOManager struct {
 	bcMgr     manager.IBroadcastManager
 	userMgr   manager.IUserManager
 	varMgr    manager.IVariableManager
+	cfg       *config.MMOConfig
 	logger    logx.ILogger
 }
 
@@ -66,6 +70,15 @@ func (o *MMOManager) SetLogger(logger logx.ILogger) {
 	if nil != o.varMgr {
 		o.varMgr.SetLogger(logger)
 	}
+}
+
+func (o *MMOManager) GetConfig() config.MMOConfig {
+	return *o.cfg
+}
+
+func (o *MMOManager) BuildEnv(cfg *config.MMOConfig) error {
+	o.cfg = cfg
+	return o.entityMgr.BuildEnv(cfg)
 }
 
 func (o *MMOManager) GetEntityManager() manager.IEntityManager {

@@ -5,7 +5,10 @@
 package entity
 
 import (
+	"errors"
+	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"sync"
 )
 
 func NewITeamEntity(teamId string, teamName string, maxMember int) basis.ITeamEntity {
@@ -21,11 +24,11 @@ type TeamEntity struct {
 	TeamId    string
 	TeamName  string
 	MaxMember int
-	VariableSupport
+	lock      sync.RWMutex
 
-	//EntityChildSupport
-	//ListEntityContainer
-	//TeamGroup *EntityListGroup
+	VariableSupport
+	EntityListGroup
+	EntityChildSupport
 }
 
 func (o *TeamEntity) UID() string {
@@ -41,66 +44,64 @@ func (o *TeamEntity) EntityType() basis.EntityType {
 }
 
 func (o *TeamEntity) InitEntity() {
-	//o.EntityChildSupport = *NewEntityChildSupport()
-	//o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
-	//e.UserGroup = NewEntityListGroup(EntityUser)
 	o.VariableSupport = *NewVariableSupport(o)
+	o.EntityListGroup = *NewEntityListGroup(basis.EntityTeam)
+	o.EntityChildSupport = *NewEntityChildSupport()
 }
 
-//func (e *TeamEntity) Leader() string {
-//	e.teamMu.RLock()
-//	defer e.teamMu.RUnlock()
-//	return e.Owner
-//}
-//
-//func (e *TeamEntity) MemberList() []string {
-//	return e.UserGroup.Entities()
-//}
-//
-//func (e *TeamEntity) ContainMember(memberId string) bool {
-//	return e.UserGroup.ContainEntity(memberId)
-//}
-//
-//func (e *TeamEntity) AcceptMember(memberId string) error {
-//	return e.UserGroup.Accept(memberId)
-//}
-//
-//func (e *TeamEntity) DropMember(memberId string) error {
-//	e.teamMu.RLock()
-//	defer e.teamMu.RUnlock()
-//	err := e.UserGroup.Drop(memberId)
-//	if nil != err {
-//		return err
-//	}
-//	if memberId == e.Owner {
-//		if 0 == e.UserGroup.Len() {
-//			return e.disbandTeam()
-//		}
-//		e.SetParent(e.UserGroup.Entities()[0])
-//	}
-//	return nil
-//}
-//
-//func (e *TeamEntity) RiseLeader(memberId string) error {
-//	e.teamMu.Lock()
-//	defer e.teamMu.Unlock()
-//	if memberId == e.Owner {
-//		return errors.New(fmt.Sprintf("%s is already the leader", memberId))
-//	}
-//	if !e.UserGroup.ContainEntity(memberId) {
-//		return errors.New(fmt.Sprintf("%s is not a member", memberId))
-//	}
-//	e.SetParent(memberId)
-//	return nil
-//}
-//
-//func (e *TeamEntity) DisbandTeam() error {
-//	if e.UserGroup.Len() == 0 {
-//		return nil
-//	}
-//	return e.disbandTeam()
-//}
-//
-//func (e *TeamEntity) disbandTeam() error {
-//	return nil
-//}
+func (o *TeamEntity) Leader() string {
+	return o.Owner
+}
+
+func (o *TeamEntity) MemberList() []string {
+	return o.Entities()
+}
+
+func (o *TeamEntity) ContainMember(memberId string) bool {
+	return o.ContainEntity(memberId)
+}
+
+func (o *TeamEntity) AcceptMember(memberId string) error {
+	return o.Accept(memberId)
+}
+
+func (o *TeamEntity) DropMember(memberId string) error {
+	o.lock.RLock()
+	defer o.lock.RUnlock()
+	err := o.Drop(memberId)
+	if nil != err {
+		return err
+	}
+	if memberId == o.Owner {
+		if 0 == o.Len() {
+			return o.disbandTeam()
+		}
+		o.SetParent(o.Entities()[0])
+	}
+	return nil
+}
+
+func (o *TeamEntity) RiseLeader(memberId string) error {
+	o.lock.Lock()
+	defer o.lock.Unlock()
+	if memberId == o.Owner {
+		return errors.New(fmt.Sprintf("%s is already the leader", memberId))
+	}
+	if !o.ContainEntity(memberId) {
+		return errors.New(fmt.Sprintf("%s is not a member", memberId))
+	}
+	o.SetParent(memberId)
+	return nil
+}
+
+func (o *TeamEntity) DisbandTeam() error {
+	if o.Len() == 0 {
+		return nil
+	}
+	return o.disbandTeam()
+}
+
+func (o *TeamEntity) disbandTeam() error {
+	o.ClearParent()
+	return nil
+}

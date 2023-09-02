@@ -29,6 +29,7 @@ type UserEntity struct {
 
 	UserSubscriber
 	VariableSupport
+	rooms []string
 }
 
 func (o *UserEntity) UID() string {
@@ -65,6 +66,15 @@ func (o *UserEntity) GetRoomId() string {
 	return o.RoomId
 }
 
+func (o *UserEntity) GetPrevRoomId() (roomId string, ok bool) {
+	o.roomLock.RLock()
+	defer o.roomLock.RUnlock()
+	if len(o.rooms) == 0 {
+		return
+	}
+	return o.rooms[len(o.rooms)-1], true
+}
+
 func (o *UserEntity) SetNextRoom(roomId string) {
 	o.nextRoomId = roomId
 }
@@ -80,9 +90,15 @@ func (o *UserEntity) ConfirmNextRoom(confirm bool) {
 	defer o.roomLock.Unlock()
 	if o.RoomId != o.nextRoomId {
 		_ = o.UserSubscriber.RemoveWhite(o.RoomId)
+		o.rooms = append(o.rooms, o.nextRoomId)
 		o.RoomId = o.nextRoomId
 		_ = o.UserSubscriber.AddWhite(o.RoomId)
 	}
+}
+
+func (o *UserEntity) BackToPrevRoom() {
+	o.RoomId = o.rooms[len(o.rooms)-1]
+	o.rooms = o.rooms[:len(o.rooms)-1]
 }
 
 //---------------------------------

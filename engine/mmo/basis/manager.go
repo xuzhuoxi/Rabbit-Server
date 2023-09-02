@@ -5,6 +5,8 @@
 package basis
 
 type IManagerBase interface {
+	// InitManager 初始化管理器
 	InitManager()
+	// DisposeManager 销毁管理器
 	DisposeManager()
 }

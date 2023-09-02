@@ -50,51 +50,51 @@ func (o *EntityIndex) Get(id string) basis.IEntity {
 	return o.entityMap[id]
 }
 
-func (o *EntityIndex) Add(entity basis.IEntity) error {
+func (o *EntityIndex) Add(entity basis.IEntity) (errNum int, err error) {
 	o.indexLock.Lock()
 	defer o.indexLock.Unlock()
 	if nil == entity {
-		//return errors.New(i.indexName + ".Add Error: entity is nil")
-		return errors.New(fmt.Sprintf("%s.Add Error: entity is nil", o.indexName))
+		//return 1, errors.New(o.indexName + ".Add Error: entity is nil")
+		return 1, errors.New(fmt.Sprintf("%s.Add Error: entity is nil", o.indexName))
 	}
 	if !o.entityType.Include(entity.EntityType()) {
-		//return errors.New(i.indexName + ".Add Error: Type is not included")
-		return errors.New(fmt.Sprintf("%s.Add Error: Type is not included", o.indexName))
+		//return 2, errors.New(o.indexName + ".Add Error: Type is not included")
+		return 2, errors.New(fmt.Sprintf("%s.Add Error: Type is not included", o.indexName))
 	}
 	id := entity.UID()
 	if o.check(id) {
-		//return errors.New(i.indexName + ".Add Error: Id(" + id + ") Duplicate")
-		return errors.New(fmt.Sprintf("%s.Add Error: Id(%s) Duplicate", o.indexName, id))
+		//return 3, errors.New(o.indexName + ".Add Error: Id(" + id + ") Duplicate")
+		return 3, errors.New(fmt.Sprintf("%s.Add Error: Id(%s) Duplicate", o.indexName, id))
 	}
 	o.entityMap[id] = entity
-	return nil
+	return 0, nil
 }
 
-func (o *EntityIndex) Remove(id string) (basis.IEntity, error) {
+func (o *EntityIndex) Remove(id string) (entity basis.IEntity, errNum int, err error) {
 	o.indexLock.Lock()
 	defer o.indexLock.Unlock()
 	e, ok := o.entityMap[id]
 	if ok {
 		delete(o.entityMap, id)
-		return e, nil
+		return e, 0, nil
 	}
-	//return nil, errors.New(i.indexName + ".Remove Error: No Entity(" + id + ")")
-	return nil, errors.New(fmt.Sprintf("%s.Remove Error: No Entity(%s)", o.indexName, id))
+	//return nil, 1, errors.New(o.indexName + ".Remove Error: No Entity(" + id + ")")
+	return nil, 1, errors.New(fmt.Sprintf("%s.Remove Error: No Entity(%s)", o.indexName, id))
 }
 
-func (o *EntityIndex) Update(entity basis.IEntity) error {
+func (o *EntityIndex) Update(entity basis.IEntity) (errNum int, err error) {
 	o.indexLock.Lock()
 	defer o.indexLock.Unlock()
 	if nil == entity {
-		//return errors.New(i.indexName + ".Update Error: entity is nil")
-		return errors.New(fmt.Sprintf("%s.Update Error: entity is nil", o.indexName))
+		//return 1, errors.New(o.indexName + ".Update Error: entity is nil")
+		return 1, errors.New(fmt.Sprintf("%s.Update Error: entity is nil", o.indexName))
 	}
 	if !o.entityType.Include(entity.EntityType()) {
-		//return errors.New(i.indexName + ".Update Error: Type is not included")
-		return errors.New(fmt.Sprintf("%s.Update Error: Type is not included", o.indexName))
+		//return 2, errors.New(o.indexName + ".Update Error: Type is not included")
+		return 2, errors.New(fmt.Sprintf("%s.Update Error: Type is not included", o.indexName))
 	}
 	o.entityMap[entity.UID()] = entity
-	return nil
+	return 0, nil
 }
 
 func (o *EntityIndex) ForEachEntity(each func(entity basis.IEntity)) {

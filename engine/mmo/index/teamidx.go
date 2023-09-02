@@ -13,11 +13,19 @@ func NewITeamIndex() basis.ITeamIndex {
 }
 
 func NewTeamIndex() *TeamIndex {
-	return &TeamIndex{EntityIndex: *NewEntityIndex("TeamIndex", basis.EntityTeam)}
+	return &TeamIndex{EntityIndex: NewEntityIndex("TeamIndex", basis.EntityTeam)}
 }
 
 type TeamIndex struct {
-	EntityIndex
+	EntityIndex basis.IEntityIndex
+}
+
+func (o *TeamIndex) EntityType() basis.EntityType {
+	return o.EntityIndex.EntityType()
+}
+
+func (o *TeamIndex) ForEachEntity(each func(entity basis.IEntity)) {
+	o.EntityIndex.ForEachEntity(each)
 }
 
 func (o *TeamIndex) CheckTeam(teamId string) bool {
@@ -29,18 +37,29 @@ func (o *TeamIndex) GetTeam(teamId string) (team basis.ITeamEntity, ok bool) {
 	return
 }
 
-func (o *TeamIndex) AddTeam(team basis.ITeamEntity) error {
-	return o.EntityIndex.Add(team)
-}
-
-func (o *TeamIndex) RemoveTeam(teamId string) (basis.ITeamEntity, error) {
-	c, err := o.EntityIndex.Remove(teamId)
-	if nil != c {
-		return c.(basis.ITeamEntity), err
+func (o *TeamIndex) AddTeam(team basis.ITeamEntity) (rsCode int32, err error) {
+	num, err1 := o.EntityIndex.Add(team)
+	if nil == err1 {
+		return
 	}
-	return nil, err
+	if num == 1 || num == 2 {
+		return basis.CodeMMOIndexType, err1
+	}
+	return basis.CodeMMOTeamExist, err1
 }
 
-func (o *TeamIndex) UpdateTeam(team basis.ITeamEntity) error {
-	return o.EntityIndex.Update(team)
+func (o *TeamIndex) RemoveTeam(teamId string) (team basis.ITeamEntity, rsCode int32, err error) {
+	c, _, err1 := o.EntityIndex.Remove(teamId)
+	if nil != c {
+		return c.(basis.IRoomEntity), 0, nil
+	}
+	return nil, basis.CodeMMOTeamNotExist, err1
+}
+
+func (o *TeamIndex) UpdateTeam(team basis.ITeamEntity) (rsCode int32, err error) {
+	_, err1 := o.EntityIndex.Update(team)
+	if nil != err1 {
+		return basis.CodeMMOIndexType, err1
+	}
+	return
 }

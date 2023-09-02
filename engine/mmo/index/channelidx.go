@@ -13,11 +13,19 @@ func NewIChannelIndex() basis.IChannelIndex {
 }
 
 func NewChannelIndex() *ChannelIndex {
-	return &ChannelIndex{EntityIndex: *NewEntityIndex("ChannelIndex", basis.EntityChannel)}
+	return &ChannelIndex{EntityIndex: NewEntityIndex("ChannelIndex", basis.EntityChannel)}
 }
 
 type ChannelIndex struct {
-	EntityIndex
+	EntityIndex basis.IEntityIndex
+}
+
+func (o *ChannelIndex) EntityType() basis.EntityType {
+	return o.EntityIndex.EntityType()
+}
+
+func (o *ChannelIndex) ForEachEntity(each func(entity basis.IEntity)) {
+	o.EntityIndex.ForEachEntity(each)
 }
 
 func (o *ChannelIndex) CheckChannel(chanId string) bool {
@@ -29,18 +37,29 @@ func (o *ChannelIndex) GetChannel(chanId string) (channel basis.IChannelEntity, 
 	return
 }
 
-func (o *ChannelIndex) AddChannel(channel basis.IChannelEntity) error {
-	return o.EntityIndex.Add(channel)
-}
-
-func (o *ChannelIndex) RemoveChannel(chanId string) (basis.IChannelEntity, error) {
-	c, err := o.EntityIndex.Remove(chanId)
-	if nil != c {
-		return c.(basis.IChannelEntity), err
+func (o *ChannelIndex) AddChannel(channel basis.IChannelEntity) (rsCode int32, err error) {
+	num, err1 := o.EntityIndex.Add(channel)
+	if nil == err1 {
+		return
 	}
-	return nil, err
+	if num == 1 || num == 2 {
+		return basis.CodeMMOIndexType, err1
+	}
+	return basis.CodeMMOChanExist, err1
 }
 
-func (o *ChannelIndex) UpdateChannel(channel basis.IChannelEntity) error {
-	return o.EntityIndex.Update(channel)
+func (o *ChannelIndex) RemoveChannel(chanId string) (channel basis.IChannelEntity, rsCode int32, err error) {
+	c, _, err1 := o.EntityIndex.Remove(chanId)
+	if nil != c {
+		return c.(basis.IChannelEntity), 0, nil
+	}
+	return nil, basis.CodeMMOChanNotExist, err1
+}
+
+func (o *ChannelIndex) UpdateChannel(channel basis.IChannelEntity) (rsCode int32, err error) {
+	_, err1 := o.EntityIndex.Update(channel)
+	if nil != err1 {
+		return basis.CodeMMOIndexType, err1
+	}
+	return
 }

@@ -151,7 +151,7 @@ type EntityListGroup struct {
 	entityType basis.EntityType
 	entityList []string
 	max        int
-	entityMu   sync.RWMutex
+	entityLock sync.RWMutex
 }
 
 func (o *EntityListGroup) EntityType() basis.EntityType {
@@ -163,39 +163,39 @@ func (o *EntityListGroup) MaxLen() int {
 }
 
 func (o *EntityListGroup) Len() int {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.entityLock.RLock()
+	defer o.entityLock.RUnlock()
 	return len(o.entityList)
 }
 
 func (o *EntityListGroup) IsFull() bool {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.entityLock.RLock()
+	defer o.entityLock.RUnlock()
 	return o.isFull()
 }
 
 func (o *EntityListGroup) Entities() []string {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.entityLock.RLock()
+	defer o.entityLock.RUnlock()
 	return o.entityList
 }
 
 func (o *EntityListGroup) CopyEntities() []string {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.entityLock.RLock()
+	defer o.entityLock.RUnlock()
 	return slicex.CopyString(o.entityList)
 }
 
 func (o *EntityListGroup) ContainEntity(entityId string) bool {
-	o.entityMu.RLock()
-	defer o.entityMu.RUnlock()
+	o.entityLock.RLock()
+	defer o.entityLock.RUnlock()
 	_, ok := slicex.IndexString(o.entityList, entityId)
 	return ok
 }
 
 func (o *EntityListGroup) Accept(entityId string) error {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.entityLock.Lock()
+	defer o.entityLock.Unlock()
 	_, ok := slicex.IndexString(o.entityList, entityId)
 	if ok {
 		return errors.New("EntityListGroup.Accept Error: Entity(" + entityId + ") Duplicate")
@@ -208,8 +208,8 @@ func (o *EntityListGroup) Accept(entityId string) error {
 }
 
 func (o *EntityListGroup) AcceptMulti(entityId []string) (count int, err error) {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.entityLock.Lock()
+	defer o.entityLock.Unlock()
 	if len(entityId) == 0 {
 		return 0, errors.New("EntityListGroup.AcceptMulti Error: len = 0")
 	}
@@ -229,8 +229,8 @@ func (o *EntityListGroup) AcceptMulti(entityId []string) (count int, err error) 
 }
 
 func (o *EntityListGroup) Drop(entityId string) error {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.entityLock.Lock()
+	defer o.entityLock.Unlock()
 	index, ok := slicex.IndexString(o.entityList, entityId)
 	if !ok {
 		return errors.New("EntityListGroup.Drop Error: No Entity(" + entityId + ")")
@@ -240,8 +240,8 @@ func (o *EntityListGroup) Drop(entityId string) error {
 }
 
 func (o *EntityListGroup) DropMulti(entityId []string) (count int, err error) {
-	o.entityMu.Lock()
-	defer o.entityMu.Unlock()
+	o.entityLock.Lock()
+	defer o.entityLock.Unlock()
 	if len(entityId) == 0 {
 		return 0, errors.New("EntityListGroup.DropMulti Error: len = 0")
 	}

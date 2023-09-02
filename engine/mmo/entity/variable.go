@@ -76,23 +76,3 @@ func (o *VariableSupport) SetVars(kv encodingx.IKeyValue) {
 			&basis.VarsEventData{Entity: o.currentTarget, Vars: diff})
 	}
 }
-
-//func (o *VariableSupport) RemoveVar(key string) {
-//	o.lock.Lock()
-//	defer o.lock.Unlock()
-//	_, ok := o.vars.Delete(key)
-//	if ok {
-//		o.DispatchEvent(basis.EventEntityVarDeleted, o.currentTarget, key)
-//	}
-//}
-//
-//func (o *VariableSupport) RemoveVars() (count int) {
-//	o.lock.Lock()
-//	defer o.lock.Unlock()
-//	count = o.vars.Len()
-//	o.vars = basis.NewVarSet()
-//	if count > 0 {
-//		o.DispatchEvent(basis.EventEntityVarsDeleted, o.currentTarget, count)
-//	}
-//	return
-//}

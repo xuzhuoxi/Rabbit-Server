@@ -13,11 +13,19 @@ func NewIRoomIndex() basis.IRoomIndex {
 }
 
 func NewRoomIndex() *RoomIndex {
-	return &RoomIndex{EntityIndex: *NewEntityIndex("RoomIndex", basis.EntityRoom)}
+	return &RoomIndex{EntityIndex: NewEntityIndex("RoomIndex", basis.EntityRoom)}
 }
 
 type RoomIndex struct {
-	EntityIndex
+	EntityIndex basis.IEntityIndex
+}
+
+func (o *RoomIndex) EntityType() basis.EntityType {
+	return o.EntityIndex.EntityType()
+}
+
+func (o *RoomIndex) ForEachEntity(each func(entity basis.IEntity)) {
+	o.EntityIndex.ForEachEntity(each)
 }
 
 func (o *RoomIndex) CheckRoom(roomId string) bool {
@@ -29,18 +37,29 @@ func (o *RoomIndex) GetRoom(roomId string) (room basis.IRoomEntity, ok bool) {
 	return
 }
 
-func (o *RoomIndex) AddRoom(room basis.IRoomEntity) error {
-	return o.EntityIndex.Add(room)
-}
-
-func (o *RoomIndex) RemoveRoom(roomId string) (basis.IRoomEntity, error) {
-	c, err := o.EntityIndex.Remove(roomId)
-	if nil != c {
-		return c.(basis.IRoomEntity), err
+func (o *RoomIndex) AddRoom(room basis.IRoomEntity) (rsCode int32, err error) {
+	num, err1 := o.EntityIndex.Add(room)
+	if nil == err1 {
+		return
 	}
-	return nil, err
+	if num == 1 || num == 2 {
+		return basis.CodeMMOIndexType, err1
+	}
+	return basis.CodeMMORoomExist, err1
 }
 
-func (o *RoomIndex) UpdateRoom(room basis.IRoomEntity) error {
-	return o.EntityIndex.Update(room)
+func (o *RoomIndex) RemoveRoom(roomId string) (room basis.IRoomEntity, rsCode int32, err error) {
+	c, _, err1 := o.EntityIndex.Remove(roomId)
+	if nil != c {
+		return c.(basis.IRoomEntity), 0, nil
+	}
+	return nil, basis.CodeMMORoomNotExist, err1
+}
+
+func (o *RoomIndex) UpdateRoom(room basis.IRoomEntity) (rsCode int32, err error) {
+	_, err1 := o.EntityIndex.Update(room)
+	if nil != err1 {
+		return basis.CodeMMOIndexType, err1
+	}
+	return
 }

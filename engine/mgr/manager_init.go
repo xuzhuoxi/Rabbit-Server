@@ -48,7 +48,7 @@ func (o *RabbitManager) initServers() {
 	o.ServerManager.Servers = servers
 }
 
-func (o *RabbitManager) initMMOWorld() {
+func (o *RabbitManager) initMMOEnv() {
 	if o.CfgMMO == nil {
 		return
 	}
@@ -65,8 +65,7 @@ func (o *RabbitManager) initMMOWorld() {
 			o.MMOManager.SetLogger(o.LogManager.FindLogger(o.CfgMMO.LogRef))
 		}
 	}
-	o.MMOManager.GetEntityManager().BuildEnv(o.CfgMMO)
-	//fmt.Println(666)
+	o.MMOManager.BuildEnv(o.CfgMMO)
 }
 
 func (o *RabbitManager) initClockManager() {

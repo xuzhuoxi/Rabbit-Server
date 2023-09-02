@@ -68,14 +68,14 @@ func (o *MapEntityContainer) GetChildById(entityId string) (entity basis.IEntity
 	return
 }
 
-func (o *MapEntityContainer) UpdateChild(entity basis.IEntity) (old basis.IEntity, err error) {
+func (o *MapEntityContainer) UpdateChild(entity basis.IEntity) (old basis.IEntity, errNum int, err error) {
 	if nil == entity {
-		return nil, errors.New("Entity is nil. ")
+		return nil, 1, errors.New("Entity is nil. ")
 	}
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	if o.isFull() {
-		return nil, errors.New("Container is full ")
+		return nil, 2, errors.New("Container is full ")
 	}
 	if v, ok := o.entities[entity.UID()]; ok {
 		old = v
@@ -84,37 +84,37 @@ func (o *MapEntityContainer) UpdateChild(entity basis.IEntity) (old basis.IEntit
 	return
 }
 
-func (o *MapEntityContainer) AddChild(entity basis.IEntity) error {
+func (o *MapEntityContainer) AddChild(entity basis.IEntity) (errNum int, err error) {
 	if nil == entity {
-		return errors.New("Entity is nil. ")
+		return 1, errors.New("Entity is nil. ")
 	}
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	id := entity.UID()
 	_, isContains := o.entities[id]
 	if isContains {
-		return errors.New(fmt.Sprintf("Entity(%s) is already in the container", id))
+		return 2, errors.New(fmt.Sprintf("Entity(%s) is already in the container", id))
 	}
 	if o.isFull() {
-		return errors.New("Container is full ")
+		return 3, errors.New("Container is full ")
 	}
 	o.entities[id] = entity
-	return nil
+	return
 }
 
-func (o *MapEntityContainer) RemoveChild(entity basis.IEntity) error {
+func (o *MapEntityContainer) RemoveChild(entity basis.IEntity) (errNum int, err error) {
 	if nil == entity {
-		return errors.New("Entity is nil. ")
+		return 1, errors.New("Entity is nil. ")
 	}
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	id := entity.UID()
 	_, isContains := o.entities[id]
 	if !isContains {
-		return errors.New(fmt.Sprintf("Entity(%s) does not exist in the container", id))
+		return 2, errors.New(fmt.Sprintf("Entity(%s) does not exist in the container", id))
 	}
 	delete(o.entities, id)
-	return nil
+	return
 }
 
 func (o *MapEntityContainer) RemoveChildById(entityId string) (entity basis.IEntity, ok bool) {
@@ -251,9 +251,9 @@ func (o *ListEntityContainer) GetChildById(childId string) (entity basis.IEntity
 	return
 }
 
-func (o *ListEntityContainer) UpdateChild(child basis.IEntity) (old basis.IEntity, err error) {
+func (o *ListEntityContainer) UpdateChild(child basis.IEntity) (old basis.IEntity, errNum int, err error) {
 	if nil == child {
-		return nil, errors.New("Entity is nil. ")
+		return nil, 1, errors.New("Entity is nil. ")
 	}
 	o.lock.Lock()
 	defer o.lock.Unlock()
@@ -264,44 +264,44 @@ func (o *ListEntityContainer) UpdateChild(child basis.IEntity) (old basis.IEntit
 		o.entities[index] = child
 	} else {
 		if o.isFull() {
-			return nil, errors.New("Container is full ")
+			return nil, 2, errors.New("Container is full ")
 		}
 		o.entities = append(o.entities, child)
 	}
 	return
 }
 
-func (o *ListEntityContainer) AddChild(child basis.IEntity) error {
+func (o *ListEntityContainer) AddChild(child basis.IEntity) (errNum int, err error) {
 	if nil == child {
-		return errors.New("Entity is nil. ")
+		return 1, errors.New("Entity is nil. ")
 	}
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	id := child.UID()
 	_, _, isContains := o.firstContains(id)
 	if isContains {
-		return errors.New(fmt.Sprintf("Entity(%s) is already in the container", id))
+		return 2, errors.New(fmt.Sprintf("Entity(%s) is already in the container", id))
 	}
 	if o.isFull() {
-		return errors.New("Container is full ")
+		return 3, errors.New("Container is full ")
 	}
 	o.entities = append(o.entities, child)
-	return nil
+	return
 }
 
-func (o *ListEntityContainer) RemoveChild(child basis.IEntity) error {
+func (o *ListEntityContainer) RemoveChild(child basis.IEntity) (errNum int, err error) {
 	if nil == child {
-		return errors.New("Entity is nil. ")
+		return 1, errors.New("Entity is nil. ")
 	}
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	id := child.UID()
 	_, index, isContains := o.firstContains(id)
 	if !isContains {
-		return errors.New(fmt.Sprintf("Entity(%s) does not exist in the container", id))
+		return 2, errors.New(fmt.Sprintf("Entity(%s) does not exist in the container", id))
 	}
 	o.entities = append(o.entities[:index], o.entities[index+1:]...)
-	return nil
+	return
 }
 
 func (o *ListEntityContainer) RemoveChildById(childId string) (entity basis.IEntity, ok bool) {

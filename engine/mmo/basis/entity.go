@@ -9,14 +9,21 @@ import "strings"
 type EntityType uint16
 
 const (
+	// EntityRoom 房间实体
 	EntityRoom EntityType = 1 << iota
+	// EntityUser 用户实体
 	EntityUser
+	// EntityTeamCorps 军团实体
 	EntityTeamCorps
+	// EntityTeam 队伍实体
 	EntityTeam
+	// EntityChannel 频道实体
 	EntityChannel
 
+	// EntityNone 不是实体
 	EntityNone EntityType = 0
-	EntityAll  EntityType = EntityRoom | EntityUser | EntityTeamCorps | EntityTeam | EntityChannel
+	// EntityAll 全部实体
+	EntityAll EntityType = EntityRoom | EntityUser | EntityTeamCorps | EntityTeam | EntityChannel
 )
 
 var (
@@ -85,10 +92,14 @@ type IUserEntity interface {
 
 	// GetRoomId 取房间Id
 	GetRoomId() string
+	// GetPrevRoomId 取上一个房间Id
+	GetPrevRoomId() (roomId string, ok bool)
 	// SetNextRoom 设置下一个房间Id
 	SetNextRoom(roomId string)
 	// ConfirmNextRoom 确认下一个房间Id
 	ConfirmNextRoom(confirm bool)
+	// BackToPrevRoom 回来上一个房间
+	BackToPrevRoom()
 
 	// GetTeamInfo 取队伍相关信息
 	GetTeamInfo() (teamId string, corpsId string)

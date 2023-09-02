@@ -4,6 +4,11 @@
 // @author xuzhuoxi
 package basis
 
+var (
+	ZeroXY  = XY{}
+	ZeroXYZ = XYZ{}
+)
+
 type XY struct {
 	X float64
 	Y float64

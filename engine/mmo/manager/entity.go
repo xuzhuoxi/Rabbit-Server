@@ -19,27 +19,22 @@ import (
 )
 
 type IEntityFactory interface {
-	//// CreateWorld 构造世界
-	//CreateWorld(worldId string, worldName string, asRoot bool, vars encodingx.IKeyValue) (world basis.IWorldEntity, rsCode int32, err error)
-	//// CreateZoneAt 构造区域
-	//CreateZoneAt(zoneId string, zoneName string, container basis.IEntityContainer, vars encodingx.IKeyValue) (basis.IZoneEntity, error)
-
 	// CreateRoom 构造房间
-	CreateRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (basis.IRoomEntity, error)
+	CreateRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error)
 
 	// CreateUser 创建用户实体
-	CreateUser(userId string, vars encodingx.IKeyValue) (basis.IUserEntity, error)
+	CreateUser(userId string, vars encodingx.IKeyValue) (user basis.IUserEntity, rsCode int32, err error)
 	// CreateTeam 创建队伍
-	CreateTeam(userId string, vars encodingx.IKeyValue) (basis.ITeamEntity, error)
+	CreateTeam(userId string, vars encodingx.IKeyValue) (team basis.ITeamEntity, rsCode int32, err error)
 	// CreateTeamCorps 创建团队
-	CreateTeamCorps(teamId string, vars encodingx.IKeyValue) (basis.ITeamCorpsEntity, error)
+	CreateTeamCorps(teamId string, vars encodingx.IKeyValue) (corps basis.ITeamCorpsEntity, rsCode int32, err error)
 	// CreateChannel 构造频道
-	CreateChannel(chanId string, chanName string, vars encodingx.IKeyValue) (basis.IChannelEntity, error)
+	CreateChannel(chanId string, chanName string, vars encodingx.IKeyValue) (channel basis.IChannelEntity, rsCode int32, err error)
 
 	// DestroyEntity 删除实体
-	DestroyEntity(entity basis.IEntity) error
+	DestroyEntity(entity basis.IEntity) (rsCode int32, err error)
 	// DestroyEntityBy 通过类型和Id删除实体
-	DestroyEntityBy(entityType basis.EntityType, eId string) (basis.IEntity, error)
+	DestroyEntityBy(entityType basis.EntityType, eId string) (entity basis.IEntity, rsCode int32, err error)
 }
 
 type IEntityIndexSet interface {
@@ -48,7 +43,7 @@ type IEntityIndexSet interface {
 	TeamIndex() basis.ITeamIndex
 	TeamCorpsIndex() basis.ITeamCorpsIndex
 	ChannelIndex() basis.IChannelIndex
-	GetEntityIndex(entityType basis.EntityType) basis.IEntityIndex
+	GetEntityIndex(entityType basis.EntityType) basis.IAbsEntityIndex
 }
 
 type IEntityGetter interface {
@@ -66,10 +61,24 @@ type IEntityGetter interface {
 	GetEntity(entityType basis.EntityType, entityId string) (entity basis.IEntity, ok bool)
 }
 
+type IEntityIterator interface {
+	// ForEachRoom 遍历每个房间实体
+	ForEachRoom(each func(room basis.IRoomEntity))
+	// ForEachUser 遍历每个用户实体
+	ForEachUser(each func(user basis.IUserEntity))
+	// ForEachTeam 遍历每个队伍实体
+	ForEachTeam(each func(team basis.ITeamEntity))
+	// ForEachTeamCorps 遍历每个军团实体
+	ForEachTeamCorps(each func(corps basis.ITeamCorpsEntity))
+	// ForEachChannel 遍历每个频道实体
+	ForEachChannel(each func(channel basis.IChannelEntity))
+}
+
 type IEntityManager interface {
 	eventx.IEventDispatcher
 	IEntityFactory
 	IEntityGetter
+	IEntityIterator
 	IEntityIndexSet
 	basis.IManagerBase
 
@@ -94,10 +103,6 @@ func NewEntityManager() IEntityManager {
 //----------------------------
 
 type EntityManager struct {
-	//worldIndex     basis.IWorldIndex // 协程安全
-	//worldLock      sync.RWMutex
-	//zoneIndex      basis.ITagIndex // 协程安全
-	//zoneLock       sync.RWMutex
 	roomIndex      basis.IRoomIndex // 协程安全
 	roomLock       sync.RWMutex
 	userIndex      basis.IUserIndex // 协程安全
@@ -109,7 +114,6 @@ type EntityManager struct {
 	chanIndex      basis.IChannelIndex // 协程安全
 	chanLock       sync.RWMutex
 
-	//rootWorld basis.IWorldEntity
 	logger logx.ILogger
 	eventx.EventDispatcher
 }
@@ -130,7 +134,7 @@ func (o *EntityManager) BuildEnv(cfg *config.MMOConfig) error {
 	o.roomLock.Lock()
 	defer o.roomLock.Unlock()
 	for _, room := range cfg.Entities.Rooms {
-		_, err1 := o.createRoom(room.Id, room.Name, room.Tags, nil)
+		_, _, err1 := o.createRoom(room.Id, room.Name, room.Tags, nil)
 		if nil != err1 {
 			return err1
 		}
@@ -138,240 +142,127 @@ func (o *EntityManager) BuildEnv(cfg *config.MMOConfig) error {
 	return nil
 }
 
-//func (o *EntityManager) ConstructWorldDefault(cfg *config.MMOConfig) (world basis.IWorldEntity, err error) {
-//	return o.ConstructWorld(cfg, cfg.DefaultWorld)
-//}
-//
-//func (o *EntityManager) ConstructWorld(cfg *config.MMOConfig, worldId string) (world basis.IWorldEntity, err error) {
-//	if relation, ok := cfg.Relations.GetWorldRelation(worldId); ok {
-//		o.logger.Infoln("Start Construct World:", worldId, cfg)
-//		worldEntity, ok1 := cfg.Entities.FindWorld(worldId)
-//		if !ok1 {
-//			err = errors.New("Construct World Fail: " + worldId + " not configured.")
-//			o.logger.Warnln(err)
-//			return
-//		}
-//		newWorld, err1 := o.CreateWorld(worldEntity.Id, worldEntity.Name, true, nil)
-//		if nil != err1 {
-//			err = err1
-//			o.logger.Warnln(err)
-//			return
-//		}
-//		for _, zoneCfg := range relation.Zones {
-//			z, ok2 := cfg.Entities.FindZone(zoneCfg.ZoneId)
-//			if !ok2 {
-//				err = errors.New("Construct Zone Fail: " + zoneCfg.ZoneId + " not configured.")
-//				o.logger.Warnln(err)
-//				return
-//			}
-//			zone, err2 := o.CreateZoneAt(z.Id, z.Name, newWorld, nil)
-//			if nil != err2 {
-//				err = err2
-//				o.logger.Warnln(err)
-//				return
-//			}
-//			for _, roomId := range zoneCfg.Rooms {
-//				r, ok3 := cfg.Entities.FindRoom(roomId)
-//				if !ok3 {
-//					err = errors.New("Construct Room Fail: " + roomId + " not configured.")
-//					o.logger.Warnln(err)
-//					return
-//				}
-//				_, err3 := o.CreateRoom(r.Id, r.Name, zone, nil)
-//				if nil != err3 {
-//					err = err3
-//					o.logger.Warnln(err)
-//					return
-//				}
-//			}
-//		}
-//		world = newWorld
-//		o.logger.Infoln("Finish Construct World:", newWorld.UID())
-//		return
-//	}
-//	return nil, errors.New("No World Relation: " + worldId)
-//}
-
-//func (o *EntityManager) CreateWorld(worldId string, worldName string, asRoot bool, vars encodingx.IKeyValue) (world basis.IWorldEntity, rsCode int32, err error) {
-//	o.worldLock.Lock()
-//	defer o.worldLock.Unlock()
-//	if o.worldIndex.CheckWorld(worldId) {
-//		return nil, basis.CodeMMOWorldExist, errors.New("EntityManager.CreateWorld Error: WorldId(" + worldId + ") Duplicate!")
-//	}
-//	world = entity.CreateWorldEntity(worldId, worldName)
-//	world.InitEntity()
-//	world.SetVars(vars)
-//	err = o.worldIndex.AddWorld(world)
-//	if nil != err {
-//		return nil, err
-//	}
-//	o.addEntityEventListener(world)
-//	if asRoot {
-//		o.rootWorld = world
-//	}
-//	return world, nil
-//}
-//
-//func (o *EntityManager) CreateZoneAt(zoneId string, zoneName string, container basis.IEntityContainer,
-//	vars encodingx.IKeyValue) (basis.IZoneEntity, error) {
-//	o.zoneLock.Lock()
-//	defer o.zoneLock.Unlock()
-//	if o.zoneIndex.CheckTag(zoneId) {
-//		return nil, errors.New("EntityManager.CreateZoneAt Error: ZoneId(" + zoneId + ") Duplicate!")
-//	}
-//	zone := entity.NewIZoneEntity(zoneId, zoneName)
-//	zone.InitEntity()
-//	zone.SetVars(vars)
-//	err := o.zoneIndex.AddZone(zone)
-//	if nil != err {
-//		return nil, err
-//	}
-//	o.addEntityEventListener(zone)
-//	if nil != container {
-//		if e, ok := container.(basis.IEntity); ok {
-//			zone.SetParent(e.UID())
-//			err1 := container.AddChild(zone)
-//			if err1 != nil {
-//				return nil, err1
-//			}
-//		}
-//	}
-//	return zone, nil
-//}
-
-func (o *EntityManager) CreateRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (basis.IRoomEntity, error) {
+func (o *EntityManager) CreateRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error) {
 	o.roomLock.Lock()
 	defer o.roomLock.Unlock()
 	return o.createRoom(roomId, roomName, tags, vars)
 }
 
-func (o *EntityManager) createRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (basis.IRoomEntity, error) {
+func (o *EntityManager) createRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error) {
 	if o.roomIndex.CheckRoom(roomId) {
-		return nil, errors.New("EntityManager.CreateRoomAt Error: RoomId(" + roomId + ") Duplicate")
+		return nil, basis.CodeMMORoomExist, errors.New("EntityManager.CreateRoomAt Error: RoomId(" + roomId + ") Duplicate")
 	}
-	room := entity.NewIRoomEntity(roomId, roomName)
+	room = entity.NewIRoomEntity(roomId, roomName)
 	room.InitEntity()
 	room.SetVars(vars)
 	room.SetTags(tags)
-	err := o.roomIndex.AddRoom(room)
+	rsCode, err = o.roomIndex.AddRoom(room)
 	if nil != err {
-		return nil, err
+		return nil, rsCode, err
 	}
 	o.addEntityEventListener(room)
-	return room, nil
+	return room, 0, nil
 }
 
-func (o *EntityManager) CreateUser(userId string, vars encodingx.IKeyValue) (basis.IUserEntity, error) {
+func (o *EntityManager) CreateUser(userId string, vars encodingx.IKeyValue) (user basis.IUserEntity, rsCode int32, err error) {
 	o.userLock.Lock()
 	defer o.userLock.Unlock()
 	if userId == "" || o.userIndex.CheckUser(userId) {
-		return nil, errors.New(fmt.Sprintf("EntityManager.CreateUser Error: User(%s) is nil or exist", userId))
+		return nil, basis.CodeMMOUserExist, errors.New(fmt.Sprintf("EntityManager.CreateUser Error: User(%s) is nil or exist", userId))
 	}
-	user := entity.NewIUserEntity(userId)
+	user = entity.NewIUserEntity(userId)
 	user.SetVars(vars)
-	err := o.userIndex.AddUser(user)
+	rsCode, err = o.userIndex.AddUser(user)
 	if nil != err {
-		return nil, err
+		return nil, rsCode, err
 	}
 	o.addEntityEventListener(user)
-	return user, nil
+	return user, 0, nil
 }
 
-func (o *EntityManager) CreateTeam(userId string, vars encodingx.IKeyValue) (basis.ITeamEntity, error) {
+func (o *EntityManager) CreateTeam(userId string, vars encodingx.IKeyValue) (team basis.ITeamEntity, rsCode int32, err error) {
 	o.teamLock.Lock()
 	defer o.teamLock.Unlock()
 	_, okUser := o.userIndex.GetUser(userId)
 	if !okUser {
-		return nil, errors.New(fmt.Sprintf("EntityManager.CreateTeam Error: User(%s) does not exist", userId))
+		return nil, basis.CodeMMOTeamExist, errors.New(fmt.Sprintf("EntityManager.CreateTeam Error: User(%s) does not exist", userId))
 	}
-	team := entity.NewITeamEntity(basis.GetTeamId(), basis.TeamName, basis.MaxTeamMember)
+	team = entity.NewITeamEntity(basis.GetTeamId(), basis.TeamName, basis.MaxTeamMember)
 	team.InitEntity()
 	team.SetVars(vars)
-	err := o.teamIndex.AddTeam(team)
+	rsCode, err = o.teamIndex.AddTeam(team)
 	if nil != err {
-		return nil, err
+		return nil, rsCode, err
 	}
 	o.addEntityEventListener(team)
-	//_ = team.AddChild(user)
-	//team.SetParent(userId)
-	return team, nil
+	return team, 0, nil
 }
 
-func (o *EntityManager) CreateTeamCorps(teamId string, vars encodingx.IKeyValue) (basis.ITeamCorpsEntity, error) {
+func (o *EntityManager) CreateTeamCorps(teamId string, vars encodingx.IKeyValue) (corps basis.ITeamCorpsEntity, rsCode int32, err error) {
 	o.teamCorpsLock.Lock()
 	defer o.teamCorpsLock.Unlock()
 	_, okTeam := o.teamIndex.GetTeam(teamId)
 	if !okTeam {
-		return nil, errors.New(fmt.Sprintf("EntityManager.CreateTeamCorps Error: Team(%s) does not exist", teamId))
+		return nil, basis.CodeMMOTeamNotExist, errors.New(fmt.Sprintf("EntityManager.CreateTeamCorps Error: Team(%s) does not exist", teamId))
 	}
 	teamCorps := entity.NewITeamCorpsEntity(basis.GetTeamCorpsId(), basis.TeamCorpsName)
 	teamCorps.InitEntity()
 	teamCorps.SetVars(vars)
-	err := o.teamCorpsIndex.AddCorps(teamCorps)
+	rsCode, err = o.teamCorpsIndex.AddCorps(teamCorps)
 	if nil != err {
-		return nil, err
+		return nil, rsCode, err
 	}
 	o.addEntityEventListener(teamCorps)
-	//_ = teamCorps.AddChild(team)
-	//teamCorps.SetParent(teamId)
-	return teamCorps, nil
+	return teamCorps, 0, nil
 }
 
-func (o *EntityManager) CreateChannel(chanId string, chanName string, vars encodingx.IKeyValue) (basis.IChannelEntity, error) {
+func (o *EntityManager) CreateChannel(chanId string, chanName string, vars encodingx.IKeyValue) (channel basis.IChannelEntity, rsCode int32, err error) {
 	o.chanLock.Lock()
 	defer o.chanLock.Unlock()
 	if o.chanIndex.CheckChannel(chanId) {
-		return nil, errors.New("EntityManager.CreateChannel Error: ChanId(" + chanId + ") Duplicate!")
+		return nil, basis.CodeMMOChanExist, errors.New("EntityManager.CreateChannel Error: ChanId(" + chanId + ") Duplicate!")
 	}
-	channel := entity.NewIChannelEntity(chanId, chanName)
+	channel = entity.NewIChannelEntity(chanId, chanName)
 	channel.InitEntity()
 	channel.SetVars(vars)
-	err := o.chanIndex.AddChannel(channel)
+	rsCode, err = o.chanIndex.AddChannel(channel)
 	if nil != err {
-		return nil, err
+		return nil, rsCode, err
 	}
 	o.addEntityEventListener(channel)
-	return channel, nil
+	return channel, 0, nil
 }
 
-func (o *EntityManager) DestroyEntity(entity basis.IEntity) error {
+func (o *EntityManager) DestroyEntity(entity basis.IEntity) (rsCode int32, err error) {
 	if nil == entity {
-		return errors.New("DestroyEntity Error at: entity is nil. ")
+		return basis.CodeMMOOther, errors.New("DestroyEntity Error at: entity is nil. ")
 	}
-	_, err := o.DestroyEntityBy(entity.EntityType(), entity.UID())
-	return err
+	_, rsCode, err = o.DestroyEntityBy(entity.EntityType(), entity.UID())
+	return
 }
 
-func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string) (entity basis.IEntity, err error) {
+func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string) (entity basis.IEntity, rsCode int32, err error) {
 	switch entityType {
-	//case basis.EntityWorld:
-	//	o.worldLock.Lock()
-	//	defer o.worldLock.Unlock()
-	//	entity, err = o.worldIndex.RemoveWorld(eId)
-	//case basis.EntityZone:
-	//	o.zoneLock.Lock()
-	//	defer o.zoneLock.Unlock()
-	//	entity, err = o.zoneIndex.RemoveZone(eId)
 	case basis.EntityRoom:
 		o.roomLock.Lock()
 		defer o.roomLock.Unlock()
-		entity, err = o.roomIndex.RemoveRoom(eId)
+		entity, rsCode, err = o.roomIndex.RemoveRoom(eId)
 	case basis.EntityUser:
 		o.userLock.Lock()
 		defer o.userLock.Unlock()
-		entity, err = o.userIndex.RemoveUser(eId)
+		entity, rsCode, err = o.userIndex.RemoveUser(eId)
 	case basis.EntityTeamCorps:
 		o.teamCorpsLock.Lock()
 		defer o.teamCorpsLock.Unlock()
-		entity, err = o.teamCorpsIndex.RemoveCorps(eId)
+		entity, rsCode, err = o.teamCorpsIndex.RemoveCorps(eId)
 	case basis.EntityTeam:
 		o.teamLock.Lock()
 		defer o.teamLock.Unlock()
-		entity, err = o.teamIndex.RemoveTeam(eId)
+		entity, rsCode, err = o.teamIndex.RemoveTeam(eId)
 	case basis.EntityChannel:
 		o.chanLock.Lock()
 		defer o.chanLock.Unlock()
-		entity, err = o.chanIndex.RemoveChannel(eId)
+		entity, rsCode, err = o.chanIndex.RemoveChannel(eId)
 	}
 	if nil != entity {
 		o.removeEntityEventListener(entity)
@@ -406,24 +297,6 @@ func (o *EntityManager) onEntityVars(evd *eventx.EventData) {
 }
 
 //----------------------------
-
-//func (o *EntityManager) DefaultWorld() basis.IWorldEntity {
-//	return o.rootWorld
-//}
-//
-//func (o *EntityManager) GetWorld(worldId string) (world basis.IWorldEntity, ok bool) {
-//	if len(worldId) == 0 {
-//		return
-//	}
-//	return o.worldIndex.GetWorld(worldId)
-//}
-//
-//func (o *EntityManager) GetZone(zoneId string) (zone basis.IZoneEntity, ok bool) {
-//	if len(zoneId) == 0 {
-//		return
-//	}
-//	return o.zoneIndex.GetZone(zoneId)
-//}
 
 func (o *EntityManager) GetRoom(roomId string) (room basis.IRoomEntity, ok bool) {
 	if len(roomId) == 0 {
@@ -462,29 +335,51 @@ func (o *EntityManager) GetChannel(chanId string) (channel basis.IChannelEntity,
 
 func (o *EntityManager) GetEntity(entityType basis.EntityType, eId string) (entity basis.IEntity, ok bool) {
 	switch entityType {
-	//case basis.EntityWorld:
-	//	entity = o.worldIndex.Get(eId)
-	//case basis.EntityZone:
-	//	entity = o.zoneIndex.Get(eId)
 	case basis.EntityRoom:
-		entity = o.roomIndex.Get(eId)
+		entity, ok = o.roomIndex.GetRoom(eId)
 	case basis.EntityUser:
-		entity = o.userIndex.Get(eId)
-	case basis.EntityTeamCorps:
-		entity = o.teamCorpsIndex.Get(eId)
+		entity, ok = o.userIndex.GetUser(eId)
 	case basis.EntityTeam:
-		entity = o.teamIndex.Get(eId)
+		entity, ok = o.teamIndex.GetTeam(eId)
+	case basis.EntityTeamCorps:
+		entity, ok = o.teamCorpsIndex.GetCorps(eId)
 	case basis.EntityChannel:
-		entity = o.chanIndex.Get(eId)
+		entity, ok = o.chanIndex.GetChannel(eId)
 	}
-	return entity, entity != nil
+	return
+}
+
+func (o *EntityManager) ForEachRoom(each func(room basis.IRoomEntity)) {
+	o.roomIndex.ForEachEntity(func(entity basis.IEntity) {
+		each(entity.(basis.IRoomEntity))
+	})
+}
+
+func (o *EntityManager) ForEachUser(each func(user basis.IUserEntity)) {
+	o.userIndex.ForEachEntity(func(entity basis.IEntity) {
+		each(entity.(basis.IUserEntity))
+	})
+}
+
+func (o *EntityManager) ForEachTeam(each func(team basis.ITeamEntity)) {
+	o.teamIndex.ForEachEntity(func(entity basis.IEntity) {
+		each(entity.(basis.ITeamEntity))
+	})
+}
+
+func (o *EntityManager) ForEachTeamCorps(each func(corps basis.ITeamCorpsEntity)) {
+	o.teamCorpsIndex.ForEachEntity(func(entity basis.IEntity) {
+		each(entity.(basis.ITeamCorpsEntity))
+	})
+}
+
+func (o *EntityManager) ForEachChannel(each func(channel basis.IChannelEntity)) {
+	o.chanIndex.ForEachEntity(func(entity basis.IEntity) {
+		each(entity.(basis.IChannelEntity))
+	})
 }
 
 //-----------------------
-
-//func (o *EntityManager) ZoneIndex() basis.ITagIndex {
-//	return o.zoneIndex
-//}
 
 func (o *EntityManager) RoomIndex() basis.IRoomIndex {
 	return o.roomIndex
@@ -506,10 +401,8 @@ func (o *EntityManager) ChannelIndex() basis.IChannelIndex {
 	return o.chanIndex
 }
 
-func (o *EntityManager) GetEntityIndex(entityType basis.EntityType) basis.IEntityIndex {
+func (o *EntityManager) GetEntityIndex(entityType basis.EntityType) basis.IAbsEntityIndex {
 	switch entityType {
-	//case basis.EntityZone:
-	//	return o.zoneIndex
 	case basis.EntityRoom:
 		return o.roomIndex
 	case basis.EntityUser:

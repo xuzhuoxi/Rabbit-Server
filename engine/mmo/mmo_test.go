@@ -29,13 +29,14 @@ func TestNewMMOManager(t *testing.T) {
 	}
 	fmt.Println(cfg)
 	eMgr := manager.NewIEntityManager()
-	world, err1 := eMgr.ConstructWorldDefault(cfg)
+	err1 := eMgr.BuildEnv(cfg)
 	if nil != err1 {
 		t.Fatal(err1)
 	}
-	eMgr.AddEventListener(basis.EventManagerVarsChanged, onVarChanged)
-	world.ForEachChild(func(child basis.IEntity) (interruptCurrent bool, interruptRecurse bool) {
-		go setVar(child, time.Duration(rand.Int63n(5)))
+	eMgr.AddEventListener(basis.EventManagerVarChanged, onVarChanged)
+	eMgr.AddEventListener(basis.EventManagerVarsChanged, onVarsChanged)
+	eMgr.ForEachRoom(func(room basis.IRoomEntity) {
+		go setVar(room, time.Duration(rand.Int63n(5)))
 		return
 	})
 	time.Sleep(time.Second * 5)
@@ -43,7 +44,12 @@ func TestNewMMOManager(t *testing.T) {
 
 func onVarChanged(evd *eventx.EventData) {
 	varData := evd.Data.(basis.VarEventData)
-	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Update.Len())
+	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Key, varData.Value)
+}
+
+func onVarsChanged(evd *eventx.EventData) {
+	varData := evd.Data.(basis.VarsEventData)
+	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Vars.Len())
 }
 
 func setVar(entity basis.IEntity, interval time.Duration) {

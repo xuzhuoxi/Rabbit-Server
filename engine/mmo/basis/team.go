@@ -10,7 +10,7 @@ import (
 
 var (
 	MaxTeamMember = 0
-	TeamId        = 1000
+	TeamId        = 200
 	TeamName      = "的队伍"
 )
 

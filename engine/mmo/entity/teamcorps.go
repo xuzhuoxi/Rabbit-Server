@@ -4,7 +4,10 @@
 // @author xuzhuoxi
 package entity
 
-import "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+import (
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"sync"
+)
 
 func NewITeamCorpsEntity(corpsId string, corpsName string) basis.ITeamCorpsEntity {
 	return &TeamCorpsEntity{CorpsId: corpsId, CorpsName: corpsName}
@@ -17,11 +20,11 @@ func NewTeamCorpsEntity(corpsId string, corpsName string) *TeamCorpsEntity {
 type TeamCorpsEntity struct {
 	CorpsId   string
 	CorpsName string
-	VariableSupport
+	lock      sync.RWMutex
 
-	//EntityChildSupport
-	//ListEntityContainer
-	//TeamGroup *EntityListGroup
+	VariableSupport
+	EntityListGroup
+	EntityChildSupport
 }
 
 func (o *TeamCorpsEntity) UID() string {
@@ -37,23 +40,23 @@ func (o *TeamCorpsEntity) EntityType() basis.EntityType {
 }
 
 func (o *TeamCorpsEntity) InitEntity() {
-	//o.ListEntityContainer = *NewListEntityContainer(0)
-	//e.TeamGroup = NewEntityListGroup(EntityTeam)
 	o.VariableSupport = *NewVariableSupport(o)
+	o.EntityListGroup = *NewEntityListGroup(basis.EntityTeam)
+	o.EntityChildSupport = *NewEntityChildSupport()
 }
 
-//func (e *TeamCorpsEntity) TeamList() []string {
-//	return e.TeamGroup.Entities()
-//}
-//
-//func (e *TeamCorpsEntity) ContainTeam(corpsId string) bool {
-//	return e.TeamGroup.ContainEntity(corpsId)
-//}
-//
-//func (e *TeamCorpsEntity) AddTeam(corpsId string) error {
-//	return e.TeamGroup.Accept(corpsId)
-//}
-//
-//func (e *TeamCorpsEntity) RemoveTeam(corpsId string) error {
-//	return e.TeamGroup.Drop(corpsId)
-//}
+func (o *TeamCorpsEntity) TeamList() []string {
+	return o.EntityListGroup.Entities()
+}
+
+func (o *TeamCorpsEntity) ContainTeam(corpsId string) bool {
+	return o.EntityListGroup.ContainEntity(corpsId)
+}
+
+func (o *TeamCorpsEntity) AddTeam(corpsId string) error {
+	return o.EntityListGroup.Accept(corpsId)
+}
+
+func (o *TeamCorpsEntity) RemoveTeam(corpsId string) error {
+	return o.EntityListGroup.Drop(corpsId)
+}

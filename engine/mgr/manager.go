@@ -34,8 +34,8 @@ type IRabbitInitManager interface {
 	InitLoggerManager() logx.ILoggerManager
 	// InitServers 初始化逻辑服务器
 	InitServers()
-	// CreateMMOWorld 创建MMO世界
-	CreateMMOWorld() mmo.IMMOManager
+	// BuildMMOEnv 创建MMO世界
+	BuildMMOEnv() mmo.IMMOManager
 	// InitClockManager 初始化时钟管理器
 	InitClockManager()
 }
@@ -144,8 +144,8 @@ func (o *RabbitManager) InitServers() {
 	o.initServers()
 }
 
-func (o *RabbitManager) CreateMMOWorld() mmo.IMMOManager {
-	o.initMMOWorld()
+func (o *RabbitManager) BuildMMOEnv() mmo.IMMOManager {
+	o.initMMOEnv()
 	return o.MMOManager
 }
 
