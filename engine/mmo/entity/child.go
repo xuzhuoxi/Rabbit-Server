@@ -9,38 +9,38 @@ import (
 	"sync"
 )
 
-func NewIEntityChildSupport() basis.IEntityChild {
-	return &EntityChildSupport{}
+func NewIChildEntitySupport() basis.IChildSupport {
+	return &ChildSupport{}
 }
 
-func NewEntityChildSupport() *EntityChildSupport {
-	return &EntityChildSupport{}
+func NewChildEntitySupport() *ChildSupport {
+	return &ChildSupport{}
 }
 
-type EntityChildSupport struct {
+type ChildSupport struct {
 	Owner string
 	lock  sync.RWMutex
 }
 
-func (o *EntityChildSupport) GetParent() string {
+func (o *ChildSupport) GetParent() string {
 	o.lock.RLock()
 	defer o.lock.RUnlock()
 	return o.Owner
 }
 
-func (o *EntityChildSupport) IsNoneParent() bool {
+func (o *ChildSupport) IsNoneParent() bool {
 	o.lock.RLock()
 	defer o.lock.RUnlock()
 	return o.Owner == ""
 }
 
-func (o *EntityChildSupport) SetParent(parentId string) {
+func (o *ChildSupport) SetParent(parentId string) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	o.Owner = parentId
 }
 
-func (o *EntityChildSupport) ClearParent() {
+func (o *ChildSupport) ClearParent() {
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	o.Owner = ""

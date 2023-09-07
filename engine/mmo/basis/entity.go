@@ -4,38 +4,40 @@
 // @author xuzhuoxi
 package basis
 
-import "strings"
+import (
+	"strings"
+)
 
 type EntityType uint16
 
 const (
 	// EntityRoom 房间实体
 	EntityRoom EntityType = 1 << iota
-	// EntityUser 用户实体
-	EntityUser
-	// EntityTeamCorps 军团实体
-	EntityTeamCorps
+	// EntityPlayer 用户实体
+	EntityPlayer
 	// EntityTeam 队伍实体
 	EntityTeam
+	// EntityTeamCorps 军团实体
+	EntityTeamCorps
 	// EntityChannel 频道实体
 	EntityChannel
 
 	// EntityNone 不是实体
 	EntityNone EntityType = 0
 	// EntityAll 全部实体
-	EntityAll EntityType = EntityRoom | EntityUser | EntityTeamCorps | EntityTeam | EntityChannel
+	EntityAll EntityType = EntityRoom | EntityPlayer | EntityTeamCorps | EntityTeam | EntityChannel
 )
 
 var (
 	entityNames = make(map[EntityType]string)
-	entities    = []EntityType{EntityRoom, EntityUser, EntityTeamCorps, EntityTeam, EntityChannel}
+	entities    = []EntityType{EntityRoom, EntityPlayer, EntityTeamCorps, EntityTeam, EntityChannel}
 )
 
 func init() {
 	entityNames[EntityRoom] = "Room"
-	entityNames[EntityUser] = "User"
-	entityNames[EntityTeamCorps] = "TeamCorps"
+	entityNames[EntityPlayer] = "Player"
 	entityNames[EntityTeam] = "Team"
+	entityNames[EntityTeamCorps] = "TeamCorps"
 	entityNames[EntityChannel] = "Channel"
 }
 
@@ -79,19 +81,23 @@ type IDestroyEntity interface {
 	DestroyEntity()
 }
 
-// IUserEntity 用户实体
-type IUserEntity interface {
+// IPlayerEntity 用户实体
+type IPlayerEntity interface {
 	IEntity
 	IInitEntity
 	IDestroyEntity
-	IUserSubscriber
+	IPlayerSubscriber
 	IVariableSupport
 
 	// NickName 用户昵称
 	NickName() string
+	// Position 取坐标
+	Position() XYZ
+	// SetPosition 设置坐标
+	SetPosition(pos XYZ)
 
-	// GetRoomId 取房间Id
-	GetRoomId() string
+	// RoomId 取房间Id
+	RoomId() string
 	// GetPrevRoomId 取上一个房间Id
 	GetPrevRoomId() (roomId string, ok bool)
 	// SetNextRoom 设置下一个房间Id
@@ -101,17 +107,16 @@ type IUserEntity interface {
 	// BackToPrevRoom 回来上一个房间
 	BackToPrevRoom()
 
+	// TeamId 队伍Id
+	TeamId() string
+	// CorpsId 团队Id
+	CorpsId() string
 	// GetTeamInfo 取队伍相关信息
 	GetTeamInfo() (teamId string, corpsId string)
 	// SetTeam 设置队伍Id
 	SetTeam(teamId string)
 	// SetCorps 设置团队Id
 	SetCorps(corpsId string)
-
-	// GetPosition 取坐标
-	GetPosition() XYZ
-	// SetPosition 设置坐标
-	SetPosition(pos XYZ)
 }
 
 // IRoomEntity 房间实体

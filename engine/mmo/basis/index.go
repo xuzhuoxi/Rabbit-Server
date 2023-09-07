@@ -31,19 +31,19 @@ type IEntityIndex interface {
 	Update(entity IEntity) (errNum int, err error)
 }
 
-// IUserIndex 玩家索引
-type IUserIndex interface {
+// IPlayerIndex 玩家索引
+type IPlayerIndex interface {
 	IAbsEntityIndex
-	// CheckUser 检查User是否存在
-	CheckUser(userId string) bool
-	// GetUser 获取User
-	GetUser(userId string) (user IUserEntity, ok bool)
-	// AddUser 添加一个新User到索引中
-	AddUser(user IUserEntity) (rsCode int32, err error)
-	// RemoveUser 从索引中移除一个User
-	RemoveUser(userId string) (user IUserEntity, rsCode int32, err error)
-	// UpdateUser 从索引中更新一个User
-	UpdateUser(user IUserEntity) (rsCode int32, err error)
+	// CheckPlayer 检查 Player 是否存在
+	CheckPlayer(playerId string) bool
+	// GetPlayer 获取 Player
+	GetPlayer(playerId string) (player IPlayerEntity, ok bool)
+	// AddPlayer 添加一个新 Player 到索引中
+	AddPlayer(player IPlayerEntity) (rsCode int32, err error)
+	// RemovePlayer 从索引中移除一个 Player
+	RemovePlayer(playerId string) (player IPlayerEntity, rsCode int32, err error)
+	// UpdatePlayer 从索引中更新一个 Player
+	UpdatePlayer(player IPlayerEntity) (rsCode int32, err error)
 }
 
 // IRoomIndex 房间索引

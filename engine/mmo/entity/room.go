@@ -4,7 +4,10 @@
 // @author xuzhuoxi
 package entity
 
-import "github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+import (
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
+)
 
 func NewIAOBRoomEntity(roomId string, roomName string) basis.IRoomEntity {
 	return NewAOBRoomEntity(roomId, roomName)
@@ -45,7 +48,7 @@ type RoomEntity struct {
 	MaxMember int
 	ListEntityContainer
 	TagsSupport
-	VariableSupport
+	vars.VariableSupport
 }
 
 func (o *RoomEntity) UID() string {
@@ -62,6 +65,5 @@ func (o *RoomEntity) EntityType() basis.EntityType {
 
 func (o *RoomEntity) InitEntity() {
 	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
-	//e.UserGroup = NewEntityListGroup(EntityUser)
-	o.VariableSupport = *NewVariableSupport(o)
+	o.VariableSupport = *vars.NewVariableSupport(o)
 }

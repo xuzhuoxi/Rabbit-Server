@@ -9,14 +9,13 @@ import (
 )
 
 func TestEntityType(t *testing.T) {
-	fmt.Println(EntityNone, EntityWorld, EntityZone, EntityRoom, EntityUser, EntityTeamCorps, EntityTeam, EntityChannel)
+	fmt.Println(EntityNone, EntityRoom, EntityPlayer, EntityTeamCorps, EntityTeam, EntityChannel)
 	fmt.Println("---")
-	fmt.Println(EntityAll.Match(EntityWorld))
-	fmt.Println(EntityWorld.Match(EntityAll))
-	fmt.Println(EntityWorld.Match(EntityZone))
+	fmt.Println(EntityAll.Match(EntityRoom))
+	fmt.Println(EntityRoom.Match(EntityAll))
+	fmt.Println(EntityRoom.Match(EntityNone))
 	fmt.Println("---")
-	fmt.Println(EntityAll.Include(EntityWorld))
-	fmt.Println(EntityWorld.Include(EntityAll))
-	fmt.Println(EntityWorld.Include(EntityZone))
-	fmt.Println(EntityWorld.Include(EntityNone))
+	fmt.Println(EntityAll.Include(EntityRoom))
+	fmt.Println(EntityRoom.Include(EntityAll))
+	fmt.Println(EntityRoom.Include(EntityNone))
 }

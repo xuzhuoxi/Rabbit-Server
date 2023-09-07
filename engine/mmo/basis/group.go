@@ -4,17 +4,6 @@
 // @author xuzhuoxi
 package basis
 
-//type IZoneGroup interface {
-//	// ZoneList 区域列表
-//	ZoneList() []string
-//	// ContainZone 检查区域存在性
-//	ContainZone(zoneId string) bool
-//	// AddZone 添加区域
-//	AddZone(zoneId string) error
-//	// RemoveZone 移除区域
-//	RemoveZone(zoneId string) error
-//}
-
 type ITeamGroup interface {
 	// TeamList 队伍列表
 	TeamList() []string
@@ -37,15 +26,15 @@ type IRoomGroup interface {
 	RemoveRoom(roomId string) error
 }
 
-type IUserGroup interface {
-	// UserList 用户列表
-	UserList() []string
-	// ContainUser 检查用户
-	ContainUser(userId string) bool
-	// AcceptUser 加入用户,进行唯一性检查
-	AcceptUser(userId string) error
-	// DropUser 从组中移除用户
-	DropUser(userId string) error
+type IPlayerGroup interface {
+	// PlayerList 玩家列表
+	PlayerList() []string
+	// ContainsPlayer 检查玩家
+	ContainsPlayer(playerId string) bool
+	// AcceptPlayer 加入玩家,进行唯一性检查
+	AcceptPlayer(playerId string) error
+	// DropPlayer 从组中移除玩家
+	DropPlayer(playerId string) error
 }
 
 // IEntityGroup 组

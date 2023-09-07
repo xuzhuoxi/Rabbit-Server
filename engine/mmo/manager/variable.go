@@ -7,6 +7,7 @@ package manager
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/logx"
@@ -72,7 +73,7 @@ func (o *VariableManager) DisposeManager() {
 }
 
 func (o *VariableManager) onEntityVar(evd *eventx.EventData) {
-	data := evd.Data.(*basis.VarEventData)
+	data := evd.Data.(*events.VarEventData)
 	eventEntity := data.Entity
 	key := data.Key
 	value := data.Value
@@ -83,7 +84,7 @@ func (o *VariableManager) onEntityVar(evd *eventx.EventData) {
 }
 
 func (o *VariableManager) onEntityVars(evd *eventx.EventData) {
-	data := evd.Data.(*basis.VarsEventData)
+	data := evd.Data.(*events.VarsEventData)
 	eventEntity := data.Entity
 	varSet := data.Vars
 	logger := o.GetLogger()

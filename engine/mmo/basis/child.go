@@ -4,7 +4,7 @@
 // @author xuzhuoxi
 package basis
 
-type IEntityChild interface {
+type IChildSupport interface {
 	// GetParent 父节点Id
 	GetParent() string
 	// IsNoneParent 判断父节点是否存在

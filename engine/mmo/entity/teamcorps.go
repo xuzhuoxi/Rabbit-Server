@@ -6,6 +6,7 @@ package entity
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 	"sync"
 )
 
@@ -22,9 +23,9 @@ type TeamCorpsEntity struct {
 	CorpsName string
 	lock      sync.RWMutex
 
-	VariableSupport
+	vars.VariableSupport
 	EntityListGroup
-	EntityChildSupport
+	ChildSupport
 }
 
 func (o *TeamCorpsEntity) UID() string {
@@ -40,9 +41,9 @@ func (o *TeamCorpsEntity) EntityType() basis.EntityType {
 }
 
 func (o *TeamCorpsEntity) InitEntity() {
-	o.VariableSupport = *NewVariableSupport(o)
+	o.VariableSupport = *vars.NewVariableSupport(o)
 	o.EntityListGroup = *NewEntityListGroup(basis.EntityTeam)
-	o.EntityChildSupport = *NewEntityChildSupport()
+	o.ChildSupport = *NewChildEntitySupport()
 }
 
 func (o *TeamCorpsEntity) TeamList() []string {

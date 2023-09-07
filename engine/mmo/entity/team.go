@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 	"sync"
 )
 
@@ -26,9 +27,9 @@ type TeamEntity struct {
 	MaxMember int
 	lock      sync.RWMutex
 
-	VariableSupport
+	vars.VariableSupport
 	EntityListGroup
-	EntityChildSupport
+	ChildSupport
 }
 
 func (o *TeamEntity) UID() string {
@@ -44,9 +45,9 @@ func (o *TeamEntity) EntityType() basis.EntityType {
 }
 
 func (o *TeamEntity) InitEntity() {
-	o.VariableSupport = *NewVariableSupport(o)
+	o.VariableSupport = *vars.NewVariableSupport(o)
 	o.EntityListGroup = *NewEntityListGroup(basis.EntityTeam)
-	o.EntityChildSupport = *NewEntityChildSupport()
+	o.ChildSupport = *NewChildEntitySupport()
 }
 
 func (o *TeamEntity) Leader() string {

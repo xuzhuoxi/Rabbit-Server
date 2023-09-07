@@ -11,8 +11,8 @@ import (
 	"sync"
 )
 
-func NewIEntityGroup(entityType basis.EntityType, userMap bool) basis.IEntityGroup {
-	if userMap {
+func NewIEntityGroup(entityType basis.EntityType, useMap bool) basis.IEntityGroup {
+	if useMap {
 		return NewEntityMapGroup(entityType)
 	} else {
 		return NewEntityListGroup(entityType)

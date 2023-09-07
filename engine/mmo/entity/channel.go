@@ -6,6 +6,7 @@ package entity
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 	"github.com/xuzhuoxi/infra-go/slicex"
 	"sync"
 )
@@ -25,7 +26,7 @@ type ChannelEntity struct {
 	ChanName   string
 	Subscriber []string
 	Lock       sync.RWMutex
-	VariableSupport
+	vars.VariableSupport
 }
 
 func (o *ChannelEntity) UID() string {

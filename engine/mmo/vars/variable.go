@@ -1,11 +1,12 @@
-// Package entity
+// Package vars
 // Created by xuzhuoxi
 // on 2019-03-03.
 // @author xuzhuoxi
-package entity
+package vars
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"sync"
@@ -59,8 +60,8 @@ func (o *VariableSupport) SetVar(kv string, value interface{}) {
 		_, ok = o.vars.Set(kv, value)
 	}
 	if ok {
-		o.DispatchEvent(basis.EventEntityVarChanged, o.currentTarget,
-			&basis.VarEventData{Entity: o.currentTarget, Key: kv, Value: value})
+		o.DispatchEvent(events.EventEntityVarChanged, o.currentTarget,
+			&events.VarEventData{Entity: o.currentTarget, Key: kv, Value: value})
 	}
 }
 
@@ -72,7 +73,7 @@ func (o *VariableSupport) SetVars(kv encodingx.IKeyValue) {
 	defer o.lock.Unlock()
 	diff, _ := o.vars.Merge(kv)
 	if nil != diff {
-		o.DispatchEvent(basis.EventEntityVarsChanged, o.currentTarget,
-			&basis.VarsEventData{Entity: o.currentTarget, Vars: diff})
+		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
+			&events.VarsEventData{Entity: o.currentTarget, Vars: diff})
 	}
 }

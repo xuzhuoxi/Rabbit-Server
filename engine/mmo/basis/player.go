@@ -4,13 +4,8 @@
 // @author xuzhuoxi
 package basis
 
-const (
-	EventUserJoinRoom  = "EventUserJoinRoom"
-	EventUserLeaveRoom = "EventUserLeaveRoom"
-)
-
-// IUserBlackList 黑名单
-type IUserBlackList interface {
+// IPlayerBlackList 黑名单
+type IPlayerBlackList interface {
 	// Blacks 通信黑名单，返回原始切片，如果要修改的，请先copy
 	Blacks() []string
 	// AddBlack 增加黑名单
@@ -21,8 +16,8 @@ type IUserBlackList interface {
 	OnBlack(targetId string) bool
 }
 
-// IUserWhiteList 黑名单
-type IUserWhiteList interface {
+// IPlayerWhiteList 黑名单
+type IPlayerWhiteList interface {
 	// Whites 通信白名单，返回原始切片，如果要修改的，请先copy
 	Whites() []string
 	// AddWhite 增加白名单
@@ -33,10 +28,10 @@ type IUserWhiteList interface {
 	OnWhite(targetId string) bool
 }
 
-// IUserSubscriber 参与者
-type IUserSubscriber interface {
-	IUserWhiteList
-	IUserBlackList
+// IPlayerSubscriber 参与者
+type IPlayerSubscriber interface {
+	IPlayerWhiteList
+	IPlayerBlackList
 	// OnActive 处于激活
 	OnActive(targetId string) bool
 }

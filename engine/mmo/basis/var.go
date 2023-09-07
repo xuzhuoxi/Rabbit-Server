@@ -1,17 +1,11 @@
 // Package basis
-// Created by xuzhuoxi
-// on 2019-03-14.
+// Create on 2023/9/7
 // @author xuzhuoxi
 package basis
 
 import (
 	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/eventx"
-)
-
-const (
-	VarKeyUserNick = "nick"
-	VarKeyUserPos  = "pos"
 )
 
 func NewVarSet() encodingx.IKeyValue {

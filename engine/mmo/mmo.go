@@ -19,7 +19,7 @@ type IMMOManager interface {
 	GetConfig() config.MMOConfig
 	BuildEnv(cfg *config.MMOConfig) error
 	GetEntityManager() manager.IEntityManager
-	GetUserManager() manager.IUserManager
+	GetPlayerManager() manager.IPlayerManager
 	GetBroadcastManager() manager.IBroadcastManager
 	GetVarManager() manager.IVariableManager
 }
@@ -37,7 +37,7 @@ func NewMMOManager() *MMOManager {
 type MMOManager struct {
 	entityMgr manager.IEntityManager
 	bcMgr     manager.IBroadcastManager
-	userMgr   manager.IUserManager
+	playerMgr manager.IPlayerManager
 	varMgr    manager.IVariableManager
 	cfg       *config.MMOConfig
 	logger    logx.ILogger
@@ -49,8 +49,8 @@ func (o *MMOManager) InitManager() {
 	}
 	o.entityMgr = manager.NewIEntityManager()
 	o.entityMgr.InitManager()
-	o.userMgr = manager.NewIUserManager(o.entityMgr)
-	o.userMgr.InitManager()
+	o.playerMgr = manager.NewIPlayerManager(o.entityMgr)
+	o.playerMgr.InitManager()
 	o.bcMgr = manager.NewIBroadcastManager(o.entityMgr)
 	o.bcMgr.InitManager()
 	o.varMgr = manager.NewIVariableManager(o.entityMgr, o.bcMgr)
@@ -61,7 +61,7 @@ func (o *MMOManager) InitManager() {
 func (o *MMOManager) DisposeManager() {
 	o.varMgr.DisposeManager()
 	o.bcMgr.DisposeManager()
-	o.userMgr.DisposeManager()
+	o.playerMgr.DisposeManager()
 	o.entityMgr.DisposeManager()
 }
 
@@ -85,8 +85,8 @@ func (o *MMOManager) GetEntityManager() manager.IEntityManager {
 	return o.entityMgr
 }
 
-func (o *MMOManager) GetUserManager() manager.IUserManager {
-	return o.userMgr
+func (o *MMOManager) GetPlayerManager() manager.IPlayerManager {
+	return o.playerMgr
 }
 
 func (o *MMOManager) GetBroadcastManager() manager.IBroadcastManager {

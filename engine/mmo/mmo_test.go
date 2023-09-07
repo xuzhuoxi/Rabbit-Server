@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/manager"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/filex"
@@ -33,8 +34,8 @@ func TestNewMMOManager(t *testing.T) {
 	if nil != err1 {
 		t.Fatal(err1)
 	}
-	eMgr.AddEventListener(basis.EventManagerVarChanged, onVarChanged)
-	eMgr.AddEventListener(basis.EventManagerVarsChanged, onVarsChanged)
+	eMgr.AddEventListener(events.EventEntityVarChanged, onVarChanged)
+	eMgr.AddEventListener(events.EventEntityVarsChanged, onVarsChanged)
 	eMgr.ForEachRoom(func(room basis.IRoomEntity) {
 		go setVar(room, time.Duration(rand.Int63n(5)))
 		return
@@ -43,12 +44,12 @@ func TestNewMMOManager(t *testing.T) {
 }
 
 func onVarChanged(evd *eventx.EventData) {
-	varData := evd.Data.(basis.VarEventData)
+	varData := evd.Data.(events.VarEventData)
 	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Key, varData.Value)
 }
 
 func onVarsChanged(evd *eventx.EventData) {
-	varData := evd.Data.(basis.VarsEventData)
+	varData := evd.Data.(events.VarsEventData)
 	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Vars.Len())
 }
 
