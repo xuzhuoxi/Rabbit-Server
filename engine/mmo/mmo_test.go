@@ -9,6 +9,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/manager"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/filex"
 	"github.com/xuzhuoxi/infra-go/osxu"
@@ -59,7 +60,7 @@ func setVar(entity basis.IEntity, interval time.Duration) {
 		if ran > 5 {
 			v.SetVar("temp", rand.Intn(1000))
 		} else {
-			vs := basis.NewVarSet()
+			vs := vars.NewVarSet()
 			vs.Set("temp1", rand.Intn(300))
 			vs.Set("temp2", rand.Intn(300))
 			v.SetVars(vs)

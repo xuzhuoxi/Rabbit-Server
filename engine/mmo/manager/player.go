@@ -58,7 +58,7 @@ func (o *PlayerManager) EnterRoomAuto(playerId string, roomId string, pos basis.
 	if _, exist := o.entityMgr.GetPlayer(playerId); exist {
 		return nil, basis.CodeMMOPlayerExist, errors.New("PlayerManager.EnterRoomAuto Error: Player " + playerId + " already exist. ")
 	}
-	vs := basis.NewVarSet()
+	vs := vars.NewVarSet()
 	vs.Set(vars.PlayerPos, pos)
 	player, rsCode, err = o.entityMgr.CreatePlayer(playerId, vs)
 	if nil != err {
