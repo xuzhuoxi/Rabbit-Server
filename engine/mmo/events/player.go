@@ -4,19 +4,21 @@
 package events
 
 const (
-	// EventPlayerBorn 玩家创建
-	EventPlayerBorn = "Manager.EventPlayerBorn"
+	// EventPlayerInit 玩家创建
+	// 事件数据： IPlayerEntity
+	EventPlayerInit = "MMO.EventPlayerInit"
 	// EventPlayerDestroy 玩家销毁
-	EventPlayerDestroy = "Manager.EventPlayerDestroy"
+	// 事件数据： IPlayerEntity
+	EventPlayerDestroy = "MMO.EventPlayerDestroy"
 )
 
 const (
 	// EventPlayerLeaveRoom 玩家离开房间
 	// 事件数据：*PlayerEventDataLeaveRoom
-	EventPlayerLeaveRoom = "Manager.EventPlayerLeaveRoom"
+	EventPlayerLeaveRoom = "MMO.EventPlayerLeaveRoom"
 	// EventPlayerEnterRoom 玩家进入房间
 	// 事件数据：IPlayerEntity
-	EventPlayerEnterRoom = "Manager.EventPlayerEnterRoom"
+	EventPlayerEnterRoom = "MMO.EventPlayerEnterRoom"
 )
 
 type PlayerEventDataLeaveRoom struct {

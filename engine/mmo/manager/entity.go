@@ -161,6 +161,7 @@ func (o *EntityManager) createRoom(roomId string, roomName string, tags []string
 	if nil != err {
 		return nil, rsCode, err
 	}
+	o.DispatchEvent(events.EventRoomInit, o, room)
 	o.addEntityEventListener(room)
 	return room, 0, nil
 }
@@ -177,6 +178,7 @@ func (o *EntityManager) CreatePlayer(playerId string, vars encodingx.IKeyValue) 
 	if nil != err {
 		return nil, rsCode, err
 	}
+	o.DispatchEvent(events.EventPlayerInit, o, player)
 	o.addEntityEventListener(player)
 	return player, 0, nil
 }
@@ -195,6 +197,7 @@ func (o *EntityManager) CreateTeam(playerId string, vars encodingx.IKeyValue) (t
 	if nil != err {
 		return nil, rsCode, err
 	}
+	o.DispatchEvent(events.EventTeamInit, o, team)
 	o.addEntityEventListener(team)
 	return team, 0, nil
 }
@@ -213,6 +216,7 @@ func (o *EntityManager) CreateTeamCorps(teamId string, vars encodingx.IKeyValue)
 	if nil != err {
 		return nil, rsCode, err
 	}
+	o.DispatchEvent(events.EventTeamCorpsInit, o, teamCorps)
 	o.addEntityEventListener(teamCorps)
 	return teamCorps, 0, nil
 }
@@ -230,6 +234,7 @@ func (o *EntityManager) CreateChannel(chanId string, chanName string, vars encod
 	if nil != err {
 		return nil, rsCode, err
 	}
+	o.DispatchEvent(events.EventChanInit, o, channel)
 	o.addEntityEventListener(channel)
 	return channel, 0, nil
 }
@@ -248,22 +253,37 @@ func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string)
 		o.roomLock.Lock()
 		defer o.roomLock.Unlock()
 		entity, rsCode, err = o.roomIndex.RemoveRoom(eId)
+		if nil != entity {
+			defer o.DispatchEvent(events.EventRoomDestroy, o, entity)
+		}
 	case basis.EntityPlayer:
 		o.playerLock.Lock()
 		defer o.playerLock.Unlock()
 		entity, rsCode, err = o.playerIndex.RemovePlayer(eId)
-	case basis.EntityTeamCorps:
-		o.teamCorpsLock.Lock()
-		defer o.teamCorpsLock.Unlock()
-		entity, rsCode, err = o.teamCorpsIndex.RemoveCorps(eId)
+		if nil != entity {
+			defer o.DispatchEvent(events.EventPlayerDestroy, o, entity)
+		}
 	case basis.EntityTeam:
 		o.teamLock.Lock()
 		defer o.teamLock.Unlock()
 		entity, rsCode, err = o.teamIndex.RemoveTeam(eId)
+		if nil != entity {
+			defer o.DispatchEvent(events.EventTeamDestroy, o, entity)
+		}
+	case basis.EntityTeamCorps:
+		o.teamCorpsLock.Lock()
+		defer o.teamCorpsLock.Unlock()
+		entity, rsCode, err = o.teamCorpsIndex.RemoveCorps(eId)
+		if nil != entity {
+			defer o.DispatchEvent(events.EventTeamCorpsDestroy, o, entity)
+		}
 	case basis.EntityChannel:
 		o.chanLock.Lock()
 		defer o.chanLock.Unlock()
 		entity, rsCode, err = o.chanIndex.RemoveChannel(eId)
+		if nil != entity {
+			defer o.DispatchEvent(events.EventChanDestroy, o, entity)
+		}
 	}
 	if nil != entity {
 		o.removeEntityEventListener(entity)
