@@ -15,7 +15,10 @@ func NewIPlayerEntity(playerId string) basis.IPlayerEntity {
 }
 
 func NewPlayerEntity(playerId string) *PlayerEntity {
-	return &PlayerEntity{Uid: playerId}
+	player := &PlayerEntity{Uid: playerId}
+	player.PlayerSubscriber = *NewPlayerSubscriber()
+	player.VariableSupport = *vars.NewVariableSupport(player)
+	return player
 }
 
 type PlayerEntity struct {

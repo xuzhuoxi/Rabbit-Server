@@ -12,14 +12,18 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 	"github.com/xuzhuoxi/infra-go/eventx"
+	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"sync"
 )
 
 type IPlayerManager interface {
 	basis.IManagerBase
 	eventx.IEventDispatcher
-	// EnterRoomAuto 进入房间，玩家实例不存在则进行创建
-	EnterRoomAuto(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, rsCode int32, err error)
+	// LinkTheWorld 进入MMO世界，玩家实例不存在则进行创建
+	LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, rsCode int32, err error)
+	// UnlinkTheWorld 离开MMO世界，移除玩家实例
+	UnlinkTheWorld(playerId string) (player basis.IPlayerEntity, rsCode int32, err error)
+
 	// EnterRoom 进入房间，要求玩家实例已经存在
 	EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (rsCode int32, err error)
 	// LeaveRoom 离开房间，要求玩家实例已经存在
@@ -52,11 +56,11 @@ func (o *PlayerManager) DisposeManager() {
 	return
 }
 
-func (o *PlayerManager) EnterRoomAuto(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, rsCode int32, err error) {
+func (o *PlayerManager) LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, rsCode int32, err error) {
 	o.transLock.Lock()
 	defer o.transLock.Unlock()
 	if _, exist := o.entityMgr.GetPlayer(playerId); exist {
-		return nil, basis.CodeMMOPlayerExist, errors.New("PlayerManager.EnterRoomAuto Error: Player " + playerId + " already exist. ")
+		return nil, basis.CodeMMOPlayerExist, errors.New("PlayerManager.LinkTheWorld Error: Player " + playerId + " already exist. ")
 	}
 	vs := vars.NewVarSet()
 	vs.Set(vars.PlayerPos, pos)
@@ -69,6 +73,18 @@ func (o *PlayerManager) EnterRoomAuto(playerId string, roomId string, pos basis.
 		return nil, rsCode, err
 	}
 	return player, 0, nil
+}
+
+func (o *PlayerManager) UnlinkTheWorld(playerId string) (player basis.IPlayerEntity, rsCode int32, err error) {
+	o.transLock.Lock()
+	defer o.transLock.Unlock()
+	playerIndex := o.entityMgr.PlayerIndex()
+	player, rsCode, err = playerIndex.RemovePlayer(playerId)
+	if rsCode == protox.CodeSuc {
+		o.leaveRoom(player, player.RoomId())
+		o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: player.RoomId(), PlayerId: player.UID()})
+	}
+	return
 }
 
 func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (rsCode int32, err error) {
@@ -120,11 +136,9 @@ func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId str
 		return code2, err2
 	}
 	player.ConfirmNextRoom(true)
-	oldRoomId := ""
 	if nil != oldRoom {
-		oldRoomId = oldRoom.UID()
+		o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoom.UID(), PlayerId: player.UID()})
 	}
-	o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoomId, PlayerId: player.UID()})
 	o.DispatchEvent(events.EventPlayerEnterRoom, o, player)
 	return 0, nil
 }

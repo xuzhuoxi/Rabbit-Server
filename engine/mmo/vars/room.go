@@ -3,4 +3,7 @@
 // @author xuzhuoxi
 package vars
 
-const ()
+const (
+	// RoomName 房间名称(string)
+	RoomName = "rn"
+)

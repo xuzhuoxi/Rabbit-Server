@@ -18,11 +18,16 @@ func NewIRoomEntity(roomId string, roomName string) basis.IRoomEntity {
 }
 
 func NewAOBRoomEntity(roomId string, roomName string) *AOBRoomEntity {
-	return &AOBRoomEntity{RoomEntity: *NewRoomEntity(roomId, roomName)}
+	room := &AOBRoomEntity{RoomEntity: *NewRoomEntity(roomId, roomName)}
+	return room
 }
 
 func NewRoomEntity(roomId string, roomName string) *RoomEntity {
-	return &RoomEntity{RoomId: roomId, RoomName: roomName, MaxMember: 0}
+	room := &RoomEntity{RoomId: roomId, RoomName: roomName, MaxMember: 0}
+	room.MaxMember = 100
+	room.ListEntityContainer = *NewListEntityContainer(room.MaxMember)
+	room.VariableSupport = *vars.NewVariableSupport(room)
+	return room
 }
 
 type RoomConfig struct {
