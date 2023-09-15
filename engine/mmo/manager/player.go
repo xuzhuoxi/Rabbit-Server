@@ -20,16 +20,16 @@ type IPlayerManager interface {
 	basis.IManagerBase
 	eventx.IEventDispatcher
 	// LinkTheWorld 进入MMO世界，玩家实例不存在则进行创建
-	LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, rsCode int32, err error)
+	LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, room basis.IRoomEntity, rsCode int32, err error)
 	// UnlinkTheWorld 离开MMO世界，移除玩家实例
 	UnlinkTheWorld(playerId string) (player basis.IPlayerEntity, rsCode int32, err error)
 
 	// EnterRoom 进入房间，要求玩家实例已经存在
-	EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (rsCode int32, err error)
+	EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error)
 	// LeaveRoom 离开房间，要求玩家实例已经存在
 	LeaveRoom(playerId string) (roomId string, rsCode int32, err error)
 	// Transfer 在世界转移，要求玩家实例已经存在
-	Transfer(playerId string, toRoomId string, pos basis.XYZ) (rsCode int32, err error)
+	Transfer(playerId string, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error)
 }
 
 func NewIPlayerManager(entityMgr IEntityManager) IPlayerManager {
@@ -56,23 +56,25 @@ func (o *PlayerManager) DisposeManager() {
 	return
 }
 
-func (o *PlayerManager) LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, rsCode int32, err error) {
+func (o *PlayerManager) LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, room basis.IRoomEntity, rsCode int32, err error) {
 	o.transLock.Lock()
 	defer o.transLock.Unlock()
 	if _, exist := o.entityMgr.GetPlayer(playerId); exist {
-		return nil, basis.CodeMMOPlayerExist, errors.New("PlayerManager.LinkTheWorld Error: Player " + playerId + " already exist. ")
+		return nil, nil, basis.CodeMMOPlayerExist, errors.New("PlayerManager.LinkTheWorld Error: Player " + playerId + " already exist. ")
 	}
 	vs := vars.NewVarSet()
-	vs.Set(vars.PlayerPos, pos)
+	vs.Set(vars.PlayerPosX, pos.X)
+	vs.Set(vars.PlayerPosY, pos.Y)
+	vs.Set(vars.PlayerPosZ, pos.Z)
 	player, rsCode, err = o.entityMgr.CreatePlayer(playerId, vs)
 	if nil != err {
-		return nil, rsCode, err
+		return nil, nil, rsCode, err
 	}
-	rsCode, err = o.forwardTransfer(player, roomId, pos)
+	room, rsCode, err = o.forwardTransfer(player, roomId, pos)
 	if nil != err {
-		return nil, rsCode, err
+		return nil, nil, rsCode, err
 	}
-	return player, 0, nil
+	return player, room, 0, nil
 }
 
 func (o *PlayerManager) UnlinkTheWorld(playerId string) (player basis.IPlayerEntity, rsCode int32, err error) {
@@ -87,16 +89,16 @@ func (o *PlayerManager) UnlinkTheWorld(playerId string) (player basis.IPlayerEnt
 	return
 }
 
-func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (rsCode int32, err error) {
+func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
 	if nil == player {
-		return basis.CodeMMOPlayerNotExist, errors.New("PlayerManager.EnterRoom Error: player is nil. ")
+		return nil, basis.CodeMMOPlayerNotExist, errors.New("PlayerManager.EnterRoom Error: player is nil. ")
 	}
 	o.transLock.Lock()
 	defer o.transLock.Unlock()
 	return o.forwardTransfer(player, roomId, pos)
 }
 
-func (o *PlayerManager) LeaveRoom(playerId string) (roomId string, rsCode int32, err error) {
+func (o *PlayerManager) LeaveRoom(playerId string) (nextRoomId string, rsCode int32, err error) {
 	o.transLock.Lock()
 	defer o.transLock.Unlock()
 	playerIndex := o.entityMgr.PlayerIndex()
@@ -107,50 +109,50 @@ func (o *PlayerManager) LeaveRoom(playerId string) (roomId string, rsCode int32,
 	return o.backwardTransfer(player, basis.ZeroXYZ)
 }
 
-func (o *PlayerManager) Transfer(playerId string, toRoomId string, pos basis.XYZ) (rsCode int32, err error) {
+func (o *PlayerManager) Transfer(playerId string, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
 	o.transLock.Lock()
 	defer o.transLock.Unlock()
 	playerIndex := o.entityMgr.PlayerIndex()
 	player, ok := playerIndex.GetPlayer(playerId)
 	if !ok {
-		return basis.CodeMMOPlayerNotExist, errors.New(fmt.Sprintf("Transfer Error: player(%s) does not exist", playerId))
+		return nil, basis.CodeMMOPlayerNotExist, errors.New(fmt.Sprintf("Transfer Error: player(%s) does not exist", playerId))
 	}
 	return o.forwardTransfer(player, toRoomId, pos)
 }
 
-func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId string, pos basis.XYZ) (rsCode int32, err error) {
-	room, ok := o.getRoom(toRoomId)
+func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
+	room1, ok := o.getRoom(toRoomId)
 	if !ok {
-		return basis.CodeMMORoomNotExist, errors.New("Room is not exist:" + toRoomId)
+		return nil, basis.CodeMMORoomNotExist, errors.New("Room is not exist:" + toRoomId)
 	}
-	if room.ContainsById(player.UID()) {
+	if room1.ContainsById(player.UID()) {
 		return
 	}
 	oldRoom := o.leaveRoom(player, toRoomId)
-	code2, err2 := o.forwardToRoom(room, player, pos)
+	code2, err2 := o.forwardToRoom(room1, player, pos)
 	if err2 != nil {
 		if oldRoom != nil {
 			oldRoom.UndoRemove(player)
 		}
 		player.ConfirmNextRoom(false)
-		return code2, err2
+		return nil, code2, err2
 	}
 	player.ConfirmNextRoom(true)
 	if nil != oldRoom {
 		o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoom.UID(), PlayerId: player.UID()})
 	}
 	o.DispatchEvent(events.EventPlayerEnterRoom, o, player)
-	return 0, nil
+	return room1, 0, nil
 }
 
-func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.XYZ) (roomId string, rsCode int32, err error) {
+func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.XYZ) (nextRoomId string, rsCode int32, err error) {
 	oldRoomId := player.RoomId()
-	roomId, _ = player.GetPrevRoomId()
-	room, ok := o.getRoom(roomId)
+	nextRoomId, _ = player.GetPrevRoomId()
+	room, ok := o.getRoom(nextRoomId)
 	if !ok {
 		return "", basis.CodeMMORoomNotExist, errors.New("Prev Room is not exist! ")
 	}
-	oldRoom := o.leaveRoom(player, roomId)
+	oldRoom := o.leaveRoom(player, nextRoomId)
 	code2, err2 := o.backwardToRoom(room, player, pos)
 	if err2 != nil {
 		if oldRoom != nil {
@@ -161,7 +163,7 @@ func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.X
 	player.BackToPrevRoom()
 	o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoomId, PlayerId: player.UID()})
 	o.DispatchEvent(events.EventPlayerEnterRoom, o, player)
-	return roomId, 0, nil
+	return nextRoomId, 0, nil
 }
 
 func (o *PlayerManager) forwardToRoom(room basis.IRoomEntity, player basis.IPlayerEntity, pos basis.XYZ) (rsCode int32, err error) {

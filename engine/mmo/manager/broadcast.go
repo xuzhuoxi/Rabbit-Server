@@ -19,7 +19,7 @@ type IBroadcastManager interface {
 	// 以下为基础方法------
 
 	// SetNearDistance 设置附近值
-	SetNearDistance(distance float64)
+	SetNearDistance(distance int32)
 
 	// 以下为广播方法
 
@@ -74,7 +74,7 @@ func NewIBroadcastManager(entityMgr IEntityManager) IBroadcastManager {
 }
 
 func NewBroadcastManager(entityMgr IEntityManager) *BroadcastManager {
-	return &BroadcastManager{entityMgr: entityMgr, distance: math.MaxFloat64}
+	return &BroadcastManager{entityMgr: entityMgr, distance: math.MaxInt32}
 }
 
 //----------------------------------
@@ -82,7 +82,7 @@ func NewBroadcastManager(entityMgr IEntityManager) *BroadcastManager {
 type BroadcastManager struct {
 	entityMgr IEntityManager
 	lock      sync.RWMutex
-	distance  float64
+	distance  int32
 }
 
 func (o *BroadcastManager) InitManager() {
@@ -93,7 +93,7 @@ func (o *BroadcastManager) DisposeManager() {
 	return
 }
 
-func (o *BroadcastManager) SetNearDistance(distance float64) {
+func (o *BroadcastManager) SetNearDistance(distance int32) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	o.distance = distance

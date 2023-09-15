@@ -8,8 +8,12 @@ const (
 	PlayerNick = "nick"
 	// PlayerHP 耐久(uint32)
 	PlayerHP = "hp"
-	// PlayerPos 位置(XYZ)
-	PlayerPos = "pos"
+	// PlayerPosX X位置 int32
+	PlayerPosX = "x"
+	// PlayerPosY Y位置 int32
+	PlayerPosY = "y"
+	// PlayerPosZ Z位置 int32
+	PlayerPosZ = "z"
 	// PlayerDirection 面向(uint8)(8方向)
 	PlayerDirection = "dir"
 	// PlayerAction 动作(uint32)

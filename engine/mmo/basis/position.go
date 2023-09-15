@@ -10,14 +10,14 @@ var (
 )
 
 type XY struct {
-	X float64
-	Y float64
+	X int32
+	Y int32
 }
 
 type XYZ struct {
-	X float64
-	Y float64
-	Z float64
+	X int32
+	Y int32
+	Z int32
 }
 
 func (xyz XYZ) XY() XY {
@@ -26,7 +26,7 @@ func (xyz XYZ) XY() XY {
 
 // NearXY 判断两点是否相近
 // 用于转发附近消息
-func NearXY(pos1 XY, pos2 XY, distance float64) bool {
+func NearXY(pos1 XY, pos2 XY, distance int32) bool {
 	x12 := pos1.X - pos2.X
 	y12 := pos1.Y - pos2.Y
 	return (x12*x12 + y12*y12) <= distance*distance
@@ -34,7 +34,7 @@ func NearXY(pos1 XY, pos2 XY, distance float64) bool {
 
 // NearXYZ 判断两点是否相近
 // 用于转发附近消息
-func NearXYZ(pos1 XYZ, pos2 XYZ, distance float64) bool {
+func NearXYZ(pos1 XYZ, pos2 XYZ, distance int32) bool {
 	x12 := pos1.X - pos2.X
 	y12 := pos1.Y - pos2.Y
 	if 0 == pos1.Z && 0 == pos2.Z {

@@ -22,6 +22,8 @@ type IVariableSupport interface {
 	SetVar(kv string, value interface{})
 	// SetVars 批量设置变量
 	SetVars(kv encodingx.IKeyValue)
+	// SetArrayVars 批量设置变量
+	SetArrayVars(keys []string, vals []interface{})
 }
 
 type IVarSet interface {

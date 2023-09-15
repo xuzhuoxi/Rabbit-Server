@@ -127,12 +127,14 @@ type IRoomEntity interface {
 	IEntityContainer
 	IVariableSupport
 	ITagsSupport
+	Players() []IPlayerEntity
 }
 
 // ITeamEntity 队伍实体
 type ITeamEntity interface {
 	IEntity
 	IInitEntity
+	ITeamControl
 	IVariableSupport
 }
 

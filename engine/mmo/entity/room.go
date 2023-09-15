@@ -72,3 +72,15 @@ func (o *RoomEntity) InitEntity() {
 	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
 	o.VariableSupport = *vars.NewVariableSupport(o)
 }
+
+func (o *RoomEntity) Players() []basis.IPlayerEntity {
+	num := o.ListEntityContainer.NumChildren()
+	if num == 0 {
+		return nil
+	}
+	rs := make([]basis.IPlayerEntity, 0, num)
+	o.ListEntityContainer.ForEachChildByType(basis.EntityPlayer, func(child basis.IEntity) {
+		rs = append(rs, child.(basis.IPlayerEntity))
+	}, false)
+	return rs
+}

@@ -63,15 +63,25 @@ func (o *PlayerEntity) NickName() string {
 }
 
 func (o *PlayerEntity) Position() (pos basis.XYZ) {
-	val, ok := o.GetVar(vars.PlayerPos)
-	if !ok {
-		return
+	x, okX := o.GetVar(vars.PlayerPosX)
+	if !okX {
+		x = 0
 	}
-	return val.(basis.XYZ)
+	y, okY := o.GetVar(vars.PlayerPosY)
+	if !okY {
+		y = 0
+	}
+	z, okZ := o.GetVar(vars.PlayerPosZ)
+	if !okZ {
+		z = 0
+	}
+	return basis.XYZ{X: x.(int32), Y: y.(int32), Z: z.(int32)}
 }
 
 func (o *PlayerEntity) SetPosition(pos basis.XYZ) {
-	o.SetVar(vars.PlayerPos, pos)
+	o.SetVar(vars.PlayerPosX, pos.X)
+	o.SetVar(vars.PlayerPosY, pos.Y)
+	o.SetVar(vars.PlayerPosZ, pos.Z)
 }
 
 func (o *PlayerEntity) RoomId() string {

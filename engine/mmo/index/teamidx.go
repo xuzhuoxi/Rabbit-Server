@@ -51,7 +51,7 @@ func (o *TeamIndex) AddTeam(team basis.ITeamEntity) (rsCode int32, err error) {
 func (o *TeamIndex) RemoveTeam(teamId string) (team basis.ITeamEntity, rsCode int32, err error) {
 	c, _, err1 := o.EntityIndex.Remove(teamId)
 	if nil != c {
-		return c.(basis.IRoomEntity), 0, nil
+		return c.(basis.ITeamEntity), 0, nil
 	}
 	return nil, basis.CodeMMOTeamNotExist, err1
 }

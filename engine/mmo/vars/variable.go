@@ -86,6 +86,19 @@ func (o *VariableSupport) SetVars(kv encodingx.IKeyValue) {
 	}
 }
 
+func (o *VariableSupport) SetArrayVars(keys []string, vals []interface{}) {
+	if len(keys) == 0 || len(keys) != len(vals) {
+		return
+	}
+	o.lock.Lock()
+	defer o.lock.Unlock()
+	diff, _ := o.vars.MergeArray(keys, vals)
+	if nil != diff {
+		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
+			&events.VarsEventData{Entity: o.currentTarget, Vars: diff})
+	}
+}
+
 type VarSet struct {
 	intSet    map[string]int32
 	stringSet map[string]string
