@@ -4,22 +4,24 @@
 package vars
 
 const (
-	// PlayerNick 昵称(string)
-	PlayerNick = "nick"
-	// PlayerHP 耐久(uint32)
-	PlayerHP = "hp"
-	// PlayerPosX X位置 int32
-	PlayerPosX = "x"
-	// PlayerPosY Y位置 int32
-	PlayerPosY = "y"
-	// PlayerPosZ Z位置 int32
-	PlayerPosZ = "z"
+	// PlayerPosX X位置(int32)
+	PlayerPosX string = "x"
+	// PlayerPosY Y位置(int32)
+	PlayerPosY string = "y"
+	// PlayerPosZ Z位置(int32)
+	PlayerPosZ string = "z"
 	// PlayerDirection 面向(uint8)(8方向)
-	PlayerDirection = "dir"
+	PlayerDirection string = "d"
 	// PlayerAction 动作(uint32)
-	PlayerAction = "act"
-	// PlayerTeam teamId(string
-	PlayerTeam = "team"
-	// PlayerTeamCorps corpsId(string
-	PlayerTeamCorps = "corps"
+	PlayerAction string = "a"
+	// PlayerHp 耐久(uint32)
+	PlayerHp string = "hp"
+	// PlayerBuff Buff(uint32), 每一个位代表一个buff
+	PlayerBuff string = "pbf"
+	// PlayerNick 昵称(string)
+	PlayerNick string = "pn"
+	// PlayerTeam 队伍id(string)
+	PlayerTeam string = "pt"
+	// PlayerTeamCorps 军团Id(string)
+	PlayerTeamCorps string = "pc"
 )
