@@ -28,9 +28,9 @@ const (
 	CodeMMOChanNotExist int32 = -111
 	// CodeMMOChanCapLimit 频道容量上限
 	CodeMMOChanCapLimit int32 = -112
-	// CodeMMOPlayerExist 用户不存在
+	// CodeMMOPlayerExist 用户已存在
 	CodeMMOPlayerExist int32 = -113
-	// CodeMMOPlayerNotExist 用户已存在
+	// CodeMMOPlayerNotExist 用户不存在
 	CodeMMOPlayerNotExist int32 = -114
 	// CodeMMOIndexType 索引类型不匹配
 	CodeMMOIndexType int32 = -200

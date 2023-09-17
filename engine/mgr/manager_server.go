@@ -19,6 +19,8 @@ type IRabbitServerManager interface {
 	StartServer(id string)
 	StopServer(id string)
 	SaveServer(id string)
+
+	ForEachServer(reverse bool, each func(index int, server server.IRabbitServer))
 }
 
 type serverMgr struct {
@@ -84,5 +86,17 @@ func (o *serverMgr) StopServers() {
 func (o *serverMgr) SaveServers() {
 	for _, s := range o.Servers {
 		s.Save()
+	}
+}
+
+func (o *serverMgr) ForEachServer(reverse bool, each func(index int, server server.IRabbitServer)) {
+	if reverse {
+		for index := len(o.Servers) - 1; index >= 0; index-- {
+			each(index, o.Servers[index])
+		}
+	} else {
+		for index := range o.Servers {
+			each(index, o.Servers[index])
+		}
 	}
 }

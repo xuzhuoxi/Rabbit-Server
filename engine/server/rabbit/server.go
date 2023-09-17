@@ -131,20 +131,24 @@ func (o *RabbitServer) Save() {
 }
 
 func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
+	evd.StopImmediatePropagation()
 	o.GetLogger().Infoln("SockServer Start...")
 	if o.Config.ToHome.Disable {
 		return
 	}
 	o.doLink()
 	go o.rateUpdate()
+	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
 
 func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
+	evd.StopImmediatePropagation()
 	o.GetLogger().Infoln("SockServer Stop...")
 	if o.Config.ToHome.Disable {
 		return
 	}
 	o.doUnlink()
+	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
 
 func (o *RabbitServer) rateUpdate() {
@@ -167,16 +171,19 @@ func (o *RabbitServer) onUpdateResp(resp *http.Response, body *[]byte) {
 }
 
 func (o *RabbitServer) onConnOpened(evd *eventx.EventData) {
+	evd.StopImmediatePropagation()
 	o.StatusDetail.AddLinkCount()
 	address := evd.Data.(string)
 	o.GetLogger().Infoln("Client Connection Open:", address)
+	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
 
 func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
+	evd.StopImmediatePropagation()
 	address := evd.Data.(string)
-	RabbitAddressProxy.RemoveByAddress(address)
 	o.GetLogger().Infoln("Client Connection Close:", address)
 	o.StatusDetail.RemoveLinkCount()
+	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
 
 // -----------------------------------
