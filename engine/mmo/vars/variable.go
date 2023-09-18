@@ -16,6 +16,17 @@ import (
 	"sync"
 )
 
+var (
+	DefaultVarSetPool encodingx.IPoolKeyValue
+)
+
+func init() {
+	DefaultVarSetPool = encodingx.NewPoolKeyValue()
+	DefaultVarSetPool.Register(NewVarSet)
+}
+
+// ---------------------------------------------
+
 func NewIVariableSupport(currentTarget basis.IEntity) basis.IVariableSupport {
 	return NewVariableSupport(currentTarget)
 }

@@ -60,10 +60,11 @@ func setVar(entity basis.IEntity, interval time.Duration) {
 		if ran > 5 {
 			v.SetVar("temp", rand.Intn(1000))
 		} else {
-			vs := vars.NewVarSet()
+			vs := vars.DefaultVarSetPool.GetInstance()
 			vs.Set("temp1", rand.Intn(300))
 			vs.Set("temp2", rand.Intn(300))
 			v.SetVars(vs)
+			vars.DefaultVarSetPool.Recycle(vs)
 		}
 	}
 	time.Sleep(interval + time.Duration(rand.Int63n(int64(time.Second)*5)))

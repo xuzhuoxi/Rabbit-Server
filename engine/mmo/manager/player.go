@@ -62,7 +62,8 @@ func (o *PlayerManager) LinkTheWorld(playerId string, roomId string, pos basis.X
 	if _, exist := o.entityMgr.GetPlayer(playerId); exist {
 		return nil, nil, basis.CodeMMOPlayerExist, errors.New("PlayerManager.LinkTheWorld Error: Player " + playerId + " already exist. ")
 	}
-	vs := vars.NewVarSet()
+	vs := vars.DefaultVarSetPool.GetInstance()
+	defer vars.DefaultVarSetPool.Recycle(vs)
 	vs.Set(vars.PlayerPosX, pos.X)
 	vs.Set(vars.PlayerPosY, pos.Y)
 	vs.Set(vars.PlayerPosZ, pos.Z)
