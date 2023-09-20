@@ -82,7 +82,6 @@ func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player bas
 			return nil, nil, rsCode, err
 		}
 	}
-	fmt.Println("Pos:", pos)
 	room, rsCode, err = o.forwardTransfer(player, roomId, pos)
 	if nil != err {
 		return nil, nil, rsCode, err
