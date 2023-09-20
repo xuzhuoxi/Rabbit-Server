@@ -4,10 +4,21 @@
 // @author xuzhuoxi
 package basis
 
+import "math/rand"
+
 var (
 	ZeroXY  = XY{}
 	ZeroXYZ = XYZ{}
 )
+
+func RandomXYZ() XYZ {
+	rs := XYZ{
+		X: rand.Int31n(200) - 100,
+		Y: 0,
+		Z: rand.Int31n(200) - 100,
+	}
+	return rs
+}
 
 type XY struct {
 	X int32

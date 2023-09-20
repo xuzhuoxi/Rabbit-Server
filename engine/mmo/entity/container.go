@@ -386,8 +386,7 @@ func (o *ListEntityContainer) ForEachChildByType(entityType basis.EntityType, ea
 			if entity.EntityType() != entityType {
 				continue
 			}
-			child := entity
-			each(child)
+			each(entity)
 			if container, ok := entity.(basis.IEntityContainer); ok {
 				container.ForEachChildByType(entityType, each, true)
 			}
@@ -397,8 +396,7 @@ func (o *ListEntityContainer) ForEachChildByType(entityType basis.EntityType, ea
 			if entity.EntityType() != entityType {
 				continue
 			}
-			child := entity
-			each(child)
+			each(entity)
 		}
 	}
 }

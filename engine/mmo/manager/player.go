@@ -20,12 +20,12 @@ type IPlayerManager interface {
 	basis.IManagerBase
 	eventx.IEventDispatcher
 	// LinkTheWorld 进入MMO世界，玩家实例不存在则进行创建
-	LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, room basis.IRoomEntity, rsCode int32, err error)
+	LinkTheWorld(playerId string, roomId string) (player basis.IPlayerEntity, room basis.IRoomEntity, rsCode int32, err error)
 	// UnlinkTheWorld 离开MMO世界，移除玩家实例
 	UnlinkTheWorld(playerId string) (player basis.IPlayerEntity, rsCode int32, err error)
 
 	// EnterRoom 进入房间，要求玩家实例已经存在
-	EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error)
+	EnterRoom(player basis.IPlayerEntity, roomId string) (room basis.IRoomEntity, rsCode int32, err error)
 	// LeaveRoom 离开房间，要求玩家实例已经存在
 	LeaveRoom(playerId string) (roomId string, rsCode int32, err error)
 	// Transfer 在世界转移，要求玩家实例已经存在
@@ -56,21 +56,33 @@ func (o *PlayerManager) DisposeManager() {
 	return
 }
 
-func (o *PlayerManager) LinkTheWorld(playerId string, roomId string, pos basis.XYZ) (player basis.IPlayerEntity, room basis.IRoomEntity, rsCode int32, err error) {
+func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player basis.IPlayerEntity, room basis.IRoomEntity, rsCode int32, err error) {
 	o.transLock.Lock()
 	defer o.transLock.Unlock()
-	if _, exist := o.entityMgr.GetPlayer(playerId); exist {
-		return nil, nil, basis.CodeMMOPlayerExist, errors.New("PlayerManager.LinkTheWorld Error: Player " + playerId + " already exist. ")
+	var pos basis.XYZ
+	if player1, exist := o.entityMgr.GetPlayer(playerId); exist {
+		if roomId == player1.RoomId() {
+			room1, ok1 := o.entityMgr.GetRoom(roomId)
+			if !ok1 {
+				return nil, nil, basis.CodeMMORoomNotExist, nil
+			}
+			return player1, room1, protox.CodeSuc, nil
+		}
+		player = player1
+		pos = player1.Position()
+	} else {
+		pos = basis.RandomXYZ()
+		vs := vars.DefaultVarSetPool.GetInstance()
+		defer vars.DefaultVarSetPool.Recycle(vs)
+		vs.Set(vars.PlayerPosX, pos.X)
+		vs.Set(vars.PlayerPosY, pos.Y)
+		vs.Set(vars.PlayerPosZ, pos.Z)
+		player, rsCode, err = o.entityMgr.CreatePlayer(playerId, vs)
+		if nil != err {
+			return nil, nil, rsCode, err
+		}
 	}
-	vs := vars.DefaultVarSetPool.GetInstance()
-	defer vars.DefaultVarSetPool.Recycle(vs)
-	vs.Set(vars.PlayerPosX, pos.X)
-	vs.Set(vars.PlayerPosY, pos.Y)
-	vs.Set(vars.PlayerPosZ, pos.Z)
-	player, rsCode, err = o.entityMgr.CreatePlayer(playerId, vs)
-	if nil != err {
-		return nil, nil, rsCode, err
-	}
+	fmt.Println("Pos:", pos)
 	room, rsCode, err = o.forwardTransfer(player, roomId, pos)
 	if nil != err {
 		return nil, nil, rsCode, err
@@ -90,12 +102,13 @@ func (o *PlayerManager) UnlinkTheWorld(playerId string) (player basis.IPlayerEnt
 	return
 }
 
-func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
+func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string) (room basis.IRoomEntity, rsCode int32, err error) {
 	if nil == player {
 		return nil, basis.CodeMMOPlayerNotExist, errors.New("PlayerManager.EnterRoom Error: player is nil. ")
 	}
 	o.transLock.Lock()
 	defer o.transLock.Unlock()
+	pos := basis.RandomXYZ()
 	return o.forwardTransfer(player, roomId, pos)
 }
 
