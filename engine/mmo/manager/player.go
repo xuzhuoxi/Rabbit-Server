@@ -57,8 +57,6 @@ func (o *PlayerManager) DisposeManager() {
 }
 
 func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player basis.IPlayerEntity, room basis.IRoomEntity, rsCode int32, err error) {
-	o.transLock.Lock()
-	defer o.transLock.Unlock()
 	var pos basis.XYZ
 	if player1, exist := o.entityMgr.GetPlayer(playerId); exist {
 		if roomId == player1.RoomId() {
@@ -90,8 +88,6 @@ func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player bas
 }
 
 func (o *PlayerManager) UnlinkTheWorld(playerId string) (player basis.IPlayerEntity, rsCode int32, err error) {
-	o.transLock.Lock()
-	defer o.transLock.Unlock()
 	playerIndex := o.entityMgr.PlayerIndex()
 	player, rsCode, err = playerIndex.RemovePlayer(playerId)
 	if rsCode == protox.CodeSuc {
@@ -105,15 +101,11 @@ func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string) (ro
 	if nil == player {
 		return nil, basis.CodeMMOPlayerNotExist, errors.New("PlayerManager.EnterRoom Error: player is nil. ")
 	}
-	o.transLock.Lock()
-	defer o.transLock.Unlock()
 	pos := basis.RandomXYZ()
 	return o.forwardTransfer(player, roomId, pos)
 }
 
 func (o *PlayerManager) LeaveRoom(playerId string) (nextRoomId string, rsCode int32, err error) {
-	o.transLock.Lock()
-	defer o.transLock.Unlock()
 	playerIndex := o.entityMgr.PlayerIndex()
 	player, ok := playerIndex.GetPlayer(playerId)
 	if !ok {
@@ -123,8 +115,6 @@ func (o *PlayerManager) LeaveRoom(playerId string) (nextRoomId string, rsCode in
 }
 
 func (o *PlayerManager) Transfer(playerId string, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
-	o.transLock.Lock()
-	defer o.transLock.Unlock()
 	playerIndex := o.entityMgr.PlayerIndex()
 	player, ok := playerIndex.GetPlayer(playerId)
 	if !ok {
@@ -134,8 +124,10 @@ func (o *PlayerManager) Transfer(playerId string, toRoomId string, pos basis.XYZ
 }
 
 func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
+	o.transLock.Lock()
 	room1, ok := o.getRoom(toRoomId)
 	if !ok {
+		o.transLock.Unlock()
 		return nil, basis.CodeMMORoomNotExist, errors.New("Room is not exist:" + toRoomId)
 	}
 	if room1.ContainsById(player.UID()) {
@@ -148,9 +140,11 @@ func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId str
 			oldRoom.UndoRemove(player)
 		}
 		player.ConfirmNextRoom(false)
+		o.transLock.Unlock()
 		return nil, code2, err2
 	}
 	player.ConfirmNextRoom(true)
+	o.transLock.Unlock()
 	if nil != oldRoom {
 		o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoom.UID(), PlayerId: player.UID()})
 	}
@@ -159,10 +153,12 @@ func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId str
 }
 
 func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.XYZ) (nextRoomId string, rsCode int32, err error) {
+	o.transLock.Lock()
 	oldRoomId := player.RoomId()
 	nextRoomId, _ = player.GetPrevRoomId()
 	room, ok := o.getRoom(nextRoomId)
 	if !ok {
+		o.transLock.Unlock()
 		return "", basis.CodeMMORoomNotExist, errors.New("Prev Room is not exist! ")
 	}
 	oldRoom := o.leaveRoom(player, nextRoomId)
@@ -171,9 +167,11 @@ func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.X
 		if oldRoom != nil {
 			oldRoom.UndoRemove(player)
 		}
+		o.transLock.Unlock()
 		return "", code2, err2
 	}
 	player.BackToPrevRoom()
+	o.transLock.Unlock()
 	o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoomId, PlayerId: player.UID()})
 	o.DispatchEvent(events.EventPlayerEnterRoom, o, player)
 	return nextRoomId, 0, nil
@@ -185,7 +183,7 @@ func (o *PlayerManager) forwardToRoom(room basis.IRoomEntity, player basis.IPlay
 		return basis.CodeMMORoomCapLimit, err1
 	}
 	player.SetNextRoom(room.UID())
-	player.SetPosition(pos)
+	player.SetPosition(pos, false)
 	return
 }
 func (o *PlayerManager) backwardToRoom(room basis.IRoomEntity, player basis.IPlayerEntity, pos basis.XYZ) (rsCode int32, err error) {
@@ -193,7 +191,7 @@ func (o *PlayerManager) backwardToRoom(room basis.IRoomEntity, player basis.IPla
 	if errNum == 3 {
 		return basis.CodeMMORoomCapLimit, err1
 	}
-	player.SetPosition(pos)
+	player.SetPosition(pos, false)
 	return
 }
 

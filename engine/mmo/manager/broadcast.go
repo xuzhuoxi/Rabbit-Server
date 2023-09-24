@@ -9,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
-	"math"
 	"sync"
 )
 
@@ -74,7 +73,7 @@ func NewIBroadcastManager(entityMgr IEntityManager) IBroadcastManager {
 }
 
 func NewBroadcastManager(entityMgr IEntityManager) *BroadcastManager {
-	return &BroadcastManager{entityMgr: entityMgr, distance: math.MaxInt32}
+	return &BroadcastManager{entityMgr: entityMgr, distance: 0}
 }
 
 //----------------------------------
@@ -304,7 +303,7 @@ func (o *BroadcastManager) sourceToChild(sourcePlayer basis.IPlayerEntity, child
 }
 
 func checkSame(source basis.IPlayerEntity, target basis.IEntity) bool {
-	return source.UID() == target.UID()
+	return source.UID() == target.UID() && source.EntityType() == target.EntityType()
 }
 
 func checkBlack(source basis.IPlayerEntity, target basis.IEntity) bool {

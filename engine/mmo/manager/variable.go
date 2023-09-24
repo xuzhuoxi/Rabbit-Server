@@ -43,7 +43,7 @@ func (o *VariableManager) SetVar(eType basis.EntityType, eId string, key string,
 		return
 	}
 	if ve, ok2 := entity.(basis.IVariableSupport); ok2 {
-		ve.SetVar(key, value)
+		ve.SetVar(key, value, true)
 		return
 	}
 	o.GetLogger().Warnln("Entity does not support variable settings: ", eType, eId)
@@ -56,7 +56,7 @@ func (o *VariableManager) SetVars(eType basis.EntityType, eId string, vars encod
 		return
 	}
 	if ve, ok2 := entity.(basis.IVariableSupport); ok2 {
-		ve.SetVars(vars)
+		ve.SetVars(vars, true)
 		return
 	}
 	o.GetLogger().Warnln("Entity does not support variable settings: ", eType, eId)
@@ -86,7 +86,7 @@ func (o *VariableManager) onEntityVar(evd *eventx.EventData) {
 func (o *VariableManager) onEntityVars(evd *eventx.EventData) {
 	data := evd.Data.(*events.VarsEventData)
 	eventEntity := data.Entity
-	varSet := data.Vars
+	varSet := data.VarKeys
 	logger := o.GetLogger()
 	if nil != logger {
 		logger.Traceln("onEntityVars", eventEntity.UID(), varSet)

@@ -104,18 +104,14 @@ func NewEntityManager() IEntityManager {
 //----------------------------
 
 type EntityManager struct {
-	roomIndex      basis.IRoomIndex // 协程安全
-	roomLock       sync.RWMutex
-	playerIndex    basis.IPlayerIndex // 协程安全
-	playerLock     sync.RWMutex
-	teamIndex      basis.ITeamIndex // 协程安全
-	teamLock       sync.RWMutex
+	roomIndex      basis.IRoomIndex      // 协程安全
+	playerIndex    basis.IPlayerIndex    // 协程安全
+	teamIndex      basis.ITeamIndex      // 协程安全
 	teamCorpsIndex basis.ITeamCorpsIndex // 协程安全
-	teamCorpsLock  sync.RWMutex
-	chanIndex      basis.IChannelIndex // 协程安全
-	chanLock       sync.RWMutex
+	chanIndex      basis.IChannelIndex   // 协程安全
 
-	logger logx.ILogger
+	buildLock sync.RWMutex
+	logger    logx.ILogger
 	eventx.EventDispatcher
 }
 
@@ -132,10 +128,10 @@ func (o *EntityManager) SetLogger(logger logx.ILogger) {
 }
 
 func (o *EntityManager) BuildEnv(cfg *config.MMOConfig) error {
-	o.roomLock.Lock()
-	defer o.roomLock.Unlock()
+	o.buildLock.Lock()
+	defer o.buildLock.Unlock()
 	for _, room := range cfg.Entities.Rooms {
-		_, _, err1 := o.createRoom(room.Id, room.Name, room.Tags, nil)
+		_, _, err1 := o.CreateRoom(room.Id, room.Name, room.Tags, nil)
 		if nil != err1 {
 			return err1
 		}
@@ -144,98 +140,84 @@ func (o *EntityManager) BuildEnv(cfg *config.MMOConfig) error {
 }
 
 func (o *EntityManager) CreateRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error) {
-	o.roomLock.Lock()
-	defer o.roomLock.Unlock()
-	return o.createRoom(roomId, roomName, tags, vars)
-}
-
-func (o *EntityManager) createRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error) {
 	if o.roomIndex.CheckRoom(roomId) {
 		return nil, basis.CodeMMORoomExist, errors.New("EntityManager.CreateRoomAt Error: RoomId(" + roomId + ") Duplicate")
 	}
 	room = entity.NewIRoomEntity(roomId, roomName)
 	room.InitEntity()
-	room.SetVars(vars)
+	room.SetVars(vars, false)
 	room.SetTags(tags)
 	rsCode, err = o.roomIndex.AddRoom(room)
 	if nil != err {
 		return nil, rsCode, err
 	}
-	o.DispatchEvent(events.EventRoomInit, o, room)
 	o.addEntityEventListener(room)
+	o.DispatchEvent(events.EventRoomInit, o, room)
 	return room, 0, nil
 }
 
 func (o *EntityManager) CreatePlayer(playerId string, vars encodingx.IKeyValue) (player basis.IPlayerEntity, rsCode int32, err error) {
-	o.playerLock.Lock()
-	defer o.playerLock.Unlock()
 	if playerId == "" || o.playerIndex.CheckPlayer(playerId) {
 		return nil, basis.CodeMMOPlayerExist, errors.New(fmt.Sprintf("EntityManager.CreatePlayer Error: Player(%s) is nil or exist", playerId))
 	}
 	player = entity.NewIPlayerEntity(playerId)
-	player.SetVars(vars)
+	player.SetVars(vars, false)
 	rsCode, err = o.playerIndex.AddPlayer(player)
 	if nil != err {
 		return nil, rsCode, err
 	}
-	o.DispatchEvent(events.EventPlayerInit, o, player)
 	o.addEntityEventListener(player)
+	o.DispatchEvent(events.EventPlayerInit, o, player)
 	return player, 0, nil
 }
 
 func (o *EntityManager) CreateTeam(playerId string, vars encodingx.IKeyValue) (team basis.ITeamEntity, rsCode int32, err error) {
-	o.teamLock.Lock()
-	defer o.teamLock.Unlock()
 	_, okPlayer := o.playerIndex.GetPlayer(playerId)
 	if !okPlayer {
 		return nil, basis.CodeMMOTeamExist, errors.New(fmt.Sprintf("EntityManager.CreateTeam Error: Player(%s) does not exist", playerId))
 	}
 	team = entity.NewITeamEntity(basis.GetTeamId(), basis.TeamName, basis.MaxTeamMember)
 	team.InitEntity()
-	team.SetVars(vars)
+	team.SetVars(vars, false)
 	rsCode, err = o.teamIndex.AddTeam(team)
 	if nil != err {
 		return nil, rsCode, err
 	}
-	o.DispatchEvent(events.EventTeamInit, o, team)
 	o.addEntityEventListener(team)
+	o.DispatchEvent(events.EventTeamInit, o, team)
 	return team, 0, nil
 }
 
 func (o *EntityManager) CreateTeamCorps(teamId string, vars encodingx.IKeyValue) (corps basis.ITeamCorpsEntity, rsCode int32, err error) {
-	o.teamCorpsLock.Lock()
-	defer o.teamCorpsLock.Unlock()
 	_, okTeam := o.teamIndex.GetTeam(teamId)
 	if !okTeam {
 		return nil, basis.CodeMMOTeamNotExist, errors.New(fmt.Sprintf("EntityManager.CreateTeamCorps Error: Team(%s) does not exist", teamId))
 	}
 	teamCorps := entity.NewITeamCorpsEntity(basis.GetTeamCorpsId(), basis.TeamCorpsName)
 	teamCorps.InitEntity()
-	teamCorps.SetVars(vars)
+	teamCorps.SetVars(vars, false)
 	rsCode, err = o.teamCorpsIndex.AddCorps(teamCorps)
 	if nil != err {
 		return nil, rsCode, err
 	}
-	o.DispatchEvent(events.EventTeamCorpsInit, o, teamCorps)
 	o.addEntityEventListener(teamCorps)
+	o.DispatchEvent(events.EventTeamCorpsInit, o, teamCorps)
 	return teamCorps, 0, nil
 }
 
 func (o *EntityManager) CreateChannel(chanId string, chanName string, vars encodingx.IKeyValue) (channel basis.IChannelEntity, rsCode int32, err error) {
-	o.chanLock.Lock()
-	defer o.chanLock.Unlock()
 	if o.chanIndex.CheckChannel(chanId) {
 		return nil, basis.CodeMMOChanExist, errors.New("EntityManager.CreateChannel Error: ChanId(" + chanId + ") Duplicate!")
 	}
 	channel = entity.NewIChannelEntity(chanId, chanName)
 	channel.InitEntity()
-	channel.SetVars(vars)
+	channel.SetVars(vars, false)
 	rsCode, err = o.chanIndex.AddChannel(channel)
 	if nil != err {
 		return nil, rsCode, err
 	}
-	o.DispatchEvent(events.EventChanInit, o, channel)
 	o.addEntityEventListener(channel)
+	o.DispatchEvent(events.EventChanInit, o, channel)
 	return channel, 0, nil
 }
 
@@ -250,36 +232,26 @@ func (o *EntityManager) DestroyEntity(entity basis.IEntity) (rsCode int32, err e
 func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string) (entity basis.IEntity, rsCode int32, err error) {
 	switch entityType {
 	case basis.EntityRoom:
-		o.roomLock.Lock()
-		defer o.roomLock.Unlock()
 		entity, rsCode, err = o.roomIndex.RemoveRoom(eId)
 		if nil != entity {
 			defer o.DispatchEvent(events.EventRoomDestroy, o, entity)
 		}
 	case basis.EntityPlayer:
-		o.playerLock.Lock()
-		defer o.playerLock.Unlock()
 		entity, rsCode, err = o.playerIndex.RemovePlayer(eId)
 		if nil != entity {
 			defer o.DispatchEvent(events.EventPlayerDestroy, o, entity)
 		}
 	case basis.EntityTeam:
-		o.teamLock.Lock()
-		defer o.teamLock.Unlock()
 		entity, rsCode, err = o.teamIndex.RemoveTeam(eId)
 		if nil != entity {
 			defer o.DispatchEvent(events.EventTeamDestroy, o, entity)
 		}
 	case basis.EntityTeamCorps:
-		o.teamCorpsLock.Lock()
-		defer o.teamCorpsLock.Unlock()
 		entity, rsCode, err = o.teamCorpsIndex.RemoveCorps(eId)
 		if nil != entity {
 			defer o.DispatchEvent(events.EventTeamCorpsDestroy, o, entity)
 		}
 	case basis.EntityChannel:
-		o.chanLock.Lock()
-		defer o.chanLock.Unlock()
 		entity, rsCode, err = o.chanIndex.RemoveChannel(eId)
 		if nil != entity {
 			defer o.DispatchEvent(events.EventChanDestroy, o, entity)

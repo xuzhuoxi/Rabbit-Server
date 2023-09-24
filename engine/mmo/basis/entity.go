@@ -94,7 +94,7 @@ type IPlayerEntity interface {
 	// Position 取坐标
 	Position() XYZ
 	// SetPosition 设置坐标
-	SetPosition(pos XYZ)
+	SetPosition(pos XYZ, notify bool)
 
 	// RoomId 取房间Id
 	RoomId() string
@@ -114,9 +114,9 @@ type IPlayerEntity interface {
 	// GetTeamInfo 取队伍相关信息
 	GetTeamInfo() (teamId string, corpsId string)
 	// SetTeam 设置队伍Id
-	SetTeam(teamId string)
+	SetTeam(teamId string, notify bool)
 	// SetCorps 设置团队Id
-	SetCorps(corpsId string)
+	SetCorps(corpsId string, notify bool)
 }
 
 // IRoomEntity 房间实体

@@ -51,19 +51,19 @@ func onVarChanged(evd *eventx.EventData) {
 
 func onVarsChanged(evd *eventx.EventData) {
 	varData := evd.Data.(events.VarsEventData)
-	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Vars.Len())
+	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.VarKeys)
 }
 
 func setVar(entity basis.IEntity, interval time.Duration) {
 	if v, ok := entity.(basis.IVariableSupport); ok {
 		ran := rand.Intn(10)
 		if ran > 5 {
-			v.SetVar("temp", rand.Intn(1000))
+			v.SetVar("temp", rand.Intn(1000), true)
 		} else {
 			vs := vars.DefaultVarSetPool.GetInstance()
 			vs.Set("temp1", rand.Intn(300))
 			vs.Set("temp2", rand.Intn(300))
-			v.SetVars(vs)
+			v.SetVars(vs, true)
 			vars.DefaultVarSetPool.Recycle(vs)
 		}
 	}

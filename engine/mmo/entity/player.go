@@ -6,6 +6,7 @@ package entity
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 	"sync"
 )
@@ -78,10 +79,27 @@ func (o *PlayerEntity) Position() (pos basis.XYZ) {
 	return basis.XYZ{X: x.(int32), Y: y.(int32), Z: z.(int32)}
 }
 
-func (o *PlayerEntity) SetPosition(pos basis.XYZ) {
-	o.SetVar(vars.PlayerPosX, pos.X)
-	o.SetVar(vars.PlayerPosY, pos.Y)
-	o.SetVar(vars.PlayerPosZ, pos.Z)
+func (o *PlayerEntity) SetPosition(pos basis.XYZ, notify bool) {
+	okX := o.SetVar(vars.PlayerPosX, pos.X, false)
+	okY := o.SetVar(vars.PlayerPosY, pos.Y, false)
+	okZ := o.SetVar(vars.PlayerPosZ, pos.Z, false)
+	if notify {
+		var diff []string
+		if okX {
+			diff = append(diff, vars.PlayerPosY)
+		}
+		if okY {
+			diff = append(diff, vars.PlayerPosY)
+		}
+		if okZ {
+			diff = append(diff, vars.PlayerPosZ)
+		}
+		if len(diff) > 0 {
+			o.VariableSupport.DispatchEvent(events.EventEntityVarsChanged, o,
+				&events.VarsEventData{Entity: o, VarSet: o.Vars(), VarKeys: diff})
+
+		}
+	}
 }
 
 func (o *PlayerEntity) RoomId() string {
@@ -148,23 +166,18 @@ func (o *PlayerEntity) GetTeamInfo() (teamId string, corpsId string) {
 	return
 }
 
-func (o *PlayerEntity) SetTeamInfo(teamId string, corpsId string) {
-	o.SetTeam(teamId)
-	o.SetCorps(corpsId)
-}
-
-func (o *PlayerEntity) SetCorps(corpsId string) {
+func (o *PlayerEntity) SetCorps(corpsId string, notify bool) {
 	if len(corpsId) == 0 {
-		o.SetVar(vars.PlayerTeamCorps, nil)
+		o.SetVar(vars.PlayerTeamCorps, nil, notify)
 	} else {
-		o.SetVar(vars.PlayerTeamCorps, corpsId)
+		o.SetVar(vars.PlayerTeamCorps, corpsId, notify)
 	}
 }
 
-func (o *PlayerEntity) SetTeam(teamId string) {
+func (o *PlayerEntity) SetTeam(teamId string, notify bool) {
 	if len(teamId) == 0 {
-		o.SetVar(vars.PlayerTeam, nil)
+		o.SetVar(vars.PlayerTeam, nil, notify)
 	} else {
-		o.SetVar(vars.PlayerTeam, teamId)
+		o.SetVar(vars.PlayerTeam, teamId, notify)
 	}
 }

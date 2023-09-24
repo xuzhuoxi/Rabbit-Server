@@ -25,6 +25,7 @@ type VarEventData struct {
 }
 
 type VarsEventData struct {
-	Entity basis.IEntity
-	Vars   encodingx.IKeyValue
+	Entity  basis.IEntity
+	VarSet  encodingx.IKeyValue
+	VarKeys []string
 }
