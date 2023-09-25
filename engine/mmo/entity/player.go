@@ -97,7 +97,6 @@ func (o *PlayerEntity) SetPosition(pos basis.XYZ, notify bool) {
 		if len(diff) > 0 {
 			o.VariableSupport.DispatchEvent(events.EventEntityVarsChanged, o,
 				&events.VarsEventData{Entity: o, VarSet: o.Vars(), VarKeys: diff})
-
 		}
 	}
 }
