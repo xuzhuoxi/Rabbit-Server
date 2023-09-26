@@ -85,7 +85,7 @@ func (o *VariableSupport) SetVars(kv encodingx.IKeyValue, notify bool) {
 		return
 	}
 	o.lock.Lock()
-	diff := o.vars.Merge(kv)
+	diff := o.vars.Merge(kv, false)
 	o.lock.Unlock()
 	if len(diff) > 0 && notify {
 		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
@@ -98,7 +98,7 @@ func (o *VariableSupport) SetArrayVars(keys []string, vals []interface{}, notify
 		return
 	}
 	o.lock.Lock()
-	diff := o.vars.MergeArray(keys, vals)
+	diff := o.vars.MergeArray(keys, vals, false)
 	o.lock.Unlock()
 	if len(diff) > 0 && notify {
 		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
