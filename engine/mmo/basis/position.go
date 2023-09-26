@@ -14,7 +14,7 @@ var (
 func RandomXYZ() XYZ {
 	rs := XYZ{
 		X: rand.Int31n(200) - 100,
-		Y: 0,
+		Y: 5,
 		Z: rand.Int31n(200) - 100,
 	}
 	return rs
