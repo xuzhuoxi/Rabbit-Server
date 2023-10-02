@@ -25,44 +25,54 @@ const (
 )
 
 type VarMeta struct {
+	Key     string
 	Type    VarType
 	Default interface{}
 }
 
 var (
 	playerVarMetas map[string]VarMeta
+	roomVarMetas   map[string]VarMeta
 )
 
-func GetPlayerVarType(key string) (t VarType, ok bool) {
+func GetPlayerVarMeta(key string) (t VarMeta, ok bool) {
 	if m, b := playerVarMetas[key]; b {
-		return m.Type, true
+		return m, b
 	}
 	return
 }
 
-func GetPlayerVarDefault(key string) (v interface{}, ok bool) {
-	if m, b := playerVarMetas[key]; b {
-		return m.Default, true
+func GetRoomVarMeta(key string) (t VarMeta, ok bool) {
+	if m, b := roomVarMetas[key]; b {
+		return m, b
 	}
 	return
+}
+
+func RegisterPlayerVarMeta(meta VarMeta) {
+	playerVarMetas[meta.Key] = meta
+}
+
+func RegisterRoomVarMeta(meta VarMeta) {
+	roomVarMetas[meta.Key] = meta
 }
 
 func init() {
 	playerVarMetas = make(map[string]VarMeta)
-	playerVarMetas[PlayerPosX] = VarMeta{Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerPosY] = VarMeta{Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerPosZ] = VarMeta{Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerInputX] = VarMeta{Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerInputY] = VarMeta{Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerInputZ] = VarMeta{Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerInputJump] = VarMeta{Type: VarSoon, Default: false}
+	playerVarMetas[PlayerPosX] = VarMeta{Key: PlayerPosX, Type: VarForever, Default: int32(0)}
+	playerVarMetas[PlayerPosY] = VarMeta{Key: PlayerPosY, Type: VarForever, Default: int32(0)}
+	playerVarMetas[PlayerPosZ] = VarMeta{Key: PlayerPosZ, Type: VarForever, Default: int32(0)}
+	playerVarMetas[PlayerInputX] = VarMeta{Key: PlayerInputX, Type: VarForever, Default: int32(0)}
+	playerVarMetas[PlayerInputY] = VarMeta{Key: PlayerInputY, Type: VarForever, Default: int32(0)}
+	playerVarMetas[PlayerInputZ] = VarMeta{Key: PlayerInputZ, Type: VarForever, Default: int32(0)}
+	playerVarMetas[PlayerInputJump] = VarMeta{Key: PlayerInputJump, Type: VarSoon, Default: false}
 
-	playerVarMetas[PlayerFace] = VarMeta{Type: VarForever, Default: uint8(0)}
-	playerVarMetas[PlayerAction] = VarMeta{Type: VarForever, Default: uint32(0)}
+	playerVarMetas[PlayerFace] = VarMeta{Key: PlayerFace, Type: VarForever, Default: uint8(0)}
+	playerVarMetas[PlayerAction] = VarMeta{Key: PlayerAction, Type: VarForever, Default: uint32(0)}
 
-	playerVarMetas[PlayerHp] = VarMeta{Type: VarForever, Default: uint32(0)}
-	playerVarMetas[PlayerBuff] = VarMeta{Type: VarForever, Default: uint32(0)}
-	playerVarMetas[PlayerNick] = VarMeta{Type: VarForever, Default: ""}
-	playerVarMetas[PlayerTeam] = VarMeta{Type: VarForever, Default: ""}
-	playerVarMetas[PlayerTeamCorps] = VarMeta{Type: VarForever, Default: ""}
+	playerVarMetas[PlayerHp] = VarMeta{Key: PlayerHp, Type: VarForever, Default: uint32(0)}
+	playerVarMetas[PlayerBuff] = VarMeta{Key: PlayerBuff, Type: VarForever, Default: uint32(0)}
+	playerVarMetas[PlayerNick] = VarMeta{Key: PlayerNick, Type: VarForever, Default: ""}
+	playerVarMetas[PlayerTeam] = VarMeta{Key: PlayerTeam, Type: VarForever, Default: ""}
+	playerVarMetas[PlayerTeamCorps] = VarMeta{Key: PlayerTeamCorps, Type: VarForever, Default: ""}
 }

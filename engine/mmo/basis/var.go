@@ -21,9 +21,9 @@ type IVariableSupport interface {
 	// SetVar 设置变量
 	SetVar(kv string, value interface{}, notify bool) (ok bool)
 	// SetVars 批量设置变量
-	SetVars(kv encodingx.IKeyValue, notify bool)
+	SetVars(kv encodingx.IKeyValue, notify bool) (diff []string)
 	// SetArrayVars 批量设置变量
-	SetArrayVars(keys []string, vals []interface{}, notify bool)
+	SetArrayVars(keys []string, vals []interface{}, notify bool) (diff []string)
 }
 
 //type IVarSet interface {

@@ -80,30 +80,32 @@ func (o *VariableSupport) SetVar(kv string, value interface{}, notify bool) (ok 
 	return
 }
 
-func (o *VariableSupport) SetVars(kv encodingx.IKeyValue, notify bool) {
+func (o *VariableSupport) SetVars(kv encodingx.IKeyValue, notify bool) (diff []string) {
 	if nil == kv {
 		return
 	}
 	o.lock.Lock()
-	diff := o.vars.Merge(kv, false)
+	diff = o.vars.Merge(kv, true)
 	o.lock.Unlock()
 	if len(diff) > 0 && notify {
 		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
 			&events.VarsEventData{Entity: o.currentTarget, VarSet: o.vars, VarKeys: diff})
 	}
+	return
 }
 
-func (o *VariableSupport) SetArrayVars(keys []string, vals []interface{}, notify bool) {
+func (o *VariableSupport) SetArrayVars(keys []string, vals []interface{}, notify bool) (diff []string) {
 	if len(keys) == 0 || len(keys) != len(vals) {
 		return
 	}
 	o.lock.Lock()
-	diff := o.vars.MergeArray(keys, vals, false)
+	diff = o.vars.MergeArray(keys, vals, false)
 	o.lock.Unlock()
 	if len(diff) > 0 && notify {
 		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
 			&events.VarsEventData{Entity: o.currentTarget, VarSet: o.vars, VarKeys: diff})
 	}
+	return
 }
 
 //type VarSet struct {
