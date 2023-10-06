@@ -59,16 +59,12 @@ func RegisterRoomVarMeta(meta VarMeta) {
 
 func init() {
 	playerVarMetas = make(map[string]VarMeta)
-	playerVarMetas[PlayerPosX] = VarMeta{Key: PlayerPosX, Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerPosY] = VarMeta{Key: PlayerPosY, Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerPosZ] = VarMeta{Key: PlayerPosZ, Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerInputX] = VarMeta{Key: PlayerInputX, Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerInputY] = VarMeta{Key: PlayerInputY, Type: VarForever, Default: int32(0)}
-	playerVarMetas[PlayerInputZ] = VarMeta{Key: PlayerInputZ, Type: VarForever, Default: int32(0)}
+	playerVarMetas[PlayerPos] = VarMeta{Key: PlayerPos, Type: VarForever, Default: []int32{0, 0, 0}}
+	playerVarMetas[PlayerInput] = VarMeta{Key: PlayerInput, Type: VarForever, Default: []int32{0, 0, 0}}
 	playerVarMetas[PlayerInputJump] = VarMeta{Key: PlayerInputJump, Type: VarSoon, Default: false}
 
 	playerVarMetas[PlayerFace] = VarMeta{Key: PlayerFace, Type: VarForever, Default: uint8(0)}
-	playerVarMetas[PlayerAction] = VarMeta{Key: PlayerAction, Type: VarForever, Default: uint32(0)}
+	playerVarMetas[PlayerActionState] = VarMeta{Key: PlayerActionState, Type: VarSoon, Default: uint32(0)}
 
 	playerVarMetas[PlayerHp] = VarMeta{Key: PlayerHp, Type: VarForever, Default: uint32(0)}
 	playerVarMetas[PlayerBuff] = VarMeta{Key: PlayerBuff, Type: VarForever, Default: uint32(0)}

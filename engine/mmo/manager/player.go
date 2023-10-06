@@ -72,9 +72,7 @@ func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player bas
 		pos = basis.RandomXYZ()
 		vs := vars.DefaultVarSetPool.GetInstance()
 		defer vars.DefaultVarSetPool.Recycle(vs)
-		vs.Set(vars.PlayerPosX, pos.X)
-		vs.Set(vars.PlayerPosY, pos.Y)
-		vs.Set(vars.PlayerPosZ, pos.Z)
+		vs.Set(vars.PlayerPos, pos.Array())
 		player, rsCode, err = o.entityMgr.CreatePlayer(playerId, vs)
 		if nil != err {
 			return nil, nil, rsCode, err

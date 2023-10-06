@@ -25,14 +25,22 @@ type XY struct {
 	Y int32
 }
 
+func (o XY) Array() []int32 {
+	return []int32{o.X, o.Y}
+}
+
 type XYZ struct {
 	X int32
 	Y int32
 	Z int32
 }
 
-func (xyz XYZ) XY() XY {
-	return XY{X: xyz.X, Y: xyz.Y}
+func (o XYZ) Array() []int32 {
+	return []int32{o.X, o.Y, o.Z}
+}
+
+func (o XYZ) XY() XY {
+	return XY{X: o.X, Y: o.Y}
 }
 
 // NearXY 判断两点是否相近

@@ -64,40 +64,32 @@ func (o *PlayerEntity) NickName() string {
 }
 
 func (o *PlayerEntity) Position() (pos basis.XYZ) {
-	x, okX := o.GetVar(vars.PlayerPosX)
-	if !okX {
-		x = 0
+	val, ok := o.GetVar(vars.PlayerPos)
+	if !ok {
+		return
 	}
-	y, okY := o.GetVar(vars.PlayerPosY)
-	if !okY {
-		y = 0
+	arr := val.([]int32)
+	if len(arr) >= 3 {
+		pos.X, pos.Y, pos.Z = arr[0], arr[1], arr[2]
+		return
 	}
-	z, okZ := o.GetVar(vars.PlayerPosZ)
-	if !okZ {
-		z = 0
+	if len(arr) == 2 {
+		pos.X, pos.Y = arr[0], arr[1]
+		return
 	}
-	return basis.XYZ{X: x.(int32), Y: y.(int32), Z: z.(int32)}
+	if len(arr) == 1 {
+		pos.X = arr[0]
+		return
+	}
+	return
 }
 
 func (o *PlayerEntity) SetPosition(pos basis.XYZ, notify bool) {
-	okX := o.SetVar(vars.PlayerPosX, pos.X, false)
-	okY := o.SetVar(vars.PlayerPosY, pos.Y, false)
-	okZ := o.SetVar(vars.PlayerPosZ, pos.Z, false)
-	if notify {
-		var diff []string
-		if okX {
-			diff = append(diff, vars.PlayerPosY)
-		}
-		if okY {
-			diff = append(diff, vars.PlayerPosY)
-		}
-		if okZ {
-			diff = append(diff, vars.PlayerPosZ)
-		}
-		if len(diff) > 0 {
-			o.VariableSupport.DispatchEvent(events.EventEntityVarsChanged, o,
-				&events.VarsEventData{Entity: o, VarSet: o.Vars(), VarKeys: diff})
-		}
+	posArr := pos.Array()
+	ok := o.SetVar(vars.PlayerPos, posArr, false)
+	if notify && ok {
+		o.VariableSupport.DispatchEvent(events.EventEntityVarChanged, o,
+			&events.VarEventData{Entity: o, Key: vars.PlayerPos, Value: posArr})
 	}
 }
 
