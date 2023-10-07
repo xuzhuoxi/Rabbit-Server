@@ -50,6 +50,9 @@ func (o *TeamEntity) InitEntity() {
 	o.ChildSupport = *NewChildEntitySupport()
 }
 
+func (o *TeamEntity) DestroyEntity() {
+}
+
 func (o *TeamEntity) Leader() string {
 	return o.Owner
 }

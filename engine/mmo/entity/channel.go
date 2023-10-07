@@ -44,6 +44,9 @@ func (o *ChannelEntity) EntityType() basis.EntityType {
 func (o *ChannelEntity) InitEntity() {
 }
 
+func (o *ChannelEntity) DestroyEntity() {
+}
+
 func (o *ChannelEntity) MyChannel() basis.IChannelEntity {
 	return o
 }

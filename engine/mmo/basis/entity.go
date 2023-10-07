@@ -11,10 +11,12 @@ import (
 type EntityType uint16
 
 const (
-	// EntityRoom 房间实体
-	EntityRoom EntityType = 1 << iota
+	// EntityUnit 单位实体
+	EntityUnit EntityType = 1 << iota
 	// EntityPlayer 用户实体
 	EntityPlayer
+	// EntityRoom 房间实体
+	EntityRoom
 	// EntityTeam 队伍实体
 	EntityTeam
 	// EntityTeamCorps 军团实体
@@ -25,7 +27,7 @@ const (
 	// EntityNone 不是实体
 	EntityNone EntityType = 0
 	// EntityAll 全部实体
-	EntityAll EntityType = EntityRoom | EntityPlayer | EntityTeamCorps | EntityTeam | EntityChannel
+	EntityAll EntityType = EntityUnit | EntityRoom | EntityPlayer | EntityTeamCorps | EntityTeam | EntityChannel
 )
 
 var (
@@ -34,8 +36,9 @@ var (
 )
 
 func init() {
-	entityNames[EntityRoom] = "Room"
+	entityNames[EntityUnit] = "Unit"
 	entityNames[EntityPlayer] = "Player"
+	entityNames[EntityRoom] = "Room"
 	entityNames[EntityTeam] = "Team"
 	entityNames[EntityTeamCorps] = "TeamCorps"
 	entityNames[EntityChannel] = "Channel"
@@ -65,32 +68,41 @@ func (o EntityType) Include(check EntityType) bool {
 type IEntity interface {
 	// UID 唯一标识
 	UID() string
-	// Name 昵称，显示使用
-	Name() string
 	// EntityType 实体类型
 	EntityType() EntityType
+}
+
+type INameEntity interface {
+	// Name 昵称，显示使用
+	Name() string
 }
 
 type IInitEntity interface {
 	// InitEntity 初始化实体
 	InitEntity()
-}
-
-type IDestroyEntity interface {
 	// DestroyEntity 释放实体
 	DestroyEntity()
+}
+
+type IUnitEntity interface {
+	IEntity
+	IInitEntity
+	IVariableSupport
+	// Position 取坐标
+	Position() (pos XYZ)
+	// SetPosition 设置坐标
+	SetPosition(pos XYZ, notify bool)
+	// RoomId 取房间Id
+	RoomId() string
 }
 
 // IPlayerEntity 用户实体
 type IPlayerEntity interface {
 	IEntity
+	INameEntity
 	IInitEntity
-	IDestroyEntity
 	IPlayerSubscriber
 	IVariableSupport
-
-	// NickName 用户昵称
-	NickName() string
 	// Position 取坐标
 	Position() XYZ
 	// SetPosition 设置坐标
@@ -122,12 +134,14 @@ type IPlayerEntity interface {
 // IRoomEntity 房间实体
 type IRoomEntity interface {
 	IEntity
+	INameEntity
 	IInitEntity
 
 	IEntityContainer
 	IVariableSupport
 	ITagsSupport
 	Players() []IPlayerEntity
+	Units() []IUnitEntity
 }
 
 // ITeamEntity 队伍实体
@@ -148,11 +162,12 @@ type ITeamCorpsEntity interface {
 // IChannelEntity 频道实体
 type IChannelEntity interface {
 	IEntity
+	INameEntity
 	IInitEntity
 	IChannelBehavior
 	IVariableSupport
 }
 
 func EntityEqual(entity1 IEntity, entity2 IEntity) bool {
-	return nil != entity1 && nil != entity2 && entity1.UID() == entity2.UID() && entity1.EntityType() == entity2.EntityType() && entity1.Name() == entity2.Name()
+	return nil != entity1 && nil != entity2 && entity1.UID() == entity2.UID() && entity1.EntityType() == entity2.EntityType()
 }

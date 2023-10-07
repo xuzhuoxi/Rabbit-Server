@@ -46,6 +46,9 @@ func (o *TeamCorpsEntity) InitEntity() {
 	o.ChildSupport = *NewChildEntitySupport()
 }
 
+func (o *TeamCorpsEntity) DestroyEntity() {
+}
+
 func (o *TeamCorpsEntity) TeamList() []string {
 	return o.EntityListGroup.Entities()
 }

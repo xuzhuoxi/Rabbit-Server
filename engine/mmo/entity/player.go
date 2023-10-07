@@ -17,8 +17,6 @@ func NewIPlayerEntity(playerId string) basis.IPlayerEntity {
 
 func NewPlayerEntity(playerId string) *PlayerEntity {
 	player := &PlayerEntity{Uid: playerId}
-	player.PlayerSubscriber = *NewPlayerSubscriber()
-	player.VariableSupport = *vars.NewVariableSupport(player)
 	return player
 }
 
@@ -37,12 +35,16 @@ func (o *PlayerEntity) UID() string {
 	return o.Uid
 }
 
-func (o *PlayerEntity) Name() string {
-	return o.NickName()
-}
-
 func (o *PlayerEntity) EntityType() basis.EntityType {
 	return basis.EntityPlayer
+}
+
+func (o *PlayerEntity) Name() string {
+	nick, ok := o.GetVar(vars.PlayerNick)
+	if !ok {
+		return ""
+	}
+	return nick.(string)
 }
 
 func (o *PlayerEntity) InitEntity() {
@@ -54,14 +56,6 @@ func (o *PlayerEntity) DestroyEntity() {
 }
 
 // 扩展属性
-
-func (o *PlayerEntity) NickName() string {
-	nick, ok := o.GetVar(vars.PlayerNick)
-	if !ok {
-		return ""
-	}
-	return nick.(string)
-}
 
 func (o *PlayerEntity) Position() (pos basis.XYZ) {
 	val, ok := o.GetVar(vars.PlayerPos)

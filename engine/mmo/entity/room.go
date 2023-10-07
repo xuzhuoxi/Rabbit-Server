@@ -25,8 +25,6 @@ func NewAOBRoomEntity(roomId string, roomName string) *AOBRoomEntity {
 func NewRoomEntity(roomId string, roomName string) *RoomEntity {
 	room := &RoomEntity{RoomId: roomId, RoomName: roomName, MaxMember: 0}
 	room.MaxMember = 100
-	room.ListEntityContainer = *NewListEntityContainer(room.MaxMember)
-	room.VariableSupport = *vars.NewVariableSupport(room)
 	return room
 }
 
@@ -48,9 +46,10 @@ func (e *AOBRoomEntity) Broadcast(speaker string, handler func(receiver string))
 
 // RoomEntity 常规房间
 type RoomEntity struct {
-	RoomId    string
-	RoomName  string
-	MaxMember int
+	RoomId        string
+	RoomName      string
+	MaxMember     int
+	UnitContainer MapEntityContainer
 	ListEntityContainer
 	TagsSupport
 	vars.VariableSupport
@@ -60,17 +59,20 @@ func (o *RoomEntity) UID() string {
 	return o.RoomId
 }
 
-func (o *RoomEntity) Name() string {
-	return o.RoomName
-}
-
 func (o *RoomEntity) EntityType() basis.EntityType {
 	return basis.EntityRoom
+}
+
+func (o *RoomEntity) Name() string {
+	return o.RoomName
 }
 
 func (o *RoomEntity) InitEntity() {
 	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
 	o.VariableSupport = *vars.NewVariableSupport(o)
+}
+
+func (o *RoomEntity) DestroyEntity() {
 }
 
 func (o *RoomEntity) Players() []basis.IPlayerEntity {
@@ -80,6 +82,18 @@ func (o *RoomEntity) Players() []basis.IPlayerEntity {
 	}
 	rs := make([]basis.IPlayerEntity, 0, num)
 	o.ListEntityContainer.ForEachChildByType(basis.EntityPlayer, func(child basis.IEntity) {
+		rs = append(rs, child.(basis.IPlayerEntity))
+	}, false)
+	return rs
+}
+
+func (o *RoomEntity) Units() []basis.IUnitEntity {
+	num := o.UnitContainer.NumChildren()
+	if num == 0 {
+		return nil
+	}
+	rs := make([]basis.IUnitEntity, 0, num)
+	o.UnitContainer.ForEachChildByType(basis.EntityUnit, func(child basis.IEntity) {
 		rs = append(rs, child.(basis.IPlayerEntity))
 	}, false)
 	return rs
