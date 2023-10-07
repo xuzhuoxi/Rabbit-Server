@@ -39,27 +39,27 @@ type VariableManager struct {
 func (o *VariableManager) SetVar(eType basis.EntityType, eId string, key string, value interface{}) {
 	entity, ok1 := o.entityMgr.GetEntity(eType, eId)
 	if !ok1 {
-		o.GetLogger().Warnln("Entity is not exist: ", eType, eId)
+		o.GetLogger().Warnln("[VariableManager.SetVar]", "Entity is not exist: ", eType, eId)
 		return
 	}
 	if ve, ok2 := entity.(basis.IVariableSupport); ok2 {
 		ve.SetVar(key, value, true)
 		return
 	}
-	o.GetLogger().Warnln("Entity does not support variable settings: ", eType, eId)
+	o.GetLogger().Warnln("[VariableManager.SetVar]", "Entity does not support variable settings: ", eType, eId)
 }
 
 func (o *VariableManager) SetVars(eType basis.EntityType, eId string, vars encodingx.IKeyValue) {
 	entity, ok1 := o.entityMgr.GetEntity(eType, eId)
 	if !ok1 {
-		o.GetLogger().Warnln("Entity is not exist: ", eType, eId)
+		o.GetLogger().Warnln("[VariableManager.SetVars]", "Entity is not exist: ", eType, eId)
 		return
 	}
 	if ve, ok2 := entity.(basis.IVariableSupport); ok2 {
 		ve.SetVars(vars, true)
 		return
 	}
-	o.GetLogger().Warnln("Entity does not support variable settings: ", eType, eId)
+	o.GetLogger().Warnln("[VariableManager.SetVars]", "Entity does not support variable settings: ", eType, eId)
 }
 
 func (o *VariableManager) InitManager() {

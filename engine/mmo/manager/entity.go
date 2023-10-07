@@ -161,6 +161,7 @@ func (o *EntityManager) CreatePlayer(playerId string, vars encodingx.IKeyValue) 
 		return nil, basis.CodeMMOPlayerExist, errors.New(fmt.Sprintf("EntityManager.CreatePlayer Error: Player(%s) is nil or exist", playerId))
 	}
 	player = entity.NewIPlayerEntity(playerId)
+	player.InitEntity()
 	player.SetVars(vars, false)
 	rsCode, err = o.playerIndex.AddPlayer(player)
 	if nil != err {

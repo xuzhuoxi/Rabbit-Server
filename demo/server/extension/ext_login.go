@@ -34,7 +34,7 @@ func (e *RabbitLoginExtension) InitExtension() error {
 func (e *RabbitLoginExtension) DestroyExtension() error {
 	e.ClearRequestHandler(ReLoginId)
 	e.ClearRequestHandler(LoginId)
-	e.GetLogger().Debugln("LoginExtension.DestroyExtension", e.Name)
+	e.GetLogger().Debugln("[RabbitLoginExtension.DestroyExtension]", e.Name)
 	return nil
 }
 
@@ -44,9 +44,9 @@ func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionResponse, re
 		rabbit.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
 		resp.SendStringResponse("ok", "200")
-		e.GetLogger().Traceln("LoginExtension.onRequestLogin:", "Check Suc!", req.ProtoId(), req.ClientId(), password)
+		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)
 	} else {
-		e.GetLogger().Warnln("LoginExtension.onRequestLogin:", "Check Fail!", req.ProtoId(), req.ClientId(), password)
+		e.GetLogger().Warnln("[RabbitLoginExtension.onRequestLogin]", "Check Fail!", req.ProtoId(), req.ClientId(), password)
 	}
 }
 
@@ -56,9 +56,9 @@ func (e *RabbitLoginExtension) onRequestReLogin(resp protox.IExtensionResponse, 
 		rabbit.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
 		resp.SendStringResponse("ok")
-		e.GetLogger().Traceln("LoginExtension.onRequestReLogin:", "Check Succ!", req.ProtoId(), req.ClientId(), password)
+		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestReLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)
 	} else {
-		e.GetLogger().Warnln("LoginExtension.onRequestReLogin:", "Check Fail!", req.ProtoId(), req.ClientId(), password)
+		e.GetLogger().Warnln("[RabbitLoginExtension.onRequestReLogin]", "Check Fail!", req.ProtoId(), req.ClientId(), password)
 	}
 }
 

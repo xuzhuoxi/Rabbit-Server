@@ -75,7 +75,7 @@ func (o *RabbitManager) initClockManager() {
 	o.ClockManager = clock.NewIRabbitClockManager()
 	err := o.ClockManager.Init(o.CfgClock)
 	if nil != err {
-		o.LogManager.Warnln("InitClockManager:", err)
+		o.LogManager.Warnln("[RabbitManager.initClockManager]", err)
 		return
 	}
 }

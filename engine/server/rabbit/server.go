@@ -127,12 +127,12 @@ func (o *RabbitServer) Restart() {
 }
 
 func (o *RabbitServer) Save() {
-	o.GetLogger().Infoln("Save!")
+	o.GetLogger().Infoln("[RabbitServer.Save]", "()")
 }
 
 func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
-	o.GetLogger().Infoln("SockServer Start...")
+	o.GetLogger().Infoln("[RabbitServer.onSockServerStart]", "SockServer Start...")
 	if o.Config.ToHome.Disable {
 		return
 	}
@@ -143,7 +143,7 @@ func (o *RabbitServer) onSockServerStart(evd *eventx.EventData) {
 
 func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
-	o.GetLogger().Infoln("SockServer Stop...")
+	o.GetLogger().Infoln("[RabbitServer.onSockServerStop]", "SockServer Stop...")
 	if o.Config.ToHome.Disable {
 		return
 	}
@@ -158,7 +158,7 @@ func (o *RabbitServer) rateUpdate() {
 		time.Sleep(rate)
 		err := homeClient.UpdateWithGet(url, o.getUpdateStatus(), o.onUpdateResp)
 		if nil != err {
-			o.GetLogger().Warnln(err)
+			o.GetLogger().Warnln("[RabbitServer.rateUpdate]", err)
 		}
 	}
 }
@@ -174,14 +174,14 @@ func (o *RabbitServer) onConnOpened(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
 	o.StatusDetail.AddLinkCount()
 	address := evd.Data.(string)
-	o.GetLogger().Infoln("Client Connection Open:", address)
+	o.GetLogger().Infoln("[RabbitServer.onConnOpened]", "Client Connection Open:", address)
 	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
 
 func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
 	address := evd.Data.(string)
-	o.GetLogger().Infoln("Client Connection Close:", address)
+	o.GetLogger().Infoln("[RabbitServer.onConnClosed]", "Client Connection Close:", address)
 	o.StatusDetail.RemoveLinkCount()
 	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
