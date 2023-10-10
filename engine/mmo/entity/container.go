@@ -8,6 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/index"
+	"github.com/xuzhuoxi/infra-go/extendx/protox"
+	"strconv"
 	"sync"
 )
 
@@ -18,6 +21,9 @@ func NewIMapEntityContainer(cap int) basis.IEntityContainer {
 func NewIListEntityContainer(cap int) basis.IEntityContainer {
 	return NewListEntityContainer(cap)
 }
+func NewIUnitContainer(entityId string, idIndex uint32) basis.IUnitContainer {
+	return NewUnitContainer(entityId, idIndex)
+}
 
 func NewMapEntityContainer(cap int) *MapEntityContainer {
 	return &MapEntityContainer{cap: cap, entities: make(map[string]basis.IEntity)}
@@ -27,7 +33,11 @@ func NewListEntityContainer(cap int) *ListEntityContainer {
 	return &ListEntityContainer{cap: cap}
 }
 
-//--------------------
+func NewUnitContainer(entityId string, idIndex uint32) *UnitContainer {
+	return &UnitContainer{EntityId: entityId, IdIndex: idIndex, UnitIndex: index.NewIUnitIndex()}
+}
+
+// --------------------
 
 type MapEntityContainer struct {
 	cap      int
@@ -202,7 +212,7 @@ func (o *MapEntityContainer) isFull() bool {
 	return o.cap > 0 && o.cap <= len(o.entities)
 }
 
-//--------------------
+// --------------------
 
 type ListEntityContainer struct {
 	cap         int
@@ -258,10 +268,10 @@ func (o *ListEntityContainer) UpdateChild(child basis.IEntity) (old basis.IEntit
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	id := child.UID()
-	_, index, isContains := o.firstContains(id)
+	_, idx, isContains := o.firstContains(id)
 	if isContains {
-		old = o.entities[index]
-		o.entities[index] = child
+		old = o.entities[idx]
+		o.entities[idx] = child
 	} else {
 		if o.isFull() {
 			return nil, 2, errors.New("Container is full ")
@@ -296,21 +306,21 @@ func (o *ListEntityContainer) RemoveChild(child basis.IEntity) (errNum int, err 
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	id := child.UID()
-	_, index, isContains := o.firstContains(id)
+	_, idx, isContains := o.firstContains(id)
 	if !isContains {
 		return 2, errors.New(fmt.Sprintf("Entity(%s) does not exist in the container", id))
 	}
-	o.entities = append(o.entities[:index], o.entities[index+1:]...)
+	o.entities = append(o.entities[:idx], o.entities[idx+1:]...)
 	return
 }
 
 func (o *ListEntityContainer) RemoveChildById(childId string) (entity basis.IEntity, ok bool) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
-	var index int
-	entity, index, ok = o.firstContains(childId)
+	var idx int
+	entity, idx, ok = o.firstContains(childId)
 	if ok {
-		o.entities = append(o.entities[:index], o.entities[index+1:]...)
+		o.entities = append(o.entities[:idx], o.entities[idx+1:]...)
 	}
 	return
 }
@@ -321,14 +331,14 @@ func (o *ListEntityContainer) UndoUpdate(old basis.IEntity, new basis.IEntity) {
 	}
 	o.lock.Lock()
 	defer o.lock.Unlock()
-	_, index, isContains := o.firstContains(new.UID())
+	_, idx, isContains := o.firstContains(new.UID())
 	if !isContains {
 		return
 	}
 	if old == nil {
-		o.entities = append(o.entities[:index], o.entities[index+1:]...)
+		o.entities = append(o.entities[:idx], o.entities[idx+1:]...)
 	} else {
-		o.entities[index] = old
+		o.entities[idx] = old
 	}
 }
 
@@ -339,9 +349,9 @@ func (o *ListEntityContainer) UndoAdd(added basis.IEntity) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
 	id := added.UID()
-	_, index, isContains := o.lastContains(id)
+	_, idx, isContains := o.lastContains(id)
 	if isContains {
-		o.entities = append(o.entities[:index], o.entities[index+1:]...)
+		o.entities = append(o.entities[:idx], o.entities[idx+1:]...)
 	}
 }
 
@@ -425,4 +435,89 @@ func (o *ListEntityContainer) lastContains(entityId string) (entity basis.IEntit
 
 func (o *ListEntityContainer) isFull() bool {
 	return o.cap > 0 && o.cap <= len(o.entities)
+}
+
+// --------------------
+
+type UnitContainer struct {
+	UnitIndex basis.IUnitIndex
+	EntityId  string
+	IdIndex   uint32
+	idLock    sync.RWMutex
+}
+
+func (o *UnitContainer) Units() []basis.IUnitEntity {
+	o.idLock.RLock()
+	rs := make([]basis.IUnitEntity, 0, o.UnitIndex.Size())
+	o.UnitIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		rs = append(rs, entity.(basis.IUnitEntity))
+		return
+	})
+	o.idLock.RUnlock()
+	return rs
+}
+
+func (o *UnitContainer) CreateUnit(params basis.UnitParams) (unit basis.IUnitEntity, rsCode int32, err error) {
+	unit = o.genUnit(params)
+	rsCode, err = o.UnitIndex.AddUnit(unit)
+	if nil != err || rsCode != protox.CodeSuc {
+		return nil, rsCode, err
+	}
+	return unit, 0, nil
+}
+
+func (o *UnitContainer) CreateUnits(params []basis.UnitParams, mustAll bool) (units []basis.IUnitEntity, rsCode int32, err error) {
+	units = o.genUnits(params)
+	rsCode, err = o.UnitIndex.AddUnits(units, mustAll)
+	if nil != err || rsCode != protox.CodeSuc {
+		return nil, rsCode, err
+	}
+	return units, 0, nil
+}
+
+func (o *UnitContainer) DestroyUnit(unitId string) (unit basis.IUnitEntity, rsCode int32, err error) {
+	unit, rsCode, err = o.UnitIndex.RemoveUnit(unitId)
+	if rsCode == protox.CodeSuc {
+		unit.DestroyEntity()
+	}
+	return
+}
+
+func (o *UnitContainer) DestroyUnitsByOwner(owner string) (units []basis.IUnitEntity) {
+	return o.UnitIndex.RemoveUnits(func(entity basis.IUnitEntity) bool {
+		return entity.Owner() == owner
+	})
+}
+
+func (o *UnitContainer) ForEachUnit(each func(child basis.IUnitEntity) (interrupt bool)) {
+	o.UnitIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		return each(entity.(basis.IUnitEntity))
+	})
+}
+
+func (o *UnitContainer) getUnitId() string {
+	o.idLock.Lock()
+	unitId := o.EntityId + "_" + strconv.FormatInt(int64(o.IdIndex), 36)
+	o.IdIndex++
+	o.idLock.Unlock()
+	return unitId
+}
+
+func (o *UnitContainer) genUnit(params basis.UnitParams) (unit basis.IUnitEntity) {
+	unitId := o.getUnitId()
+	unit = NewIUnitEntity(unitId)
+	unit.InitEntity()
+	unit.SetVars(params.Vars, false)
+	return
+}
+
+func (o *UnitContainer) genUnits(params []basis.UnitParams) (units []basis.IUnitEntity) {
+	if len(params) == 0 {
+		return
+	}
+	for idx := range params {
+		unit := o.genUnit(params[idx])
+		units = append(units, unit)
+	}
+	return
 }

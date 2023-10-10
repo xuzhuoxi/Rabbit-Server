@@ -2,14 +2,12 @@ package vars
 const (
     // PlayerPos int32数组;坐标X、坐标Y、坐标Z
     PlayerPos string = "pos"
-    // PlayerInput int32数组;输入X、输入Y、输入Z
-    PlayerInput string = "ip"
+    // PlayerLook 朝向，int16
+    PlayerLook string = "lk"
+    // PlayerInputMove int32数组;输入X、输入Y、输入Z
+    PlayerInputMove string = "im"
     // PlayerInputJump 输入状态Jump(bool)
     PlayerInputJump string = "ij"
-    // PlayerFace 面向(uint8)(8方向)
-    PlayerFace string = "f"
-    // PlayerMoveState 移动状态(uint32)
-    PlayerMoveState string = "ms"
     // PlayerActionState 动作状态(uint32)
     PlayerActionState string = "as"
     // PlayerHp 耐久(uint32)

@@ -20,11 +20,15 @@ type RoomIndex struct {
 	EntityIndex basis.IEntityIndex
 }
 
+func (o *RoomIndex) Size() int {
+	return o.EntityIndex.Size()
+}
+
 func (o *RoomIndex) EntityType() basis.EntityType {
 	return o.EntityIndex.EntityType()
 }
 
-func (o *RoomIndex) ForEachEntity(each func(entity basis.IEntity)) {
+func (o *RoomIndex) ForEachEntity(each func(entity basis.IEntity) (interrupt bool)) {
 	o.EntityIndex.ForEachEntity(each)
 }
 

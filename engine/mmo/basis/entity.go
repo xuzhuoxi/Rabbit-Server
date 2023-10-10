@@ -92,7 +92,11 @@ type IUnitEntity interface {
 	Position() (pos XYZ)
 	// SetPosition 设置坐标
 	SetPosition(pos XYZ, notify bool)
-	// RoomId 取房间Id
+	// Owner 拥有者
+	Owner() string
+	// SetOwner 设置拥有者
+	SetOwner(owner string, notify bool)
+	// RoomId 房间Id
 	RoomId() string
 }
 
@@ -136,12 +140,19 @@ type IRoomEntity interface {
 	IEntity
 	INameEntity
 	IInitEntity
-
-	IEntityContainer
 	IVariableSupport
 	ITagsSupport
+
+	IEntityContainer
+	IUnitContainer
+	// PlayerCount 玩家数量
+	PlayerCount() int
+	// Players 全部玩家
 	Players() []IPlayerEntity
-	Units() []IUnitEntity
+	// UnitCount 单位数量
+	UnitCount() int
+	// UnitIndex 单位索引
+	UnitIndex() IUnitIndex
 }
 
 // ITeamEntity 队伍实体

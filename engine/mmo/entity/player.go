@@ -6,7 +6,6 @@ package entity
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 	"sync"
 )
@@ -80,11 +79,7 @@ func (o *PlayerEntity) Position() (pos basis.XYZ) {
 
 func (o *PlayerEntity) SetPosition(pos basis.XYZ, notify bool) {
 	posArr := pos.Array()
-	ok := o.SetVar(vars.PlayerPos, posArr, false)
-	if notify && ok {
-		o.VariableSupport.DispatchEvent(events.EventEntityVarChanged, o,
-			&events.VarEventData{Entity: o, Key: vars.PlayerPos, Value: posArr})
-	}
+	_ = o.SetVar(vars.PlayerPos, posArr, notify)
 }
 
 func (o *PlayerEntity) RoomId() string {

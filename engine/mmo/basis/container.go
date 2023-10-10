@@ -4,6 +4,10 @@
 // @author xuzhuoxi
 package basis
 
+import (
+	"github.com/xuzhuoxi/infra-go/encodingx"
+)
+
 type IEntityContainer interface {
 	// NumChildren 子实体数量
 	NumChildren() int
@@ -44,4 +48,24 @@ type IEntityContainer interface {
 	ForEachChild(each func(child IEntity) (interruptCurrent bool, interruptRecurse bool))
 	// ForEachChildByType 遍历指定类型的子实体
 	ForEachChildByType(entityType EntityType, each func(child IEntity), recurse bool)
+}
+
+type UnitParams struct {
+	Owner string
+	Vars  encodingx.IKeyValue
+}
+
+type IUnitContainer interface {
+	// Units 全部 Unit
+	Units() []IUnitEntity
+	// CreateUnit 创建 Unit
+	CreateUnit(params UnitParams) (unit IUnitEntity, rsCode int32, err error)
+	// CreateUnits  创建 Unit
+	CreateUnits(params []UnitParams, mustAll bool) (units []IUnitEntity, rsCode int32, err error)
+	// DestroyUnit 删除 Unit
+	DestroyUnit(unitId string) (unit IUnitEntity, rsCode int32, err error)
+	// DestroyUnitsByOwner 删除指定持有都的全部 Unit
+	DestroyUnitsByOwner(owner string) (units []IUnitEntity)
+	// ForEachUnit 遍历 Unit
+	ForEachUnit(each func(child IUnitEntity) (interrupt bool))
 }

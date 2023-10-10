@@ -20,11 +20,15 @@ type TeamCorpsIndex struct {
 	EntityIndex basis.IEntityIndex
 }
 
+func (o *TeamCorpsIndex) Size() int {
+	return o.EntityIndex.Size()
+}
+
 func (o *TeamCorpsIndex) EntityType() basis.EntityType {
 	return o.EntityIndex.EntityType()
 }
 
-func (o *TeamCorpsIndex) ForEachEntity(each func(entity basis.IEntity)) {
+func (o *TeamCorpsIndex) ForEachEntity(each func(entity basis.IEntity) (interrupt bool)) {
 	o.EntityIndex.ForEachEntity(each)
 }
 

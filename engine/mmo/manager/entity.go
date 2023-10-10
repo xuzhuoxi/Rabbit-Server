@@ -22,7 +22,6 @@ import (
 type IEntityFactory interface {
 	// CreateRoom 构造房间
 	CreateRoom(roomId string, roomName string, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error)
-
 	// CreatePlayer 创建玩家实体
 	CreatePlayer(playerId string, vars encodingx.IKeyValue) (player basis.IPlayerEntity, rsCode int32, err error)
 	// CreateTeam 创建队伍
@@ -39,6 +38,7 @@ type IEntityFactory interface {
 }
 
 type IEntityIndexSet interface {
+	GetRoomUnitIndex(roomId string) (index basis.IUnitIndex, ok bool)
 	RoomIndex() basis.IRoomIndex
 	PlayerIndex() basis.IPlayerIndex
 	TeamIndex() basis.ITeamIndex
@@ -48,6 +48,8 @@ type IEntityIndexSet interface {
 }
 
 type IEntityGetter interface {
+	// GetUnit 获取单位实例
+	GetUnit(roomId string, unitId string) (unit basis.IUnitEntity, ok bool)
 	// GetRoom 获取房间实例
 	GetRoom(roomId string) (room basis.IRoomEntity, ok bool)
 	// GetPlayer 获取玩家实例
@@ -63,16 +65,18 @@ type IEntityGetter interface {
 }
 
 type IEntityIterator interface {
+	// ForEachUnit 遍历每个单位实体
+	ForEachUnit(roomId string, each func(room basis.IUnitEntity) (interrupt bool))
 	// ForEachRoom 遍历每个房间实体
-	ForEachRoom(each func(room basis.IRoomEntity))
+	ForEachRoom(each func(room basis.IRoomEntity) (interrupt bool))
 	// ForEachPlayer 遍历每个玩家实体
-	ForEachPlayer(each func(player basis.IPlayerEntity))
+	ForEachPlayer(each func(player basis.IPlayerEntity) (interrupt bool))
 	// ForEachTeam 遍历每个队伍实体
-	ForEachTeam(each func(team basis.ITeamEntity))
+	ForEachTeam(each func(team basis.ITeamEntity) (interrupt bool))
 	// ForEachTeamCorps 遍历每个军团实体
-	ForEachTeamCorps(each func(corps basis.ITeamCorpsEntity))
+	ForEachTeamCorps(each func(corps basis.ITeamCorpsEntity) (interrupt bool))
 	// ForEachChannel 遍历每个频道实体
-	ForEachChannel(each func(channel basis.IChannelEntity))
+	ForEachChannel(each func(channel basis.IChannelEntity) (interrupt bool))
 }
 
 type IEntityManager interface {
@@ -260,37 +264,49 @@ func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string)
 	}
 	if nil != entity {
 		o.removeEntityEventListener(entity)
+		if initEntity, ok := entity.(basis.IInitEntity); ok {
+			initEntity.DestroyEntity()
+		}
 	}
 	return
 }
 
 func (o *EntityManager) addEntityEventListener(entity basis.IEntity) {
-	if dispatcher, ok := entity.(basis.IVariableSupport); ok {
-		dispatcher.AddEventListener(events.EventEntityVarChanged, o.onEntityVar)
-		dispatcher.AddEventListener(events.EventEntityVarsChanged, o.onEntityVars)
+	if dispatcher, ok := entity.(eventx.IEventDispatcher); ok {
+		dispatcher.AddEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+		dispatcher.AddEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+		dispatcher.AddEventListener(events.EventUnitInit, o.onEventRedirect)
+		dispatcher.AddEventListener(events.EventUnitDestroy, o.onEventRedirect)
 	}
 }
 
 func (o *EntityManager) removeEntityEventListener(entity basis.IEntity) {
-	if dispatcher, ok := entity.(basis.IVariableSupport); ok {
-		dispatcher.RemoveEventListener(events.EventEntityVarsChanged, o.onEntityVars)
-		dispatcher.RemoveEventListener(events.EventEntityVarChanged, o.onEntityVar)
+	if dispatcher, ok := entity.(eventx.IEventDispatcher); ok {
+		dispatcher.RemoveEventListener(events.EventUnitDestroy, o.onEventRedirect)
+		dispatcher.RemoveEventListener(events.EventUnitInit, o.onEventRedirect)
+		dispatcher.RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+		dispatcher.RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
 	}
 }
 
-// 事件转发: 单个量变量更新
-func (o *EntityManager) onEntityVar(evd *eventx.EventData) {
-	evd.StopImmediatePropagation()
-	o.DispatchEvent(evd.EventType, o, evd.Data)
-}
-
-// 事件转发: 批量变量更新
-func (o *EntityManager) onEntityVars(evd *eventx.EventData) {
+// 事件重定向
+func (o *EntityManager) onEventRedirect(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
 	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
 
 //----------------------------
+
+func (o *EntityManager) GetUnit(roomId string, unitId string) (unit basis.IUnitEntity, ok bool) {
+	if len(roomId) == 0 || len(unitId) == 0 {
+		return
+	}
+	index, ok1 := o.GetRoomUnitIndex(roomId)
+	if !ok1 {
+		return
+	}
+	return index.GetUnit(unitId)
+}
 
 func (o *EntityManager) GetRoom(roomId string) (room basis.IRoomEntity, ok bool) {
 	if len(roomId) == 0 {
@@ -343,37 +359,55 @@ func (o *EntityManager) GetEntity(entityType basis.EntityType, eId string) (enti
 	return
 }
 
-func (o *EntityManager) ForEachRoom(each func(room basis.IRoomEntity)) {
-	o.roomIndex.ForEachEntity(func(entity basis.IEntity) {
-		each(entity.(basis.IRoomEntity))
+func (o *EntityManager) ForEachUnit(roomId string, each func(room basis.IUnitEntity) (interrupt bool)) {
+	index, ok := o.GetRoomUnitIndex(roomId)
+	if !ok {
+		return
+	}
+	index.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		return each(entity.(basis.IUnitEntity))
 	})
 }
 
-func (o *EntityManager) ForEachPlayer(each func(player basis.IPlayerEntity)) {
-	o.playerIndex.ForEachEntity(func(entity basis.IEntity) {
-		each(entity.(basis.IPlayerEntity))
+func (o *EntityManager) ForEachRoom(each func(room basis.IRoomEntity) (interrupt bool)) {
+	o.roomIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		return each(entity.(basis.IRoomEntity))
 	})
 }
 
-func (o *EntityManager) ForEachTeam(each func(team basis.ITeamEntity)) {
-	o.teamIndex.ForEachEntity(func(entity basis.IEntity) {
-		each(entity.(basis.ITeamEntity))
+func (o *EntityManager) ForEachPlayer(each func(player basis.IPlayerEntity) (interrupt bool)) {
+	o.playerIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		return each(entity.(basis.IPlayerEntity))
 	})
 }
 
-func (o *EntityManager) ForEachTeamCorps(each func(corps basis.ITeamCorpsEntity)) {
-	o.teamCorpsIndex.ForEachEntity(func(entity basis.IEntity) {
-		each(entity.(basis.ITeamCorpsEntity))
+func (o *EntityManager) ForEachTeam(each func(team basis.ITeamEntity) (interrupt bool)) {
+	o.teamIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		return each(entity.(basis.ITeamEntity))
 	})
 }
 
-func (o *EntityManager) ForEachChannel(each func(channel basis.IChannelEntity)) {
-	o.chanIndex.ForEachEntity(func(entity basis.IEntity) {
-		each(entity.(basis.IChannelEntity))
+func (o *EntityManager) ForEachTeamCorps(each func(corps basis.ITeamCorpsEntity) (interrupt bool)) {
+	o.teamCorpsIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		return each(entity.(basis.ITeamCorpsEntity))
+	})
+}
+
+func (o *EntityManager) ForEachChannel(each func(channel basis.IChannelEntity) (interrupt bool)) {
+	o.chanIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
+		return each(entity.(basis.IChannelEntity))
 	})
 }
 
 //-----------------------
+
+func (o *EntityManager) GetRoomUnitIndex(roomId string) (index basis.IUnitIndex, ok bool) {
+	room, ok1 := o.roomIndex.GetRoom(roomId)
+	if !ok1 {
+		return
+	}
+	return room.UnitIndex(), true
+}
 
 func (o *EntityManager) RoomIndex() basis.IRoomIndex {
 	return o.roomIndex

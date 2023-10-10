@@ -20,11 +20,15 @@ type PlayerIndex struct {
 	EntityIndex basis.IEntityIndex
 }
 
+func (o *PlayerIndex) Size() int {
+	return o.EntityIndex.Size()
+}
+
 func (o *PlayerIndex) EntityType() basis.EntityType {
 	return o.EntityIndex.EntityType()
 }
 
-func (o *PlayerIndex) ForEachEntity(each func(entity basis.IEntity)) {
+func (o *PlayerIndex) ForEachEntity(each func(entity basis.IEntity) (interrupt bool)) {
 	o.EntityIndex.ForEachEntity(each)
 }
 

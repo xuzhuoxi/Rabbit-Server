@@ -217,10 +217,10 @@ func (o *BroadcastManager) BroadcastTag(sourcePlayer basis.IPlayerEntity, tag st
 	o.lock.RLock()
 	defer o.lock.RUnlock()
 	roomIndex := o.entityMgr.RoomIndex()
-	roomIndex.ForEachEntity(func(entity basis.IEntity) {
+	roomIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
 		room, ok1 := entity.(basis.IRoomEntity)
 		if !ok1 || !room.ContainsTag(tag) {
-			return
+			return false
 		}
 		if c, ok2 := entity.(basis.IEntityContainer); ok2 {
 			if sourcePlayer != nil {
@@ -233,6 +233,7 @@ func (o *BroadcastManager) BroadcastTag(sourcePlayer basis.IPlayerEntity, tag st
 				}, false)
 			}
 		}
+		return false
 	})
 	return nil
 }
@@ -244,10 +245,10 @@ func (o *BroadcastManager) BroadcastTags(sourcePlayer basis.IPlayerEntity, tags 
 	o.lock.RLock()
 	defer o.lock.RUnlock()
 	roomIndex := o.entityMgr.RoomIndex()
-	roomIndex.ForEachEntity(func(entity basis.IEntity) {
+	roomIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
 		room, ok1 := entity.(basis.IRoomEntity)
 		if !ok1 || !room.ContainsTags(tags, tagAnd) {
-			return
+			return false
 		}
 		if c, ok2 := entity.(basis.IEntityContainer); ok2 {
 			if sourcePlayer != nil {
@@ -260,6 +261,7 @@ func (o *BroadcastManager) BroadcastTags(sourcePlayer basis.IPlayerEntity, tags 
 				}, false)
 			}
 		}
+		return false
 	})
 	return nil
 }

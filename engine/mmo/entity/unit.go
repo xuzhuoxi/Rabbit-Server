@@ -5,22 +5,20 @@ package entity
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
 )
 
-func NewIUnitEntity(unitId string, roomId string) basis.IUnitEntity {
-	return NewUnitEntity(unitId, roomId)
+func NewIUnitEntity(unitId string) basis.IUnitEntity {
+	return NewUnitEntity(unitId)
 }
 
-func NewUnitEntity(unitId string, roomId string) *UnitEntity {
-	unit := &UnitEntity{Uid: unitId, roomId: roomId}
+func NewUnitEntity(unitId string) *UnitEntity {
+	unit := &UnitEntity{Uid: unitId}
 	return unit
 }
 
 type UnitEntity struct {
-	Uid    string //用户标识，唯一，内部使用
-	roomId string
+	Uid string //用户标识，唯一，内部使用
 	vars.VariableSupport
 }
 
@@ -62,13 +60,25 @@ func (o *UnitEntity) Position() (pos basis.XYZ) {
 
 func (o *UnitEntity) SetPosition(pos basis.XYZ, notify bool) {
 	posArr := pos.Array()
-	ok := o.SetVar(vars.UnitPos, posArr, false)
-	if notify && ok {
-		o.VariableSupport.DispatchEvent(events.EventEntityVarChanged, o,
-			&events.VarEventData{Entity: o, Key: vars.PlayerPos, Value: posArr})
+	_ = o.SetVar(vars.UnitPos, posArr, notify)
+}
+
+func (o *UnitEntity) Owner() string {
+	owner, ok := o.GetVar(vars.UnitOwner)
+	if !ok {
+		return ""
 	}
+	return owner.(string)
+}
+
+func (o *UnitEntity) SetOwner(owner string, notify bool) {
+	_ = o.SetVar(vars.UnitOwner, owner, notify)
 }
 
 func (o *UnitEntity) RoomId() string {
-	return o.roomId
+	owner, ok := o.GetVar(vars.UnitRoom)
+	if !ok {
+		return ""
+	}
+	return owner.(string)
 }

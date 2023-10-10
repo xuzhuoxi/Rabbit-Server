@@ -37,9 +37,9 @@ func TestNewMMOManager(t *testing.T) {
 	}
 	eMgr.AddEventListener(events.EventEntityVarChanged, onVarChanged)
 	eMgr.AddEventListener(events.EventEntityVarsChanged, onVarsChanged)
-	eMgr.ForEachRoom(func(room basis.IRoomEntity) {
+	eMgr.ForEachRoom(func(room basis.IRoomEntity) (interrupt bool) {
 		go setVar(room, time.Duration(rand.Int63n(5)))
-		return
+		return false
 	})
 	time.Sleep(time.Second * 5)
 }

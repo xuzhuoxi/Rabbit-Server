@@ -30,6 +30,12 @@ func (o *EntityIndex) EntityType() basis.EntityType {
 	return o.entityType
 }
 
+func (o *EntityIndex) Size() int {
+	o.indexLock.RLock()
+	defer o.indexLock.RUnlock()
+	return len(o.entityMap)
+}
+
 func (o *EntityIndex) Check(id string) bool {
 	o.indexLock.RLock()
 	defer o.indexLock.RUnlock()
@@ -97,13 +103,15 @@ func (o *EntityIndex) Update(entity basis.IEntity) (errNum int, err error) {
 	return 0, nil
 }
 
-func (o *EntityIndex) ForEachEntity(each func(entity basis.IEntity)) {
+func (o *EntityIndex) ForEachEntity(each func(entity basis.IEntity) (interrupt bool)) {
 	if nil == each {
 		return
 	}
 	o.indexLock.Lock()
 	defer o.indexLock.Unlock()
 	for _, entity := range o.entityMap {
-		each(entity)
+		if each(entity) {
+			break
+		}
 	}
 }
