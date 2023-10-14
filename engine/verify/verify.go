@@ -23,10 +23,10 @@ type reqLog struct {
 	origin    []int64
 }
 
-func (o *reqLog) ReplaceStamp(newStamp int64) {
-	o.ReqStamps = append(o.origin, o.ReqStamps...)
-	o.ReqStamps = append(o.ReqStamps, newStamp)
-}
+//func (o *reqLog) ReplaceStamp(newStamp int64) {
+//	o.ReqStamps = append(o.origin, o.ReqStamps...)
+//	o.ReqStamps = append(o.ReqStamps, newStamp)
+//}
 
 func (o *reqLog) AppendStamp(newStamp int64) {
 	o.ReqStamps = append(o.ReqStamps, newStamp)
@@ -55,24 +55,27 @@ func (o *RabbitVerify) Verify(name string, pid string, uid string) (rsCode int32
 	nowStamp := time.Now().UnixNano()
 	if log.Name != name || log.PId != pid {
 		log.Name, log.PId = name, pid
-		log.SetStamp(nowStamp)
+		log.SetStamp(nowStamp) // 重置并记录
 		return protox.CodeSuc
 	}
 	//fmt.Println("RabbitVerify.Verify", name, pid, uid, found, log.ReqStamps)
-	if found.MinFreqVal > 0 && (nowStamp-log.ReqStamps[len(log.ReqStamps)-1]) < int64(found.MinFreqVal) {
-		log.ReplaceStamp(nowStamp)
-		return protox.CodeFreq
+	if found.FreqLimitOn() { // FreqLimit 频率限制验证
+		if (nowStamp - log.ReqStamps[len(log.ReqStamps)-1]) < int64(found.GetMinFreq()) {
+			log.AppendStamp(nowStamp)
+			return protox.CodeFreq
+		}
 	}
-	if found.MaxPerSec == 0 || len(log.ReqStamps) < found.MaxPerSec {
-		log.AppendStamp(nowStamp)
-		return protox.CodeSuc
+	if found.PerSecLimitOn() { // PerSecLimit 每秒条数限制验证
+		maxCount := found.GetMaxPerSec()
+		if len(log.ReqStamps) >= maxCount {
+			index := len(log.ReqStamps) - maxCount
+			if nowStamp-log.ReqStamps[index] < int64(time.Second) {
+				log.AppendStamp(nowStamp)
+				return protox.CodeFreq
+			}
+		}
 	}
-	index := len(log.ReqStamps) - found.MaxPerSec
-	if nowStamp-log.ReqStamps[index] < int64(time.Second) {
-		log.ReplaceStamp(nowStamp)
-		return protox.CodeFreq
-	}
-	log.AppendStamp(nowStamp)
+	log.AppendStamp(nowStamp) // 追加记录
 	return protox.CodeSuc
 }
 

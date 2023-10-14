@@ -4,31 +4,45 @@
 package config
 
 import (
-	"fmt"
 	"github.com/xuzhuoxi/infra-go/timex"
 	"sort"
 	"strings"
 	"time"
 )
 
-type CfgVerify struct {
+type ICfgProtoVerify interface {
+	PerSecLimitOn() bool
+	GetMaxPerSec() int
+	FreqLimitOn() bool
+	GetMinFreq() time.Duration
+}
+
+type CfgProtoVerify struct {
+	Name       string `yaml:"name,omitempty"`
+	PId        string `yaml:"pid,omitempty"`
 	MaxPerSec  int    `yaml:"max_per_sec"`
 	MinFreq    string `yaml:"min_freq"`
 	MinFreqVal time.Duration
 }
 
-func (o CfgVerify) String() string {
-	return fmt.Sprint("{", o.MaxPerSec, o.MinFreq, o.MinFreqVal, "}")
+func (o CfgProtoVerify) PerSecLimitOn() bool {
+	return o.MaxPerSec > 0
 }
 
-type CfgProtoVerify struct {
-	Name string `yaml:"name"`
-	PId  string `yaml:"pid"`
-	CfgVerify
+func (o CfgProtoVerify) GetMaxPerSec() int {
+	return o.MaxPerSec
+}
+
+func (o CfgProtoVerify) FreqLimitOn() bool {
+	return o.MinFreqVal > 0
+}
+
+func (o CfgProtoVerify) GetMinFreq() time.Duration {
+	return o.MinFreqVal
 }
 
 type CfgVerifyRoot struct {
-	Default CfgVerify        `yaml:"default"`
+	Default CfgProtoVerify   `yaml:"default"`
 	Customs []CfgProtoVerify `yaml:"custom"`
 }
 
@@ -69,10 +83,10 @@ func (o *CfgVerifyRoot) Swap(i, j int) {
 	o.Customs[i], o.Customs[j] = o.Customs[j], o.Customs[i]
 }
 
-func (o *CfgVerifyRoot) FindVerify(name string, pid string) (v CfgVerify) {
+func (o *CfgVerifyRoot) FindVerify(name string, pid string) (v ICfgProtoVerify) {
 	for index := len(o.Customs) - 1; index >= 0; index -= 1 {
 		if name == o.Customs[index].Name && pid == o.Customs[index].PId {
-			return o.Customs[index].CfgVerify
+			return o.Customs[index]
 		}
 	}
 	return o.Default

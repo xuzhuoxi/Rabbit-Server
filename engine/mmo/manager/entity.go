@@ -263,7 +263,9 @@ func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string)
 		}
 	}
 	if nil != entity {
-		o.removeEntityEventListener(entity)
+		if ed, ok := entity.(eventx.IEventDispatcher); ok {
+			o.removeEntityEventListener(ed)
+		}
 		if initEntity, ok := entity.(basis.IInitEntity); ok {
 			initEntity.DestroyEntity()
 		}
@@ -271,26 +273,23 @@ func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string)
 	return
 }
 
-func (o *EntityManager) addEntityEventListener(entity basis.IEntity) {
-	if dispatcher, ok := entity.(eventx.IEventDispatcher); ok {
-		dispatcher.AddEventListener(events.EventEntityVarChanged, o.onEventRedirect)
-		dispatcher.AddEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
-		dispatcher.AddEventListener(events.EventUnitInit, o.onEventRedirect)
-		dispatcher.AddEventListener(events.EventUnitDestroy, o.onEventRedirect)
-	}
+func (o *EntityManager) addEntityEventListener(entity eventx.IEventDispatcher) {
+	entity.AddEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+	entity.AddEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+	entity.AddEventListener(events.EventUnitInit, o.onEventRedirect)
+	entity.AddEventListener(events.EventUnitDestroy, o.onEventRedirect)
 }
 
-func (o *EntityManager) removeEntityEventListener(entity basis.IEntity) {
-	if dispatcher, ok := entity.(eventx.IEventDispatcher); ok {
-		dispatcher.RemoveEventListener(events.EventUnitDestroy, o.onEventRedirect)
-		dispatcher.RemoveEventListener(events.EventUnitInit, o.onEventRedirect)
-		dispatcher.RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
-		dispatcher.RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
-	}
+func (o *EntityManager) removeEntityEventListener(entity eventx.IEventDispatcher) {
+	entity.RemoveEventListener(events.EventUnitDestroy, o.onEventRedirect)
+	entity.RemoveEventListener(events.EventUnitInit, o.onEventRedirect)
+	entity.RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+	entity.RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
 }
 
 // 事件重定向
 func (o *EntityManager) onEventRedirect(evd *eventx.EventData) {
+	//fmt.Println("[EntityManager.onEventRedirect]", evd.EventType)
 	evd.StopImmediatePropagation()
 	o.DispatchEvent(evd.EventType, o, evd.Data)
 }

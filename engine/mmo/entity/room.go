@@ -79,8 +79,7 @@ func (o *RoomEntity) InitEntity() {
 
 func (o *RoomEntity) DestroyEntity() {
 	o.UnitContainer.ForEachUnit(func(child basis.IUnitEntity) (interrupt bool) {
-		child.RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
-		child.RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+		o.removeUnitEventListener(child)
 		return false
 	})
 }
@@ -130,8 +129,7 @@ func (o *RoomEntity) CreateUnits(params []basis.UnitParams, mustAll bool) (units
 	units, rsCode, err = o.UnitContainer.CreateUnits(params, mustAll)
 	if rsCode == protox.CodeSuc {
 		for index := range units {
-			units[index].AddEventListener(events.EventEntityVarChanged, o.onEventRedirect)
-			units[index].AddEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+			o.addUnitEventListener(units[index])
 		}
 		defer func() {
 			for index := range units {
@@ -145,8 +143,7 @@ func (o *RoomEntity) CreateUnits(params []basis.UnitParams, mustAll bool) (units
 func (o *RoomEntity) DestroyUnit(unitId string) (unit basis.IUnitEntity, rsCode int32, err error) {
 	unit, rsCode, err = o.UnitContainer.DestroyUnit(unitId)
 	if rsCode == protox.CodeSuc {
-		unit.RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
-		unit.RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+		o.removeUnitEventListener(unit)
 		defer o.DispatchEvent(events.EventUnitDestroy, o, unit)
 	}
 	return
@@ -158,8 +155,7 @@ func (o *RoomEntity) DestroyUnitsByOwner(owner string) []basis.IUnitEntity {
 		return nil
 	}
 	for index := range rs {
-		rs[index].RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
-		rs[index].RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+		o.removeUnitEventListener(rs[index])
 	}
 	defer func() {
 		for index := range rs {
@@ -173,8 +169,19 @@ func (o *RoomEntity) ForEachUnit(each func(child basis.IUnitEntity) (interrupt b
 	o.UnitContainer.ForEachUnit(each)
 }
 
+func (o *RoomEntity) addUnitEventListener(unit eventx.IEventDispatcher) {
+	unit.AddEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+	unit.AddEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+}
+
+func (o *RoomEntity) removeUnitEventListener(unit eventx.IEventDispatcher) {
+	unit.RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+	unit.RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+}
+
 // 事件重定向
 func (o *RoomEntity) onEventRedirect(evd *eventx.EventData) {
+	//fmt.Println("[RoomEntity.onEventRedirect]", evd.EventType)
 	evd.StopImmediatePropagation()
 	o.DispatchEvent(evd.EventType, o, evd.Data)
 }

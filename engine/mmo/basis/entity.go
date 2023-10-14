@@ -32,7 +32,7 @@ const (
 
 var (
 	entityNames = make(map[EntityType]string)
-	entities    = []EntityType{EntityRoom, EntityPlayer, EntityTeamCorps, EntityTeam, EntityChannel}
+	entities    = []EntityType{EntityUnit, EntityPlayer, EntityRoom, EntityTeam, EntityTeamCorps, EntityChannel}
 )
 
 func init() {
