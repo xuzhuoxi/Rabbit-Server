@@ -44,17 +44,10 @@ func (o *UnitIndex) GetUnit(unitId string) (Unit basis.IUnitEntity, ok bool) {
 	return
 }
 
-func (o *UnitIndex) AddUnit(Unit basis.IUnitEntity) (rsCode int32, err error) {
+func (o *UnitIndex) AddUnit(unit basis.IUnitEntity) (rsCode int32, err error) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
-	num, err1 := o.EntityIndex.Add(Unit)
-	if nil == err1 {
-		return
-	}
-	if num == 1 || num == 2 {
-		return basis.CodeMMOIndexType, err1
-	}
-	return basis.CodeMMOUnitExist, err1
+	return o.addUnit(unit)
 }
 
 func (o *UnitIndex) AddUnits(units []basis.IUnitEntity, mustAll bool) (rsCode int32, err error) {
@@ -65,7 +58,7 @@ func (o *UnitIndex) AddUnits(units []basis.IUnitEntity, mustAll bool) (rsCode in
 	defer o.lock.Unlock()
 	index := 0
 	for index = range units {
-		rsCode, err = o.AddUnit(units[index])
+		rsCode, err = o.addUnit(units[index])
 		if rsCode != protox.CodeSuc {
 			if mustAll {
 				goto undo
@@ -85,11 +78,7 @@ undo:
 func (o *UnitIndex) RemoveUnit(unitId string) (Unit basis.IUnitEntity, rsCode int32, err error) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
-	c, _, err1 := o.EntityIndex.Remove(unitId)
-	if nil != c {
-		return c.(basis.IUnitEntity), 0, nil
-	}
-	return nil, basis.CodeMMOUnitNotExist, err1
+	return o.removeUnit(unitId)
 }
 
 func (o *UnitIndex) RemoveUnits(match func(entity basis.IUnitEntity) bool) (units []basis.IUnitEntity) {
@@ -106,7 +95,7 @@ func (o *UnitIndex) RemoveUnits(match func(entity basis.IUnitEntity) bool) (unit
 		return
 	}
 	for index := range idArr {
-		e, _, _ := o.EntityIndex.Remove(idArr[index])
+		e, _, _ := o.removeUnit(idArr[index])
 		if nil != e {
 			units = append(units, e.(basis.IUnitEntity))
 		}
@@ -114,9 +103,32 @@ func (o *UnitIndex) RemoveUnits(match func(entity basis.IUnitEntity) bool) (unit
 	return
 }
 
-func (o *UnitIndex) UpdateUnit(Unit basis.IUnitEntity) (rsCode int32, err error) {
+func (o *UnitIndex) UpdateUnit(unit basis.IUnitEntity) (rsCode int32, err error) {
 	o.lock.Lock()
 	defer o.lock.Unlock()
+	return o.updateUnit(unit)
+}
+
+func (o *UnitIndex) addUnit(unit basis.IUnitEntity) (rsCode int32, err error) {
+	num, err1 := o.EntityIndex.Add(unit)
+	if nil == err1 {
+		return
+	}
+	if num == 1 || num == 2 {
+		return basis.CodeMMOIndexType, err1
+	}
+	return basis.CodeMMOUnitExist, err1
+}
+
+func (o *UnitIndex) removeUnit(unitId string) (Unit basis.IUnitEntity, rsCode int32, err error) {
+	c, _, err1 := o.EntityIndex.Remove(unitId)
+	if nil != c {
+		return c.(basis.IUnitEntity), 0, nil
+	}
+	return nil, basis.CodeMMOUnitNotExist, err1
+}
+
+func (o *UnitIndex) updateUnit(Unit basis.IUnitEntity) (rsCode int32, err error) {
 	_, err1 := o.EntityIndex.Update(Unit)
 	if nil != err1 {
 		return basis.CodeMMOIndexType, err1

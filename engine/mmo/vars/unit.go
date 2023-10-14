@@ -12,4 +12,6 @@ const (
     UnitInputMove string = "im"
     // UnitInputJump 输入状态, Jump(bool)
     UnitInputJump string = "ij"
+    // UnitActionState 动作状态(uint32)
+    UnitActionState string = "as"
 )
