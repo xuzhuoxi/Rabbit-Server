@@ -10,6 +10,8 @@ const (
     UnitLook string = "lk"
     // UnitInputMove int32数组;输入X、输入Y、输入Z
     UnitInputMove string = "im"
+    // UnitInputTarget int32数组;目标X、目标Y、目标Z
+    UnitInputTarget string = "it"
     // UnitInputJump 输入状态, Jump(bool)
     UnitInputJump string = "ij"
     // UnitActionState 动作状态(uint32)

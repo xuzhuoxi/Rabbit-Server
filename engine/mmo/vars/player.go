@@ -6,6 +6,8 @@ const (
     PlayerLook string = "lk"
     // PlayerInputMove int32数组;输入X、输入Y、输入Z
     PlayerInputMove string = "im"
+    // PlayerInputTarget int32数组;目标X、目标Y、目标Z
+    PlayerInputTarget string = "it"
     // PlayerInputJump 输入状态Jump(bool)
     PlayerInputJump string = "ij"
     // PlayerActionState 动作状态(uint32)
