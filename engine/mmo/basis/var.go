@@ -24,6 +24,11 @@ type IVariableSupport interface {
 	SetVars(kv encodingx.IKeyValue, notify bool) (diff []string)
 	// SetArrayVars 批量设置变量
 	SetArrayVars(keys []string, vals []interface{}, notify bool) (diff []string)
+
+	// DelVar 删除变量
+	DelVar(kv string, notify bool) (ok bool)
+	// DelVars 批量删除变量
+	DelVars(keys []string, notify bool) (delKeys []string)
 }
 
 //type IVarSet interface {

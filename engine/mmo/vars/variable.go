@@ -66,16 +66,15 @@ func (o *VariableSupport) SetVar(kv string, value interface{}, notify bool) (ok 
 	if len(kv) == 0 {
 		return
 	}
-	o.lock.Lock()
-	if value == nil {
-		_, ok = o.vars.Delete(kv)
-	} else {
-		_, ok = o.vars.Set(kv, value)
+	if nil == value {
+		return o.DelVar(kv, notify)
 	}
+	o.lock.Lock()
+	_, ok = o.vars.Set(kv, value)
 	o.lock.Unlock()
 	if ok && notify {
-		o.DispatchEvent(events.EventEntityVarChanged, o.currentTarget,
-			&events.VarEventData{Entity: o.currentTarget, Key: kv, Value: value})
+		o.DispatchEvent(events.EventEntityVarMod, o.currentTarget,
+			&events.VarModEventData{Entity: o.currentTarget, Key: kv, Value: value})
 	}
 	return
 }
@@ -88,8 +87,8 @@ func (o *VariableSupport) SetVars(kv encodingx.IKeyValue, notify bool) (diff []s
 	diff = o.vars.Merge(kv, true)
 	o.lock.Unlock()
 	if len(diff) > 0 && notify {
-		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
-			&events.VarsEventData{Entity: o.currentTarget, VarSet: o.vars, VarKeys: diff})
+		o.DispatchEvent(events.EventEntityVarsMod, o.currentTarget,
+			&events.VarsModEventData{Entity: o.currentTarget, VarSet: o.vars, VarKeys: diff})
 	}
 	return
 }
@@ -102,8 +101,41 @@ func (o *VariableSupport) SetArrayVars(keys []string, vals []interface{}, notify
 	diff = o.vars.MergeArray(keys, vals, false)
 	o.lock.Unlock()
 	if len(diff) > 0 && notify {
-		o.DispatchEvent(events.EventEntityVarsChanged, o.currentTarget,
-			&events.VarsEventData{Entity: o.currentTarget, VarSet: o.vars, VarKeys: diff})
+		o.DispatchEvent(events.EventEntityVarsMod, o.currentTarget,
+			&events.VarsModEventData{Entity: o.currentTarget, VarSet: o.vars, VarKeys: diff})
+	}
+	return
+}
+
+func (o *VariableSupport) DelVar(kv string, notify bool) (ok bool) {
+	if len(kv) == 0 {
+		return
+	}
+	o.lock.Lock()
+	_, ok = o.vars.Delete(kv)
+	o.lock.Unlock()
+	if ok && notify {
+		o.DispatchEvent(events.EventEntityVarDel, o.currentTarget,
+			&events.VarDelEventData{Entity: o.currentTarget, Key: kv})
+	}
+	return
+}
+
+func (o *VariableSupport) DelVars(keys []string, notify bool) (delKeys []string) {
+	if len(keys) == 0 {
+		return keys
+	}
+	o.lock.Lock()
+	for index := range keys {
+		_, ok := o.vars.Delete(keys[index])
+		if ok {
+			delKeys = append(delKeys, keys[index])
+		}
+	}
+	o.lock.Unlock()
+	if len(delKeys) > 0 && notify {
+		o.DispatchEvent(events.EventEntityVarsDel, o.currentTarget,
+			&events.VarsDelEventData{Entity: o.currentTarget, VarKeys: delKeys})
 	}
 	return
 }

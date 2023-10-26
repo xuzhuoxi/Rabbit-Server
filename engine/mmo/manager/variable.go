@@ -73,7 +73,7 @@ func (o *VariableManager) DisposeManager() {
 }
 
 func (o *VariableManager) onEntityVar(evd *eventx.EventData) {
-	data := evd.Data.(*events.VarEventData)
+	data := evd.Data.(*events.VarModEventData)
 	eventEntity := data.Entity
 	key := data.Key
 	value := data.Value
@@ -84,7 +84,7 @@ func (o *VariableManager) onEntityVar(evd *eventx.EventData) {
 }
 
 func (o *VariableManager) onEntityVars(evd *eventx.EventData) {
-	data := evd.Data.(*events.VarsEventData)
+	data := evd.Data.(*events.VarsModEventData)
 	eventEntity := data.Entity
 	varSet := data.VarKeys
 	logger := o.GetLogger()

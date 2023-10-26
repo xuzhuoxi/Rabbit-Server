@@ -76,7 +76,7 @@ func init() {
 func initPlayerVarMetas() {
 	playerVarMetas = make(map[string]VarMeta)
 	playerVarMetas[PlayerPos] = VarMeta{Key: PlayerPos, Type: VarForever, Default: []int32{0, 0, 0}}
-	playerVarMetas[PlayerLook] = VarMeta{Key: PlayerLook, Type: VarForever, Default: int16(0)}
+	playerVarMetas[PlayerToward] = VarMeta{Key: PlayerToward, Type: VarForever, Default: int16(0)}
 	playerVarMetas[PlayerInputMove] = VarMeta{Key: PlayerInputMove, Type: VarForever, Default: []int32{0, 0, 0}}
 	playerVarMetas[PlayerInputJump] = VarMeta{Key: PlayerInputJump, Type: VarSoon, Default: false}
 
@@ -91,11 +91,11 @@ func initPlayerVarMetas() {
 
 func initUnitVarMetas() {
 	unitVarMetas = make(map[string]VarMeta)
-	unitVarMetas[UnitOwner] = VarMeta{Key: PlayerPos, Type: VarForever, Default: ""}
-	unitVarMetas[UnitRoom] = VarMeta{Key: PlayerInputMove, Type: VarForever, Default: ""}
-	unitVarMetas[UnitPos] = VarMeta{Key: PlayerInputMove, Type: VarForever, Default: []int32{0, 0, 0}}
-	unitVarMetas[UnitLook] = VarMeta{Key: PlayerInputJump, Type: VarForever, Default: int16(0)}
+	unitVarMetas[UnitOwner] = VarMeta{Key: UnitOwner, Type: VarForever, Default: ""}
+	unitVarMetas[UnitRoom] = VarMeta{Key: UnitRoom, Type: VarForever, Default: ""}
+	unitVarMetas[UnitPos] = VarMeta{Key: UnitPos, Type: VarForever, Default: []int32{0, 0, 0}}
+	unitVarMetas[UnitToward] = VarMeta{Key: UnitToward, Type: VarForever, Default: int16(0)}
 
 	unitVarMetas[UnitInputMove] = VarMeta{Key: UnitInputMove, Type: VarForever, Default: []int32{0, 0, 0}}
-	unitVarMetas[UnitInputJump] = VarMeta{Key: PlayerInputJump, Type: VarSoon, Default: false}
+	unitVarMetas[UnitInputJump] = VarMeta{Key: UnitInputJump, Type: VarSoon, Default: false}
 }

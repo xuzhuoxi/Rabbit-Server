@@ -10,22 +10,38 @@ import (
 )
 
 const (
-	// EventEntityVarChanged 实体变量更新事件
-	// 事件数据格式：*basis.VarEventData
-	EventEntityVarChanged = "Entity-VariableChanged"
-	// EventEntityVarsChanged 实体变量批量更新事件
-	// 事件数据格式：*basis.VarsEventData
-	EventEntityVarsChanged = "Entity-VariablesChanged"
+	// EventEntityVarMod 实体变量更新事件
+	// 事件数据格式：*VarModEventData
+	EventEntityVarMod = "MMO.EventEntityVarMod"
+	// EventEntityVarsMod 实体变量批量更新事件
+	// 事件数据格式：*VarsModEventData
+	EventEntityVarsMod = "MMO.EventEntityVarsMod"
+	// EventEntityVarDel 实体变量删除事件
+	// 事件数据格式：*VarDelEventData
+	EventEntityVarDel = "MMO.EventEntityVarDel"
+	// EventEntityVarsDel 实体变量批量删除事件
+	// 事件数据格式：*VarsDelEventData
+	EventEntityVarsDel = "MMO.EventEntityVarsDel"
 )
 
-type VarEventData struct {
+type VarModEventData struct {
 	Entity basis.IEntity
 	Key    string
 	Value  interface{}
 }
 
-type VarsEventData struct {
+type VarsModEventData struct {
 	Entity  basis.IEntity
 	VarSet  encodingx.IKeyValue
+	VarKeys []string
+}
+
+type VarDelEventData struct {
+	Entity basis.IEntity
+	Key    string
+}
+
+type VarsDelEventData struct {
+	Entity  basis.IEntity
 	VarKeys []string
 }

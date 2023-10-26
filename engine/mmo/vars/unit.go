@@ -6,8 +6,8 @@ const (
     UnitRoom string = "rm"
     // UnitPos int32数组;坐标X、坐标Y、坐标Z
     UnitPos string = "pos"
-    // UnitLook 朝向，int16
-    UnitLook string = "lk"
+    // UnitToward 朝向，int16
+    UnitToward string = "tw"
     // UnitInputMove int32数组;输入X、输入Y、输入Z
     UnitInputMove string = "im"
     // UnitInputTarget int32数组;目标X、目标Y、目标Z

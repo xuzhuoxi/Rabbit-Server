@@ -274,8 +274,8 @@ func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string)
 }
 
 func (o *EntityManager) addEntityEventListener(entity eventx.IEventDispatcher) {
-	entity.AddEventListener(events.EventEntityVarChanged, o.onEventRedirect)
-	entity.AddEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
+	entity.AddEventListener(events.EventEntityVarMod, o.onEventRedirect)
+	entity.AddEventListener(events.EventEntityVarsMod, o.onEventRedirect)
 	entity.AddEventListener(events.EventUnitInit, o.onEventRedirect)
 	entity.AddEventListener(events.EventUnitDestroy, o.onEventRedirect)
 }
@@ -283,8 +283,8 @@ func (o *EntityManager) addEntityEventListener(entity eventx.IEventDispatcher) {
 func (o *EntityManager) removeEntityEventListener(entity eventx.IEventDispatcher) {
 	entity.RemoveEventListener(events.EventUnitDestroy, o.onEventRedirect)
 	entity.RemoveEventListener(events.EventUnitInit, o.onEventRedirect)
-	entity.RemoveEventListener(events.EventEntityVarsChanged, o.onEventRedirect)
-	entity.RemoveEventListener(events.EventEntityVarChanged, o.onEventRedirect)
+	entity.RemoveEventListener(events.EventEntityVarsMod, o.onEventRedirect)
+	entity.RemoveEventListener(events.EventEntityVarMod, o.onEventRedirect)
 }
 
 // 事件重定向

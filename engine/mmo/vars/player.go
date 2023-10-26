@@ -2,8 +2,8 @@ package vars
 const (
     // PlayerPos int32数组;坐标X、坐标Y、坐标Z
     PlayerPos string = "pos"
-    // PlayerLook 朝向，int16
-    PlayerLook string = "lk"
+    // PlayerToward 朝向，int16
+    PlayerToward string = "tw"
     // PlayerInputMove int32数组;输入X、输入Y、输入Z
     PlayerInputMove string = "im"
     // PlayerInputTarget int32数组;目标X、目标Y、目标Z

@@ -35,8 +35,8 @@ func TestNewMMOManager(t *testing.T) {
 	if nil != err1 {
 		t.Fatal(err1)
 	}
-	eMgr.AddEventListener(events.EventEntityVarChanged, onVarChanged)
-	eMgr.AddEventListener(events.EventEntityVarsChanged, onVarsChanged)
+	eMgr.AddEventListener(events.EventEntityVarMod, onVarChanged)
+	eMgr.AddEventListener(events.EventEntityVarsMod, onVarsChanged)
 	eMgr.ForEachRoom(func(room basis.IRoomEntity) (interrupt bool) {
 		go setVar(room, time.Duration(rand.Int63n(5)))
 		return false
@@ -45,12 +45,12 @@ func TestNewMMOManager(t *testing.T) {
 }
 
 func onVarChanged(evd *eventx.EventData) {
-	varData := evd.Data.(events.VarEventData)
+	varData := evd.Data.(events.VarModEventData)
 	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.Key, varData.Value)
 }
 
 func onVarsChanged(evd *eventx.EventData) {
-	varData := evd.Data.(events.VarsEventData)
+	varData := evd.Data.(events.VarsModEventData)
 	fmt.Println(varData.Entity.UID(), varData.Entity.EntityType(), varData.VarKeys)
 }
 
