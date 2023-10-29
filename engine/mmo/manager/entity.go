@@ -276,6 +276,8 @@ func (o *EntityManager) DestroyEntityBy(entityType basis.EntityType, eId string)
 func (o *EntityManager) addEntityEventListener(entity eventx.IEventDispatcher) {
 	entity.AddEventListener(events.EventEntityVarMod, o.onEventRedirect)
 	entity.AddEventListener(events.EventEntityVarsMod, o.onEventRedirect)
+	entity.AddEventListener(events.EventEntityVarDel, o.onEventRedirect)
+	entity.AddEventListener(events.EventEntityVarsDel, o.onEventRedirect)
 	entity.AddEventListener(events.EventUnitInit, o.onEventRedirect)
 	entity.AddEventListener(events.EventUnitDestroy, o.onEventRedirect)
 }
@@ -283,6 +285,8 @@ func (o *EntityManager) addEntityEventListener(entity eventx.IEventDispatcher) {
 func (o *EntityManager) removeEntityEventListener(entity eventx.IEventDispatcher) {
 	entity.RemoveEventListener(events.EventUnitDestroy, o.onEventRedirect)
 	entity.RemoveEventListener(events.EventUnitInit, o.onEventRedirect)
+	entity.RemoveEventListener(events.EventEntityVarsDel, o.onEventRedirect)
+	entity.RemoveEventListener(events.EventEntityVarDel, o.onEventRedirect)
 	entity.RemoveEventListener(events.EventEntityVarsMod, o.onEventRedirect)
 	entity.RemoveEventListener(events.EventEntityVarMod, o.onEventRedirect)
 }

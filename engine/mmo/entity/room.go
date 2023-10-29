@@ -117,8 +117,7 @@ func (o *RoomEntity) Units() []basis.IUnitEntity {
 func (o *RoomEntity) CreateUnit(params basis.UnitParams) (unit basis.IUnitEntity, rsCode int32, err error) {
 	unit, rsCode, err = o.UnitContainer.CreateUnit(params)
 	if rsCode == protox.CodeSuc {
-		unit.AddEventListener(events.EventEntityVarMod, o.onEventRedirect)
-		unit.AddEventListener(events.EventEntityVarsMod, o.onEventRedirect)
+		o.addUnitEventListener(unit)
 		defer o.DispatchEvent(events.EventUnitInit, o, unit)
 		fmt.Println("[RoomEntity.CreateUnit]")
 	}
@@ -172,9 +171,13 @@ func (o *RoomEntity) ForEachUnit(each func(child basis.IUnitEntity) (interrupt b
 func (o *RoomEntity) addUnitEventListener(unit eventx.IEventDispatcher) {
 	unit.AddEventListener(events.EventEntityVarMod, o.onEventRedirect)
 	unit.AddEventListener(events.EventEntityVarsMod, o.onEventRedirect)
+	unit.AddEventListener(events.EventEntityVarDel, o.onEventRedirect)
+	unit.AddEventListener(events.EventEntityVarsDel, o.onEventRedirect)
 }
 
 func (o *RoomEntity) removeUnitEventListener(unit eventx.IEventDispatcher) {
+	unit.RemoveEventListener(events.EventEntityVarsDel, o.onEventRedirect)
+	unit.RemoveEventListener(events.EventEntityVarDel, o.onEventRedirect)
 	unit.RemoveEventListener(events.EventEntityVarsMod, o.onEventRedirect)
 	unit.RemoveEventListener(events.EventEntityVarMod, o.onEventRedirect)
 }
