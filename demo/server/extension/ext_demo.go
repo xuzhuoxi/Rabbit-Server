@@ -26,8 +26,8 @@ type originObj struct {
 type paramCodingHandler struct {
 }
 
-func (c *paramCodingHandler) HandleEncode(data interface{}) []byte {
-	return nil
+func (c *paramCodingHandler) HandleEncode(data interface{}) (bs []byte, err error) {
+	return
 }
 
 func (c *paramCodingHandler) HandleDecode(bs []byte, data interface{}) error {

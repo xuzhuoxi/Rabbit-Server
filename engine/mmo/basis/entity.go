@@ -145,10 +145,19 @@ type IRoomEntity interface {
 
 	IEntityContainer
 	IUnitContainer
+
+	// RoomMapId 房间地图Id
+	RoomMapId() string
+
+	// PlayerCap 玩家容量
+	PlayerCap() int
+	// SetPlayerCap 设置玩家最高容量
+	SetPlayerCap(cap int)
 	// PlayerCount 玩家数量
 	PlayerCount() int
 	// Players 全部玩家
 	Players() []IPlayerEntity
+
 	// UnitCount 单位数量
 	UnitCount() int
 	// UnitIndex 单位索引

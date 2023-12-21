@@ -5,7 +5,6 @@
 package entity
 
 import (
-	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
@@ -13,22 +12,21 @@ import (
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 )
 
-func NewIAOBRoomEntity(roomId string, roomName string) basis.IRoomEntity {
-	return NewAOBRoomEntity(roomId, roomName)
+func NewIAOBRoomEntity(roomId string, roomName string, playerCap int) basis.IRoomEntity {
+	return NewAOBRoomEntity(roomId, roomName, playerCap)
 }
 
-func NewIRoomEntity(roomId string, roomName string) basis.IRoomEntity {
-	return NewRoomEntity(roomId, roomName)
+func NewIRoomEntity(roomId string, roomName string, playerCap int) basis.IRoomEntity {
+	return NewRoomEntity(roomId, roomName, playerCap)
 }
 
-func NewAOBRoomEntity(roomId string, roomName string) *AOBRoomEntity {
-	room := &AOBRoomEntity{RoomEntity: *NewRoomEntity(roomId, roomName)}
+func NewAOBRoomEntity(roomId string, roomName string, playerCap int) *AOBRoomEntity {
+	room := &AOBRoomEntity{RoomEntity: *NewRoomEntity(roomId, roomName, playerCap)}
 	return room
 }
 
-func NewRoomEntity(roomId string, roomName string) *RoomEntity {
-	room := &RoomEntity{RoomId: roomId, RoomName: roomName, MaxMember: 0}
-	room.MaxMember = 100
+func NewRoomEntity(roomId string, roomName string, playerCap int) *RoomEntity {
+	room := &RoomEntity{RoomId: roomId, RoomName: roomName, _PlayerCap: playerCap}
 	return room
 }
 
@@ -50,9 +48,9 @@ func (e *AOBRoomEntity) Broadcast(speaker string, handler func(receiver string))
 
 // RoomEntity 常规房间
 type RoomEntity struct {
-	RoomId    string
-	RoomName  string
-	MaxMember int
+	RoomId     string
+	RoomName   string
+	_PlayerCap int
 	vars.VariableSupport
 	UnitContainer UnitContainer
 	ListEntityContainer
@@ -72,7 +70,7 @@ func (o *RoomEntity) Name() string {
 }
 
 func (o *RoomEntity) InitEntity() {
-	o.ListEntityContainer = *NewListEntityContainer(o.MaxMember)
+	o.ListEntityContainer = *NewListEntityContainer(o._PlayerCap)
 	o.VariableSupport = *vars.NewVariableSupport(o)
 	o.UnitContainer = *NewUnitContainer(o.RoomId, 1000)
 }
@@ -84,8 +82,24 @@ func (o *RoomEntity) DestroyEntity() {
 	})
 }
 
+func (o *RoomEntity) PlayerCap() int {
+	return o._PlayerCap
+}
+
+func (o *RoomEntity) SetPlayerCap(cap int) {
+	o._PlayerCap = cap
+}
+
 func (o *RoomEntity) PlayerCount() int {
 	return o.ListEntityContainer.NumChildren()
+}
+
+func (o *RoomEntity) RoomMapId() string {
+	mid, ok := o.GetVar(vars.RoomMapId)
+	if ok {
+		return mid.(string)
+	}
+	return ""
 }
 
 func (o *RoomEntity) Players() []basis.IPlayerEntity {
@@ -119,7 +133,6 @@ func (o *RoomEntity) CreateUnit(params basis.UnitParams) (unit basis.IUnitEntity
 	if rsCode == protox.CodeSuc {
 		o.addUnitEventListener(unit)
 		defer o.DispatchEvent(events.EventUnitInit, o, unit)
-		fmt.Println("[RoomEntity.CreateUnit]")
 	}
 	return
 }

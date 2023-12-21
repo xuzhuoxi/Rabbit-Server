@@ -10,10 +10,11 @@ import (
 )
 
 type CfgMMOEntity struct {
-	Id   string   `json:"id" yaml:"id"`
-	Name string   `json:"name" yaml:"name"`
-	Cap  int      `json:"cap" yaml:"cap"`
-	Tags []string `json:"tags" yaml:"tags"`
+	Id    string   `json:"id" yaml:"id"`
+	RefId string   `json:"rid" yaml:"rid"`
+	Name  string   `json:"name" yaml:"name"`
+	Cap   int      `json:"cap" yaml:"cap"`
+	Tags  []string `json:"tags" yaml:"tags"`
 }
 
 func (o *CfgMMOEntity) AppendTag(tag string) bool {
