@@ -146,6 +146,8 @@ type IRoomEntity interface {
 	IEntityContainer
 	IUnitContainer
 
+	// RoomRefId 引用Id
+	RoomRefId() string
 	// RoomMapId 房间地图Id
 	RoomMapId() string
 

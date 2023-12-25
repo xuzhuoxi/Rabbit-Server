@@ -40,10 +40,12 @@ const (
     CodeMMOPlayerExist int32 = -113
     // CodeMMOPlayerNotExist 用户不存在
     CodeMMOPlayerNotExist int32 = -114
+    // CodeMMOPlayerInRoom 用户已经在房间中
+    CodeMMOPlayerInRoom int32 = -115
     // CodeMMOUnitExist 单位已存在
-    CodeMMOUnitExist int32 = -115
+    CodeMMOUnitExist int32 = -116
     // CodeMMOUnitNotExist 单位不存在
-    CodeMMOUnitNotExist int32 = -116
+    CodeMMOUnitNotExist int32 = -117
     // CodeMMOIndexType 索引类型不匹配
     CodeMMOIndexType int32 = -200
     // CodeMMOOther 其它错误

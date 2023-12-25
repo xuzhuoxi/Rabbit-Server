@@ -21,7 +21,7 @@ import (
 
 type IEntityFactory interface {
 	// CreateRoom 构造房间
-	CreateRoom(roomId string, roomName string, playerCap int, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error)
+	CreateRoom(roomId string, roomRefId string, roomName string, playerCap int, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error)
 	// CreatePlayer 创建玩家实体
 	CreatePlayer(playerId string, vars encodingx.IKeyValue) (player basis.IPlayerEntity, rsCode int32, err error)
 	// CreateTeam 创建队伍
@@ -135,7 +135,7 @@ func (o *EntityManager) BuildEnv(cfg *config.MMOConfig) error {
 	o.buildLock.Lock()
 	defer o.buildLock.Unlock()
 	for _, room := range cfg.Entities.Rooms {
-		_, _, err1 := o.CreateRoom(room.Id, room.Name, room.Cap, room.Tags, nil)
+		_, _, err1 := o.CreateRoom(room.Id, room.RefId, room.Name, room.Cap, room.Tags, nil)
 		if nil != err1 {
 			return err1
 		}
@@ -143,11 +143,11 @@ func (o *EntityManager) BuildEnv(cfg *config.MMOConfig) error {
 	return nil
 }
 
-func (o *EntityManager) CreateRoom(roomId string, roomName string, playerCap int, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error) {
+func (o *EntityManager) CreateRoom(roomId string, roomRefId string, roomName string, playerCap int, tags []string, vars encodingx.IKeyValue) (room basis.IRoomEntity, rsCode int32, err error) {
 	if o.roomIndex.CheckRoom(roomId) {
 		return nil, basis.CodeMMORoomExist, errors.New("EntityManager.CreateRoomAt Error: RoomId(" + roomId + ") Duplicate")
 	}
-	room = entity.NewIRoomEntity(roomId, roomName, playerCap)
+	room = entity.NewIRoomEntity(roomId, roomRefId, roomName, playerCap)
 	room.InitEntity()
 	room.SetVars(vars, false)
 	room.SetTags(tags)

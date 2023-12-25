@@ -1,44 +1,44 @@
 entities:
   rooms:
     - id: 'r111'
-      rid: ""
+      rid: "r111"
       name: '测试房间111'
       cap: 100
       tags: [ 'main' ]
     - id: 'r112'
-      rid: ""
+      rid: "r112"
       name: '测试房间112'
       cap: 100
     - id: 'r121'
-      rid: ""
+      rid: "r121"
       name: '测试房间121'
       cap: 100
     - id: 'r122'
-      rid: ""
+      rid: "r122"
       name: '测试房间122'
       cap: 100
     - id: 'r211'
-      rid: ""
+      rid: "r211"
       name: '测试房间211'
       cap: 100
     - id: 'r212'
-      rid: ""
+      rid: "r212"
       name: '测试房间212'
       cap: 100
     - id: 'r221'
-      rid: ""
+      rid: "r221"
       name: '测试房间221'
       cap: 100
     - id: 'r222'
-      rid: ""
+      rid: "r222"
       name: '测试房间222'
       cap: 100
     - id: 'other1'
-      rid: ""
+      rid: "other1"
       name: '其它房间1'
       cap: 100
     - id: 'other2'
-      rid: ""
+      rid: "other2"
       name: '其它房间2'
       cap: 100
 relations:

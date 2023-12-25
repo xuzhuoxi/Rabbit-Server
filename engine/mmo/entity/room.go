@@ -12,21 +12,21 @@ import (
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
 )
 
-func NewIAOBRoomEntity(roomId string, roomName string, playerCap int) basis.IRoomEntity {
-	return NewAOBRoomEntity(roomId, roomName, playerCap)
+func NewIAOBRoomEntity(roomId string, roomRefId string, roomName string, playerCap int) basis.IRoomEntity {
+	return NewAOBRoomEntity(roomId, roomRefId, roomName, playerCap)
 }
 
-func NewIRoomEntity(roomId string, roomName string, playerCap int) basis.IRoomEntity {
-	return NewRoomEntity(roomId, roomName, playerCap)
+func NewIRoomEntity(roomId string, roomRefId string, roomName string, playerCap int) basis.IRoomEntity {
+	return NewRoomEntity(roomId, roomRefId, roomName, playerCap)
 }
 
-func NewAOBRoomEntity(roomId string, roomName string, playerCap int) *AOBRoomEntity {
-	room := &AOBRoomEntity{RoomEntity: *NewRoomEntity(roomId, roomName, playerCap)}
+func NewAOBRoomEntity(roomId string, roomRefId string, roomName string, playerCap int) *AOBRoomEntity {
+	room := &AOBRoomEntity{RoomEntity: *NewRoomEntity(roomId, roomRefId, roomName, playerCap)}
 	return room
 }
 
-func NewRoomEntity(roomId string, roomName string, playerCap int) *RoomEntity {
-	room := &RoomEntity{RoomId: roomId, RoomName: roomName, _PlayerCap: playerCap}
+func NewRoomEntity(roomId string, roomRefId string, roomName string, playerCap int) *RoomEntity {
+	room := &RoomEntity{RoomId: roomId, RefId: roomRefId, RoomName: roomName, _PlayerCap: playerCap}
 	return room
 }
 
@@ -49,6 +49,7 @@ func (e *AOBRoomEntity) Broadcast(speaker string, handler func(receiver string))
 // RoomEntity 常规房间
 type RoomEntity struct {
 	RoomId     string
+	RefId      string
 	RoomName   string
 	_PlayerCap int
 	vars.VariableSupport
@@ -82,6 +83,14 @@ func (o *RoomEntity) DestroyEntity() {
 	})
 }
 
+func (o *RoomEntity) RoomRefId() string {
+	return o.RefId
+}
+
+func (o *RoomEntity) RoomMapId() string {
+	return o.RefId
+}
+
 func (o *RoomEntity) PlayerCap() int {
 	return o._PlayerCap
 }
@@ -92,14 +101,6 @@ func (o *RoomEntity) SetPlayerCap(cap int) {
 
 func (o *RoomEntity) PlayerCount() int {
 	return o.ListEntityContainer.NumChildren()
-}
-
-func (o *RoomEntity) RoomMapId() string {
-	mid, ok := o.GetVar(vars.RoomMapId)
-	if ok {
-		return mid.(string)
-	}
-	return ""
 }
 
 func (o *RoomEntity) Players() []basis.IPlayerEntity {
