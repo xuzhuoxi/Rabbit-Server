@@ -27,7 +27,7 @@ type IPlayerManager interface {
 	// EnterRoom 进入房间，要求玩家实例已经存在
 	EnterRoom(player basis.IPlayerEntity, roomId string) (room basis.IRoomEntity, rsCode int32, err error)
 	// LeaveRoom 离开房间，要求玩家实例已经存在
-	LeaveRoom(playerId string) (roomId string, rsCode int32, err error)
+	LeaveRoom(playerId string) (prevRoomId string, rsCode int32, err error)
 	// Transfer 在世界转移，要求玩家实例已经存在
 	Transfer(playerId string, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error)
 }
@@ -103,7 +103,7 @@ func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string) (ro
 	return o.forwardTransfer(player, roomId, pos)
 }
 
-func (o *PlayerManager) LeaveRoom(playerId string) (nextRoomId string, rsCode int32, err error) {
+func (o *PlayerManager) LeaveRoom(playerId string) (prevRoomId string, rsCode int32, err error) {
 	playerIndex := o.entityMgr.PlayerIndex()
 	player, ok := playerIndex.GetPlayer(playerId)
 	if !ok {
@@ -150,16 +150,16 @@ func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId str
 	return room1, 0, nil
 }
 
-func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.XYZ) (nextRoomId string, rsCode int32, err error) {
+func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.XYZ) (prevRoomId string, rsCode int32, err error) {
 	o.transLock.Lock()
-	oldRoomId := player.RoomId()
-	nextRoomId, _ = player.GetPrevRoomId()
-	room, ok := o.getRoom(nextRoomId)
+	currentRoomId := player.RoomId()
+	prevRoomId, _ = player.GetPrevRoomId()
+	room, ok := o.getRoom(prevRoomId)
 	if !ok {
 		o.transLock.Unlock()
 		return "", basis.CodeMMORoomNotExist, errors.New("Prev Room is not exist! ")
 	}
-	oldRoom := o.leaveRoom(player, nextRoomId)
+	oldRoom := o.leaveRoom(player, prevRoomId)
 	code2, err2 := o.backwardToRoom(room, player, pos)
 	if err2 != nil {
 		if oldRoom != nil {
@@ -170,9 +170,9 @@ func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.X
 	}
 	player.BackToPrevRoom()
 	o.transLock.Unlock()
-	o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoomId, PlayerId: player.UID()})
+	o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: currentRoomId, PlayerId: player.UID()})
 	o.DispatchEvent(events.EventPlayerEnterRoom, o, player)
-	return nextRoomId, 0, nil
+	return prevRoomId, 0, nil
 }
 
 func (o *PlayerManager) forwardToRoom(room basis.IRoomEntity, player basis.IPlayerEntity, pos basis.XYZ) (rsCode int32, err error) {

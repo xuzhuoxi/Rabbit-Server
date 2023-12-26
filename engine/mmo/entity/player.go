@@ -91,10 +91,11 @@ func (o *PlayerEntity) RoomId() string {
 func (o *PlayerEntity) GetPrevRoomId() (roomId string, ok bool) {
 	o.roomLock.RLock()
 	defer o.roomLock.RUnlock()
-	if len(o.rooms) == 0 {
+	if len(o.rooms) < 2 {
 		return
 	}
-	return o.rooms[len(o.rooms)-1], true
+	prevIdx := len(o.rooms) - 2
+	return o.rooms[prevIdx], true
 }
 
 func (o *PlayerEntity) SetNextRoom(roomId string) {
@@ -119,8 +120,9 @@ func (o *PlayerEntity) ConfirmNextRoom(confirm bool) {
 }
 
 func (o *PlayerEntity) BackToPrevRoom() {
-	o.roomId = o.rooms[len(o.rooms)-1]
-	o.rooms = o.rooms[:len(o.rooms)-1]
+	ln := len(o.rooms)
+	o.roomId = o.rooms[ln-2]
+	o.rooms = o.rooms[:ln-1]
 }
 
 //---------------------------------
