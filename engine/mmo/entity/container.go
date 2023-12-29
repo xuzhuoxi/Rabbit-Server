@@ -10,7 +10,6 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/index"
 	"github.com/xuzhuoxi/infra-go/extendx/protox"
-	"strconv"
 	"sync"
 )
 
@@ -21,8 +20,8 @@ func NewIMapEntityContainer(cap int) basis.IEntityContainer {
 func NewIListEntityContainer(cap int) basis.IEntityContainer {
 	return NewListEntityContainer(cap)
 }
-func NewIUnitContainer(entityId string, idIndex uint32) basis.IUnitContainer {
-	return NewUnitContainer(entityId, idIndex)
+func NewIUnitContainer(entityId string) basis.IUnitContainer {
+	return NewUnitContainer(entityId)
 }
 
 func NewMapEntityContainer(cap int) *MapEntityContainer {
@@ -33,8 +32,8 @@ func NewListEntityContainer(cap int) *ListEntityContainer {
 	return &ListEntityContainer{cap: cap}
 }
 
-func NewUnitContainer(entityId string, idIndex uint32) *UnitContainer {
-	return &UnitContainer{EntityId: entityId, IdIndex: idIndex, UnitIndex: index.NewIUnitIndex()}
+func NewUnitContainer(entityId string) *UnitContainer {
+	return &UnitContainer{EntityId: entityId, UnitIndex: index.NewIUnitIndex()}
 }
 
 // --------------------
@@ -442,18 +441,14 @@ func (o *ListEntityContainer) isFull() bool {
 type UnitContainer struct {
 	UnitIndex basis.IUnitIndex
 	EntityId  string
-	IdIndex   uint32
-	idLock    sync.RWMutex
 }
 
 func (o *UnitContainer) Units() []basis.IUnitEntity {
-	o.idLock.RLock()
 	rs := make([]basis.IUnitEntity, 0, o.UnitIndex.Size())
 	o.UnitIndex.ForEachEntity(func(entity basis.IEntity) (interrupt bool) {
 		rs = append(rs, entity.(basis.IUnitEntity))
 		return
 	})
-	o.idLock.RUnlock()
 	return rs
 }
 
@@ -495,16 +490,8 @@ func (o *UnitContainer) ForEachUnit(each func(child basis.IUnitEntity) (interrup
 	})
 }
 
-func (o *UnitContainer) getUnitId() string {
-	o.idLock.Lock()
-	unitId := o.EntityId + "_" + strconv.FormatInt(int64(o.IdIndex), 36)
-	o.IdIndex++
-	o.idLock.Unlock()
-	return unitId
-}
-
 func (o *UnitContainer) genUnit(params basis.UnitParams) (unit basis.IUnitEntity) {
-	unitId := o.getUnitId()
+	unitId := GenId(basis.EntityUnit)
 	unit = NewIUnitEntity(unitId)
 	unit.InitEntity()
 	unit.SetVars(params.Vars, false)

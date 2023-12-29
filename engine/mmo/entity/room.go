@@ -73,7 +73,7 @@ func (o *RoomEntity) Name() string {
 func (o *RoomEntity) InitEntity() {
 	o.ListEntityContainer = *NewListEntityContainer(o._PlayerCap)
 	o.VariableSupport = *vars.NewVariableSupport(o)
-	o.UnitContainer = *NewUnitContainer(o.RoomId, 1000)
+	o.UnitContainer = *NewUnitContainer(o.RoomId)
 }
 
 func (o *RoomEntity) DestroyEntity() {
