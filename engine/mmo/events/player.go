@@ -16,9 +16,12 @@ const (
 	// EventPlayerLeaveRoom 玩家离开房间
 	// 事件数据：*PlayerEventDataLeaveRoom
 	EventPlayerLeaveRoom = "MMO.EventPlayerLeaveRoom"
-	// EventPlayerEnterRoom 玩家进入房间
+	// EventPlayerEnterRoomActive 玩家进入房间(主动)
 	// 事件数据：IPlayerEntity
-	EventPlayerEnterRoom = "MMO.EventPlayerEnterRoom"
+	EventPlayerEnterRoomActive = "MMO.EventPlayerEnterRoomActive"
+	// EventPlayerEnterRoomPassive 玩家进入房间(被动)
+	// 事件数据：IPlayerEntity
+	EventPlayerEnterRoomPassive = "MMO.EventPlayerEnterRoomPassive"
 )
 
 type PlayerEventDataLeaveRoom struct {

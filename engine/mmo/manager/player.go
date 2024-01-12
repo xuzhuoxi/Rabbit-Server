@@ -30,6 +30,8 @@ type IPlayerManager interface {
 	LeaveRoom(playerId string) (prevRoomId string, rsCode int32, err error)
 	// Transfer 在世界转移，要求玩家实例已经存在
 	Transfer(playerId string, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error)
+	// DragIntoRoom 把玩家插入房间
+	DragIntoRoom(playerId string, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error)
 }
 
 func NewIPlayerManager(entityMgr IEntityManager) IPlayerManager {
@@ -78,7 +80,7 @@ func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player bas
 			return nil, nil, rsCode, err
 		}
 	}
-	room, rsCode, err = o.forwardTransfer(player, roomId, pos)
+	room, rsCode, err = o.forwardTransfer(player, roomId, true, pos)
 	if nil != err {
 		return nil, nil, rsCode, err
 	}
@@ -100,7 +102,7 @@ func (o *PlayerManager) EnterRoom(player basis.IPlayerEntity, roomId string) (ro
 		return nil, basis.CodeMMOPlayerNotExist, errors.New("PlayerManager.EnterRoom Error: player is nil. ")
 	}
 	pos := basis.RandomXYZ()
-	return o.forwardTransfer(player, roomId, pos)
+	return o.forwardTransfer(player, roomId, true, pos)
 }
 
 func (o *PlayerManager) LeaveRoom(playerId string) (prevRoomId string, rsCode int32, err error) {
@@ -118,10 +120,19 @@ func (o *PlayerManager) Transfer(playerId string, toRoomId string, pos basis.XYZ
 	if !ok {
 		return nil, basis.CodeMMOPlayerNotExist, errors.New(fmt.Sprintf("Transfer Error: player(%s) does not exist", playerId))
 	}
-	return o.forwardTransfer(player, toRoomId, pos)
+	return o.forwardTransfer(player, toRoomId, true, pos)
 }
 
-func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
+func (o *PlayerManager) DragIntoRoom(playerId string, toRoomId string, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
+	playerIndex := o.entityMgr.PlayerIndex()
+	player, ok := playerIndex.GetPlayer(playerId)
+	if !ok {
+		return nil, basis.CodeMMOPlayerNotExist, errors.New(fmt.Sprintf("DragInto Error: player(%s) does not exist", playerId))
+	}
+	return o.forwardTransfer(player, toRoomId, false, pos)
+}
+
+func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId string, active bool, pos basis.XYZ) (room basis.IRoomEntity, rsCode int32, err error) {
 	o.transLock.Lock()
 	room1, ok := o.getRoom(toRoomId)
 	if !ok {
@@ -146,7 +157,11 @@ func (o *PlayerManager) forwardTransfer(player basis.IPlayerEntity, toRoomId str
 	if nil != oldRoom {
 		o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: oldRoom.UID(), PlayerId: player.UID()})
 	}
-	o.DispatchEvent(events.EventPlayerEnterRoom, o, player)
+	if active {
+		o.DispatchEvent(events.EventPlayerEnterRoomActive, o, player)
+	} else {
+		o.DispatchEvent(events.EventPlayerEnterRoomPassive, o, player)
+	}
 	return room1, 0, nil
 }
 
@@ -171,7 +186,7 @@ func (o *PlayerManager) backwardTransfer(player basis.IPlayerEntity, pos basis.X
 	player.BackToPrevRoom()
 	o.transLock.Unlock()
 	o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: currentRoomId, PlayerId: player.UID()})
-	o.DispatchEvent(events.EventPlayerEnterRoom, o, player)
+	o.DispatchEvent(events.EventPlayerEnterRoomActive, o, player)
 	return prevRoomId, 0, nil
 }
 
