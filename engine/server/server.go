@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
 	"sync"
@@ -33,17 +32,11 @@ type IRabbitServerInfo interface {
 	GetName() string
 }
 
-// Extension ---
-
-type IRabbitExtension interface {
-	protox.IProtocolExtension
-	logx.ILoggerSupport
-}
-type FuncNewRabbitExtension func(name string) IRabbitExtension
-type IRabbitExtensionContainer = protox.IProtocolExtensionContainer
+type FuncNewRabbitExtension func(name string) IProtoExtension
+type IRabbitExtensionContainer = IProtoExtensionContainer
 type IRabbitExtensionManager interface {
-	protox.IExtensionManager
-	SetCustomVerify(reqVerify protox.IReqVerify)
+	IExtensionManager
+	SetCustomVerify(reqVerify IReqVerify)
 }
 
 // Register ---
@@ -107,7 +100,7 @@ func GetAllExtensions() []string {
 	return rs
 }
 
-func NewRabbitExtension(name string) (extension IRabbitExtension, err error) {
+func NewRabbitExtension(name string) (extension IProtoExtension, err error) {
 	lock.RLock()
 	defer lock.RUnlock()
 	for _, meta := range extList {

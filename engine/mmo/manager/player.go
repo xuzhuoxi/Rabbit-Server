@@ -11,8 +11,8 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/eventx"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
 	"sync"
 )
 
@@ -66,7 +66,7 @@ func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player bas
 			if !ok1 {
 				return nil, nil, basis.CodeMMORoomNotExist, nil
 			}
-			return player1, room1, protox.CodeSuc, nil
+			return player1, room1, server.CodeSuc, nil
 		}
 		player = player1
 		pos = player1.Position()
@@ -90,7 +90,7 @@ func (o *PlayerManager) LinkTheWorld(playerId string, roomId string) (player bas
 func (o *PlayerManager) UnlinkTheWorld(playerId string) (player basis.IPlayerEntity, rsCode int32, err error) {
 	playerIndex := o.entityMgr.PlayerIndex()
 	player, rsCode, err = playerIndex.RemovePlayer(playerId)
-	if rsCode == protox.CodeSuc {
+	if rsCode == server.CodeSuc {
 		o.leaveRoom(player, player.RoomId())
 		o.DispatchEvent(events.EventPlayerLeaveRoom, o, &events.PlayerEventDataLeaveRoom{RoomId: player.RoomId(), PlayerId: player.UID()})
 	}

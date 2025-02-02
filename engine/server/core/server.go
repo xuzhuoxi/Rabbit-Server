@@ -1,4 +1,4 @@
-package rabbit
+package core
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Home/core/home"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/status"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
@@ -37,7 +38,7 @@ type RabbitServer struct {
 	SockServer   netx.ISockEventServer
 	ExtContainer server.IRabbitExtensionContainer
 	ExtManager   server.IRabbitExtensionManager
-	StatusDetail *ServerStatusDetail
+	StatusDetail *status.ServerStatusDetail
 }
 
 func (o *RabbitServer) GetConnSet() (set netx.IServerConnSet, ok bool) {
@@ -58,7 +59,7 @@ func (o *RabbitServer) GetName() string {
 
 func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	o.Config = cfg
-	o.StatusDetail = NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
+	o.StatusDetail = status.NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
 	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
 
 	// 设置SockServer信息

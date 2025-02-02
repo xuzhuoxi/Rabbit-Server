@@ -5,12 +5,11 @@ package mgr
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
 )
 
 type IRabbitServerManager interface {
-	SetReqVerify(reqVerify protox.IReqVerify)
-	SetReqVerifyNew(newReqVerify protox.FuncNewIReqVerify)
+	SetReqVerify(reqVerify server.IReqVerify)
+	SetReqVerifyNew(newReqVerify server.FuncNewIReqVerify)
 
 	StartServers()
 	StopServers()
@@ -27,7 +26,7 @@ type serverMgr struct {
 	Servers []server.IRabbitServer
 }
 
-func (o *serverMgr) SetReqVerify(reqVerify protox.IReqVerify) {
+func (o *serverMgr) SetReqVerify(reqVerify server.IReqVerify) {
 	for index := range o.Servers {
 		mgr, ok := o.Servers[index].GetExtensionManager()
 		if !ok {
@@ -37,7 +36,7 @@ func (o *serverMgr) SetReqVerify(reqVerify protox.IReqVerify) {
 	}
 }
 
-func (o *serverMgr) SetReqVerifyNew(newReqVerify protox.FuncNewIReqVerify) {
+func (o *serverMgr) SetReqVerifyNew(newReqVerify server.FuncNewIReqVerify) {
 	for index := range o.Servers {
 		mgr, ok := o.Servers[index].GetExtensionManager()
 		if !ok {

@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/index"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"sync"
 )
 
@@ -455,7 +455,7 @@ func (o *UnitContainer) Units() []basis.IUnitEntity {
 func (o *UnitContainer) CreateUnit(params basis.UnitParams) (unit basis.IUnitEntity, rsCode int32, err error) {
 	unit = o.genUnit(params)
 	rsCode, err = o.UnitIndex.AddUnit(unit)
-	if nil != err || rsCode != protox.CodeSuc {
+	if nil != err || rsCode != server.CodeSuc {
 		return nil, rsCode, err
 	}
 	return unit, 0, nil
@@ -464,7 +464,7 @@ func (o *UnitContainer) CreateUnit(params basis.UnitParams) (unit basis.IUnitEnt
 func (o *UnitContainer) CreateUnits(params []basis.UnitParams, mustAll bool) (units []basis.IUnitEntity, rsCode int32, err error) {
 	units = o.genUnits(params)
 	rsCode, err = o.UnitIndex.AddUnits(units, mustAll)
-	if nil != err || rsCode != protox.CodeSuc {
+	if nil != err || rsCode != server.CodeSuc {
 		return nil, rsCode, err
 	}
 	return units, 0, nil
@@ -472,7 +472,7 @@ func (o *UnitContainer) CreateUnits(params []basis.UnitParams, mustAll bool) (un
 
 func (o *UnitContainer) DestroyUnit(unitId string) (unit basis.IUnitEntity, rsCode int32, err error) {
 	unit, rsCode, err = o.UnitIndex.RemoveUnit(unitId)
-	if rsCode == protox.CodeSuc {
+	if rsCode == server.CodeSuc {
 		unit.DestroyEntity()
 	}
 	return

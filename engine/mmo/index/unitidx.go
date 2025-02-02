@@ -6,7 +6,7 @@ package index
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"sync"
 )
 
@@ -59,7 +59,7 @@ func (o *UnitIndex) AddUnits(units []basis.IUnitEntity, mustAll bool) (rsCode in
 	index := 0
 	for index = range units {
 		rsCode, err = o.addUnit(units[index])
-		if rsCode != protox.CodeSuc {
+		if rsCode != server.CodeSuc {
 			if mustAll {
 				goto undo
 			}

@@ -7,10 +7,9 @@ package extension
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
 )
 
-func NewRabbitDemoExtension(Name string) server.IRabbitExtension {
+func NewRabbitDemoExtension(Name string) server.IProtoExtension {
 	return &RabbitDemoExtension{RabbitDemoExtensionSupport: NewRabbitDemoExtensionSupport(Name)}
 }
 
@@ -64,19 +63,19 @@ func (e *RabbitDemoExtension) BeforeRequest(protoId string) {
 	e.GetLogger().Debugln("DemoExtension.BeforeRequest!", protoId)
 }
 
-func (e *RabbitDemoExtension) onRequestNoneParam(resp protox.IExtensionResponse, req protox.IExtensionRequest) {
+func (e *RabbitDemoExtension) onRequestNoneParam(resp server.IExtensionResponse, req server.IExtensionRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestNoneParam!", req, resp)
 }
 
-func (e *RabbitDemoExtension) onRequestBinary(resp protox.IExtensionResponse, req protox.IExtensionBinaryRequest) {
+func (e *RabbitDemoExtension) onRequestBinary(resp server.IExtensionResponse, req server.IBinaryRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestBinary!", req, resp)
 }
 
-func (e *RabbitDemoExtension) onRequestJson(resp protox.IExtensionResponse, req protox.IExtensionStringRequest) {
+func (e *RabbitDemoExtension) onRequestJson(resp server.IExtensionResponse, req server.IStringRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestJson!", req, resp)
 }
 
-func (e *RabbitDemoExtension) onRequestObj(resp protox.IExtensionResponse, req protox.IExtensionObjectRequest) {
+func (e *RabbitDemoExtension) onRequestObj(resp server.IExtensionResponse, req server.IObjectRequest) {
 	e.GetLogger().Debugln("DemoExtension.onRequestObj!", req, resp)
 }
 

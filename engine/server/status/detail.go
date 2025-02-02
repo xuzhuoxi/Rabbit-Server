@@ -1,7 +1,7 @@
-// Package rabbit
+// Package status
 // Create on 2023/6/14
 // @author xuzhuoxi
-package rabbit
+package status
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Home/core"

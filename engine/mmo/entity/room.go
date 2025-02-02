@@ -8,8 +8,8 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/basis"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/events"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/vars"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/eventx"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
 )
 
 func NewIAOBRoomEntity(roomId string, roomRefId string, roomName string, playerCap int) basis.IRoomEntity {
@@ -131,7 +131,7 @@ func (o *RoomEntity) Units() []basis.IUnitEntity {
 
 func (o *RoomEntity) CreateUnit(params basis.UnitParams) (unit basis.IUnitEntity, rsCode int32, err error) {
 	unit, rsCode, err = o.UnitContainer.CreateUnit(params)
-	if rsCode == protox.CodeSuc {
+	if rsCode == server.CodeSuc {
 		o.addUnitEventListener(unit)
 		defer o.DispatchEvent(events.EventUnitInit, o, unit)
 	}
@@ -140,7 +140,7 @@ func (o *RoomEntity) CreateUnit(params basis.UnitParams) (unit basis.IUnitEntity
 
 func (o *RoomEntity) CreateUnits(params []basis.UnitParams, mustAll bool) (units []basis.IUnitEntity, rsCode int32, err error) {
 	units, rsCode, err = o.UnitContainer.CreateUnits(params, mustAll)
-	if rsCode == protox.CodeSuc {
+	if rsCode == server.CodeSuc {
 		for index := range units {
 			o.addUnitEventListener(units[index])
 		}
@@ -155,7 +155,7 @@ func (o *RoomEntity) CreateUnits(params []basis.UnitParams, mustAll bool) (units
 
 func (o *RoomEntity) DestroyUnit(unitId string) (unit basis.IUnitEntity, rsCode int32, err error) {
 	unit, rsCode, err = o.UnitContainer.DestroyUnit(unitId)
-	if rsCode == protox.CodeSuc {
+	if rsCode == server.CodeSuc {
 		o.removeUnitEventListener(unit)
 		defer o.DispatchEvent(events.EventUnitDestroy, o, unit)
 	}

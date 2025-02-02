@@ -6,8 +6,8 @@
 package extension
 
 import (
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/rabbit"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/core"
 	"time"
 )
 
@@ -38,10 +38,10 @@ func (e *RabbitLoginExtension) DestroyExtension() error {
 	return nil
 }
 
-func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionResponse, req protox.IExtensionStringRequest) {
+func (e *RabbitLoginExtension) onRequestLogin(resp server.IExtensionResponse, req server.IStringRequest) {
 	password := string(req.StringData()[0])
 	if e.check(req.ClientId(), password) {
-		rabbit.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
+		core.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
 		resp.SendStringResponse("ok", "200")
 		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)
@@ -50,10 +50,10 @@ func (e *RabbitLoginExtension) onRequestLogin(resp protox.IExtensionResponse, re
 	}
 }
 
-func (e *RabbitLoginExtension) onRequestReLogin(resp protox.IExtensionResponse, req protox.IExtensionStringRequest) {
+func (e *RabbitLoginExtension) onRequestReLogin(resp server.IExtensionResponse, req server.IStringRequest) {
 	password := req.StringData()[0]
 	if e.check(req.ClientId(), password) {
-		rabbit.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
+		core.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
 		resp.SendStringResponse("ok")
 		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestReLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)

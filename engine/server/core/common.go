@@ -1,7 +1,7 @@
-// Package rabbit
+// Package core
 // Create on 2023/6/14
 // @author xuzhuoxi
-package rabbit
+package core
 
 import (
 	"github.com/xuzhuoxi/infra-go/netx"

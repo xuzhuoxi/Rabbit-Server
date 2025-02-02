@@ -1,12 +1,13 @@
 // Package rabbit
 // Create on 2023/6/14
 // @author xuzhuoxi
-package rabbit
+package core
 
 import (
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/extension"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/status"
 	"github.com/xuzhuoxi/infra-go/timex"
 	"time"
 )
@@ -14,22 +15,22 @@ import (
 // Container
 
 func NewRabbitExtensionContainer() server.IRabbitExtensionContainer {
-	return protox.NewIProtocolExtensionContainer()
+	return extension.NewIProtoExtensionContainer()
 }
 
 // Manager
 
-func NewRabbitExtensionManager(statusDetail *ServerStatusDetail) server.IRabbitExtensionManager {
+func NewRabbitExtensionManager(statusDetail *status.ServerStatusDetail) server.IRabbitExtensionManager {
 	rs := &RabbitExtensionManager{
-		ExtensionManager: *protox.NewExtensionManager(),
+		ExtensionManager: *extension.NewExtensionManager(),
 		StatusDetail:     statusDetail,
 	}
 	return rs
 }
 
 type RabbitExtensionManager struct {
-	protox.ExtensionManager
-	StatusDetail *ServerStatusDetail
+	extension.ExtensionManager
+	StatusDetail *status.ServerStatusDetail
 }
 
 func (m *RabbitExtensionManager) StartManager() {
@@ -51,12 +52,12 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 	funcName := "[RabbitExtensionManager.onRabbitGamePack]"
 	m.StatusDetail.AddReqCount()
 	name, pid, uid, data := m.ParseMessage(msgData)
-	extension, rsCode := m.Verify(name, pid, uid)
-	if protox.CodeSuc != rsCode {
-		resp := protox.DefaultResponsePool.GetInstance()
-		defer protox.DefaultResponsePool.Recycle(resp)
+	ext, rsCode := m.Verify(name, pid, uid)
+	if server.CodeSuc != rsCode {
+		resp := extension.DefaultResponsePool.GetInstance()
+		defer extension.DefaultResponsePool.Recycle(resp)
 		resp.SetHeader(name, pid, uid, senderAddress)
-		resp.(protox.IExtensionResponseSettings).SetSockSender(m.SockSender)
+		resp.(server.IExtensionResponseSettings).SetSockSender(m.SockSender)
 		resp.SetResultCode(rsCode)
 		resp.SendNoneResponse()
 		m.Logger.Warnln("[RabbitExtensionManager.onRabbitGamePack]",
@@ -64,16 +65,16 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 		return false
 	}
 	// 参数处理
-	response, request := m.GetRecycleParams(extension, senderAddress, name, pid, uid, data)
+	response, request := m.GetRecycleParams(ext, senderAddress, name, pid, uid, data)
 	defer func() {
-		protox.DefaultRequestPool.Recycle(request)
-		protox.DefaultResponsePool.Recycle(response)
+		extension.DefaultRequestPool.Recycle(request)
+		extension.DefaultResponsePool.Recycle(response)
 	}()
 	// 响应处理
-	if be, ok := extension.(protox.IBeforeRequestExtension); ok { //前置处理
+	if be, ok := ext.(server.IBeforeRequestExtension); ok { //前置处理
 		be.BeforeRequest(request)
 	}
-	if re, ok := extension.(protox.IRequestExtension); ok {
+	if re, ok := ext.(server.IOnRequestExtension); ok {
 		func() { //记录时间状态
 			tn := time.Now().UnixNano()
 			defer func() {
@@ -85,7 +86,7 @@ func (m *RabbitExtensionManager) onRabbitGamePack(msgData []byte, senderAddress 
 			re.OnRequest(response, request)
 		}()
 	}
-	if ae, ok := extension.(protox.IAfterRequestExtension); ok { //后置处理
+	if ae, ok := ext.(server.IAfterRequestExtension); ok { //后置处理
 		ae.AfterRequest(response, request)
 	}
 	return true

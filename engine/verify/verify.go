@@ -5,7 +5,7 @@ package verify
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
-	"github.com/xuzhuoxi/infra-go/extendx/protox"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"sync"
 	"time"
 )
@@ -56,13 +56,13 @@ func (o *RabbitVerify) Verify(name string, pid string, uid string) (rsCode int32
 	if log.Name != name || log.PId != pid {
 		log.Name, log.PId = name, pid
 		log.SetStamp(nowStamp) // 重置并记录
-		return protox.CodeSuc
+		return server.CodeSuc
 	}
 	//fmt.Println("RabbitVerify.Verify", name, pid, uid, found, log.ReqStamps)
 	if found.FreqLimitOn() { // FreqLimit 频率限制验证
 		if (nowStamp - log.ReqStamps[len(log.ReqStamps)-1]) < int64(found.GetMinFreq()) {
 			log.AppendStamp(nowStamp)
-			return protox.CodeFreq
+			return server.CodeFreq
 		}
 	}
 	if found.PerSecLimitOn() { // PerSecLimit 每秒条数限制验证
@@ -71,12 +71,12 @@ func (o *RabbitVerify) Verify(name string, pid string, uid string) (rsCode int32
 			index := len(log.ReqStamps) - maxCount
 			if nowStamp-log.ReqStamps[index] < int64(time.Second) {
 				log.AppendStamp(nowStamp)
-				return protox.CodeFreq
+				return server.CodeFreq
 			}
 		}
 	}
 	log.AppendStamp(nowStamp) // 追加记录
-	return protox.CodeSuc
+	return server.CodeSuc
 }
 
 func (o *RabbitVerify) findLog(uid string) *reqLog {
