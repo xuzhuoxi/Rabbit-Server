@@ -1,4 +1,4 @@
-// Package protox
+// Package extension
 // Created by xuzhuoxi
 // on 2019-05-18.
 // @author xuzhuoxi
@@ -14,90 +14,92 @@ import (
 	"sync"
 )
 
-func NewIExtensionManager() server.IExtensionManager {
-	return NewExtensionManager()
+func NewIRabbitExtensionManager() server.IRabbitExtensionManager {
+	return NewRabbitExtensionManager()
 }
 
-func NewExtensionManager() *ExtensionManager {
-	return &ExtensionManager{}
+func NewRabbitExtensionManager() *RabbitExtensionManager {
+	m := &RabbitExtensionManager{}
+	m.SetCustomParsePacketFunc(m.ParseMessage)
+	return m
 }
 
-type ExtensionManager struct {
+type RabbitExtensionManager struct {
 	HandlerContainer   netx.IPackHandlerContainer
-	ExtensionContainer server.IProtoExtensionContainer
+	ExtensionContainer server.IRabbitExtensionContainer
 	SockSender         netx.ISockSender
 
 	Logger       logx.ILogger
 	AddressProxy netx.IAddressProxy
 	Mutex        sync.RWMutex
 
-	ExtensionManagerCustomizeSupport
+	CustomManagerSupport
 }
 
-func (m *ExtensionManager) InitManager(handlerContainer netx.IPackHandlerContainer, extensionContainer server.IProtoExtensionContainer,
+func (m *RabbitExtensionManager) InitManager(handlerContainer netx.IPackHandlerContainer, extensionContainer server.IRabbitExtensionContainer,
 	sockSender netx.ISockSender) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.HandlerContainer, m.ExtensionContainer, m.SockSender = handlerContainer, extensionContainer, sockSender
 }
 
-func (m *ExtensionManager) SetAddressProxy(proxy netx.IAddressProxy) {
+func (m *RabbitExtensionManager) SetAddressProxy(proxy netx.IAddressProxy) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.AddressProxy = proxy
 }
 
-func (m *ExtensionManager) SetLogger(logger logx.ILogger) {
+func (m *RabbitExtensionManager) SetLogger(logger logx.ILogger) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.Logger = logger
 }
 
-func (m *ExtensionManager) StartManager() {
+func (m *RabbitExtensionManager) StartManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.InitExtensions()
 	m.HandlerContainer.AppendPackHandler(m.OnMessageUnpack)
 }
 
-func (m *ExtensionManager) StopManager() {
+func (m *RabbitExtensionManager) StopManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.HandlerContainer.ClearHandler(m.OnMessageUnpack)
 	m.ExtensionContainer.DestroyExtensions()
 }
 
-func (m *ExtensionManager) SaveExtensions() {
+func (m *RabbitExtensionManager) SaveExtensions() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.SaveExtensions()
 }
 
-func (m *ExtensionManager) SaveExtension(name string) {
+func (m *RabbitExtensionManager) SaveExtension(name string) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.SaveExtension(name)
 }
 
-func (m *ExtensionManager) EnableExtension(name string) {
+func (m *RabbitExtensionManager) EnableExtension(name string) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.EnableExtension(name, true)
 }
 
-func (m *ExtensionManager) DisableExtension(name string) {
+func (m *RabbitExtensionManager) DisableExtension(name string) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.EnableExtension(name, false)
 }
 
-func (m *ExtensionManager) EnableExtensions() {
+func (m *RabbitExtensionManager) EnableExtensions() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.EnableExtensions(true)
 }
 
-func (m *ExtensionManager) DisableExtensions() {
+func (m *RabbitExtensionManager) DisableExtensions() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.EnableExtensions(false)
@@ -115,10 +117,10 @@ type iExtResponse interface {
 // 并发注意:本方法是否并发，取决于SockServer的并发性
 // 在netx中，TCP,Quic,WebSocket为并发响应，UDP为非并发响应
 // msgData非共享的，但在parsePackMessage后这部分数据会发生变化
-func (m *ExtensionManager) OnMessageUnpack(msgData []byte, senderAddress string, other interface{}) bool {
+func (m *RabbitExtensionManager) OnMessageUnpack(msgData []byte, senderAddress string, other interface{}) bool {
 	//m.Logger.Infoln("ExtensionManager.onPack", senderAddress, msgData)
 	m.CustomStartOnPack(senderAddress)
-	name, pid, uid, data := m.ParseMessage(msgData)
+	name, pid, uid, data := m.CustomParsePacket(msgData) // 默认调用m.ParseMessage
 	extension, rsCode := m.Verify(name, pid, uid)
 	if server.CodeSuc != rsCode {
 		// 这里可以直接响应失败
@@ -141,9 +143,9 @@ func (m *ExtensionManager) OnMessageUnpack(msgData []byte, senderAddress string,
 // block2 : uid	utf8
 // block3 : data [][]byte
 // [n]其它信息
-func (m *ExtensionManager) ParseMessage(msgBytes []byte) (extName string, pid string, uid string, data [][]byte) {
-	if nil != m.FuncParseMessage {
-		return m.FuncParseMessage(msgBytes)
+func (m *RabbitExtensionManager) ParseMessage(msgBytes []byte) (extName string, pid string, uid string, data [][]byte) {
+	if nil != m.FuncParsePacket {
+		return m.FuncParsePacket(msgBytes)
 	}
 	buffToData := bytex.DefaultPoolBuffToData.GetInstance()
 	defer bytex.DefaultPoolBuffToData.Recycle(buffToData)
@@ -169,27 +171,27 @@ func (m *ExtensionManager) ParseMessage(msgBytes []byte) (extName string, pid st
 	return extName, pid, uid, data
 }
 
-func (m *ExtensionManager) Verify(name string, pid string, uid string) (e server.IProtoExtension, rsCode int32) {
-	extension, ok := m.GetProtocolExtension(name)
-	//有效性验证
+func (m *RabbitExtensionManager) Verify(extName string, pid string, uid string) (e server.IRabbitExtension, rsCode int32) {
+	ext, ok := m.GetRabbitExtension(extName)
+	// 有效性验证
 	if !ok {
 		if nil != m.Logger {
-			m.Logger.Warnln("[ExtensionManager.Verify]", fmt.Sprintf("Undefined Extension(%s)! Sender(%s)", name, uid))
+			m.Logger.Warnln("[ExtensionManager.Verify]", fmt.Sprintf("Undefined Extension(%s)! Sender(%s)", extName, uid))
 		}
 		return nil, server.CodeProtoFail
 	}
-	if !extension.CheckProtocolId(pid) { //有效性检查
+	if !ext.CheckProtoId(pid) { //有效性检查
 		if nil != m.Logger {
-			m.Logger.Warnln("[ExtensionManager.Verify]", fmt.Sprintf("Undefined ProtoId(%s) Send to Extension(%s)! Sender(%s)", pid, name, uid))
+			m.Logger.Warnln("[ExtensionManager.Verify]", fmt.Sprintf("Undefined ProtoId(%s) Send to Extension(%s)! Sender(%s)", pid, extName, uid))
 		}
 		return nil, server.CodeProtoFail
 	}
-	return extension, m.CustomVerify(name, pid, uid)
+	return ext, m.CustomVerify(extName, pid, uid)
 }
 
 // GetRecycleParams
 // 构造响应参数
-func (m *ExtensionManager) GetRecycleParams(extension server.IProtoExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse, req server.IExtensionRequest) {
+func (m *RabbitExtensionManager) GetRecycleParams(extension server.IRabbitExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse, req server.IExtensionRequest) {
 	t, h := extension.GetParamInfo(pid)
 	response := DefaultResponsePool.GetInstance().(iExtResponse)
 	response.SetHeader(name, pid, uid, senderAddress)
@@ -205,7 +207,7 @@ func (m *ExtensionManager) GetRecycleParams(extension server.IProtoExtension, se
 
 // GetRecycleResponse
 // 构造响应参数
-func (m *ExtensionManager) GetRecycleResponse(extension server.IProtoExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse) {
+func (m *RabbitExtensionManager) GetRecycleResponse(extension server.IRabbitExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse) {
 	t, h := extension.GetParamInfo(pid)
 	response := DefaultResponsePool.GetInstance().(iExtResponse)
 	response.SetHeader(name, pid, uid, senderAddress)
@@ -218,7 +220,7 @@ func (m *ExtensionManager) GetRecycleResponse(extension server.IProtoExtension, 
 
 // GetRecycleRequest
 // 获取可回收的请求结构
-func (m *ExtensionManager) GetRecycleRequest(extension server.IProtoExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (req server.IExtensionRequest) {
+func (m *RabbitExtensionManager) GetRecycleRequest(extension server.IRabbitExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (req server.IExtensionRequest) {
 	t, h := extension.GetParamInfo(pid)
 	request := DefaultRequestPool.GetInstance()
 	request.SetHeader(name, pid, uid, senderAddress)
@@ -226,10 +228,10 @@ func (m *ExtensionManager) GetRecycleRequest(extension server.IProtoExtension, s
 	return request
 }
 
-func (m *ExtensionManager) DoRequest(extension server.IProtoExtension, request server.IExtensionRequest, response server.IExtensionResponse) {
+func (m *RabbitExtensionManager) DoRequest(extension server.IRabbitExtension, request server.IExtensionRequest, response server.IExtensionResponse) {
 	// 响应处理
 	if be, ok := extension.(server.IBeforeRequestExtension); ok { //前置处理
-		be.BeforeRequest(request)
+		be.BeforeRequest(response, request)
 	}
 	if re, ok := extension.(server.IOnRequestExtension); ok {
 		m.CustomStartOnRequest(response, request)
@@ -241,8 +243,8 @@ func (m *ExtensionManager) DoRequest(extension server.IProtoExtension, request s
 	}
 }
 
-func (m *ExtensionManager) GetProtocolExtension(eName string) (pe server.IProtoExtension, ok bool) {
-	if pe, ok := m.ExtensionContainer.GetExtension(eName).(server.IProtoExtension); ok {
+func (m *RabbitExtensionManager) GetRabbitExtension(extName string) (pe server.IRabbitExtension, ok bool) {
+	if pe, ok := m.ExtensionContainer.GetExtension(extName).(server.IRabbitExtension); ok {
 		return pe, true
 	}
 	return nil, false

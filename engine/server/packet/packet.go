@@ -1,43 +1,42 @@
-// Package protox
+// Package packet
 // Create on 2023/8/6
 // @author xuzhuoxi
-package extension
+package packet
 
 import (
 	"errors"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/proto"
 	"github.com/xuzhuoxi/infra-go/binaryx"
 	"github.com/xuzhuoxi/infra-go/bytex"
 )
 
-func NewProtoReturnMessage() *ProtoReturnMessage {
-	return &ProtoReturnMessage{
+func NewResponsePacket() *ResponsePacket {
+	return &ResponsePacket{
 		DataBuff: bytex.NewDefaultBuffToBlock(),
 		MsgBuff:  bytex.NewDefaultBuffToBlock(),
 	}
 }
 
-type ProtoReturnMessage struct {
-	proto.ProtoHeader
+type ResponsePacket struct {
+	PacketHeader
 	RsCode       int32
-	ParamHandler server.IProtoParamsHandler
+	ParamHandler server.IPacketParamsHandler
 	MsgBuff      bytex.IBuffToBlock
 	DataBuff     bytex.IBuffToBlock
 	dataBytes    []byte
 }
 
-func (o *ProtoReturnMessage) PrepareData() {
+func (o *ResponsePacket) PrepareData() {
 	o.dataBytes = nil
 	o.DataBuff.Reset()
 }
 
-func (o *ProtoReturnMessage) AppendLen(ln int) error {
+func (o *ResponsePacket) AppendLen(ln int) error {
 	order := o.DataBuff.GetOrder()
 	return binaryx.Write(o.DataBuff, order, uint16(ln))
 }
 
-func (o *ProtoReturnMessage) AppendBinary(data ...[]byte) error {
+func (o *ResponsePacket) AppendBinary(data ...[]byte) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -47,7 +46,7 @@ func (o *ProtoReturnMessage) AppendBinary(data ...[]byte) error {
 	return nil
 }
 
-func (o *ProtoReturnMessage) AppendCommon(data ...interface{}) error {
+func (o *ResponsePacket) AppendCommon(data ...interface{}) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -61,7 +60,7 @@ func (o *ProtoReturnMessage) AppendCommon(data ...interface{}) error {
 	return nil
 }
 
-func (o *ProtoReturnMessage) AppendString(data ...string) error {
+func (o *ResponsePacket) AppendString(data ...string) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -71,7 +70,7 @@ func (o *ProtoReturnMessage) AppendString(data ...string) error {
 	return nil
 }
 
-func (o *ProtoReturnMessage) AppendJson(data ...interface{}) error {
+func (o *ResponsePacket) AppendJson(data ...interface{}) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -88,7 +87,7 @@ func (o *ProtoReturnMessage) AppendJson(data ...interface{}) error {
 	return nil
 }
 
-func (o *ProtoReturnMessage) AppendObject(data ...interface{}) error {
+func (o *ResponsePacket) AppendObject(data ...interface{}) error {
 	if len(data) == 0 {
 		return nil
 	}
@@ -96,17 +95,21 @@ func (o *ProtoReturnMessage) AppendObject(data ...interface{}) error {
 		return errors.New("AppendObject Error: ParamHandler is nil! ")
 	}
 	for index := range data {
-		bs := o.ParamHandler.HandleReturnParam(data[index])
+		bs := o.ParamHandler.EncodeResponseParam(data[index])
 		o.DataBuff.WriteData(bs)
 	}
 	return nil
 }
 
-func (o *ProtoReturnMessage) GenMsgBytes() (msg []byte, err error) {
-	return o.genMsgBytes(o.PGroup, o.PId)
+func (o *ResponsePacket) GenMsgBytes(eName string, pId string) (bytes []byte, err error) {
+	return o.genMsgBytes(eName, pId)
 }
 
-func (o *ProtoReturnMessage) genMsgBytes(eName string, pId string) (bytes []byte, err error) {
+func (o *ResponsePacket) GenDefaultMsgBytes() (msg []byte, err error) {
+	return o.genMsgBytes(o.EName, o.PId)
+}
+
+func (o *ResponsePacket) genMsgBytes(eName string, pId string) (bytes []byte, err error) {
 	err1 := o.writeHeaderToMsg(eName, pId)
 	if nil != err1 {
 		return nil, err1
@@ -118,7 +121,7 @@ func (o *ProtoReturnMessage) genMsgBytes(eName string, pId string) (bytes []byte
 	return o.MsgBuff.ReadBytes(), nil
 }
 
-func (o *ProtoReturnMessage) writeHeaderToMsg(eName string, pId string) error {
+func (o *ResponsePacket) writeHeaderToMsg(eName string, pId string) error {
 	o.MsgBuff.Reset()
 	o.MsgBuff.WriteString(eName)
 	o.MsgBuff.WriteString(pId)
@@ -126,7 +129,7 @@ func (o *ProtoReturnMessage) writeHeaderToMsg(eName string, pId string) error {
 	return binaryx.Write(o.MsgBuff, o.MsgBuff.GetOrder(), o.RsCode)
 }
 
-func (o *ProtoReturnMessage) writeDataToMsg() error {
+func (o *ResponsePacket) writeDataToMsg() error {
 	if nil == o.dataBytes {
 		o.dataBytes = o.DataBuff.ReadBytesCopy()
 		if nil == o.dataBytes {

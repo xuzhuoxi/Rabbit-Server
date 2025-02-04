@@ -1,11 +1,11 @@
-// Package extension
+// Package server
 // Create on 2025/2/2
 // @author xuzhuoxi
 package server
 
-// IPoolExtensionRequest
+// IRequestPool
 // 请求参数集的对象池接口
-type IPoolExtensionRequest interface {
+type IRequestPool interface {
 	// Register 注册创建方法
 	Register(newFunc func() IExtensionRequest)
 	// GetInstance 获取一个实例
@@ -14,9 +14,9 @@ type IPoolExtensionRequest interface {
 	Recycle(instance IExtensionRequest) bool
 }
 
-// IPoolExtensionResponse
+// IResponsePool
 // 响应参数集的对象池接口
-type IPoolExtensionResponse interface {
+type IResponsePool interface {
 	// Register 注册创建方法
 	Register(newFunc func() IExtensionResponse)
 	// GetInstance 获取一个实例
@@ -25,9 +25,9 @@ type IPoolExtensionResponse interface {
 	Recycle(instance IExtensionResponse) bool
 }
 
-// IPoolExtensionNotify
+// INotifyPool
 // 通知参数集的对象池接口
-type IPoolExtensionNotify interface {
+type INotifyPool interface {
 	// Register 注册创建方法
 	Register(newFunc func() IExtensionNotify)
 	// GetInstance 获取一个实例

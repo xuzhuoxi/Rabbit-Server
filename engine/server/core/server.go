@@ -7,6 +7,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Home/core/home"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/extension"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/status"
 	"github.com/xuzhuoxi/infra-go/eventx"
 	"github.com/xuzhuoxi/infra-go/logx"
@@ -15,16 +16,12 @@ import (
 	"time"
 )
 
-func init() {
-	server.RegisterRabbitServerDefault(NewIRabbitServer)
-}
-
 func NewIRabbitServer() server.IRabbitServer {
 	return NewRabbitServer()
 }
 
 func NewRabbitServer() *RabbitServer {
-	container := NewRabbitExtensionContainer()
+	container := extension.NewIRabbitExtensionContainer()
 	rs := &RabbitServer{
 		ExtContainer: container,
 	}
@@ -60,7 +57,7 @@ func (o *RabbitServer) GetName() string {
 func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	o.Config = cfg
 	o.StatusDetail = status.NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
-	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
+	o.ExtManager = NewCustomRabbitManager(o.StatusDetail)
 
 	// 设置SockServer信息
 	server, err := netx.ParseSockNetwork(o.Config.FromUser.Network).NewServer()

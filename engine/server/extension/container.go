@@ -1,4 +1,4 @@
-// Package protox
+// Package extension
 // Created by xuzhuoxi
 // on 2019-02-26.
 // @author xuzhuoxi
@@ -10,20 +10,12 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 )
 
-func NewIProtoExtensionContainer() server.IProtoExtensionContainer {
-	return &ProtocolContainer{ExtensionContainer: NewExtensionContainer()}
-}
-
-func NewProtoExtensionContainer() ProtocolContainer {
-	return ProtocolContainer{ExtensionContainer: NewExtensionContainer()}
-}
-
 func NewIExtensionContainer() server.IExtensionContainer {
-	return &ExtensionContainer{extensionMap: make(map[string]server.IExtension)}
+	return NewExtensionContainer()
 }
 
-func NewExtensionContainer() ExtensionContainer {
-	return ExtensionContainer{extensionMap: make(map[string]server.IExtension)}
+func NewExtensionContainer() *ExtensionContainer {
+	return &ExtensionContainer{extensionMap: make(map[string]server.IExtension)}
 }
 
 type ExtensionContainer struct {
@@ -31,93 +23,101 @@ type ExtensionContainer struct {
 	extensionMap map[string]server.IExtension
 }
 
-func (m *ExtensionContainer) AppendExtension(extension server.IExtension) {
-	name := extension.ExtensionName()
-	if m.checkMap(name) {
-		panic("Repeat Name In Map: " + name)
+func (c *ExtensionContainer) AppendExtension(extension server.IExtension) {
+	extName := extension.ExtensionName()
+	if c.checkMap(extName) {
+		panic("Repeat Name In Map: " + extName)
 	}
-	m.extensionMap[name] = extension
-	m.extensions = append(m.extensions, extension)
+	c.extensionMap[extName] = extension
+	c.extensions = append(c.extensions, extension)
 }
 
-func (m *ExtensionContainer) CheckExtension(name string) bool {
-	_, ok := m.extensionMap[name]
+func (c *ExtensionContainer) CheckExtension(extName string) bool {
+	_, ok := c.extensionMap[extName]
 	return ok
 }
 
-func (m *ExtensionContainer) GetExtension(name string) server.IExtension {
-	if !m.checkMap(name) {
+func (c *ExtensionContainer) GetExtension(extName string) server.IExtension {
+	if !c.checkMap(extName) {
 		return nil
 	}
-	rs, _ := m.extensionMap[name]
+	rs, _ := c.extensionMap[extName]
 	return rs
 }
 
-func (m *ExtensionContainer) Len() int {
-	return len(m.extensions)
+func (c *ExtensionContainer) Len() int {
+	return len(c.extensions)
 }
 
-func (m *ExtensionContainer) Extensions() []server.IExtension {
-	ln := len(m.extensions)
+func (c *ExtensionContainer) Extensions() []server.IExtension {
+	ln := len(c.extensions)
 	if 0 == ln {
 		return nil
 	}
 	cp := make([]server.IExtension, ln)
-	copy(cp, m.extensions)
+	copy(cp, c.extensions)
 	return cp
 }
 
-func (m *ExtensionContainer) ExtensionsReversed() []server.IExtension {
-	ln := len(m.extensions)
+func (c *ExtensionContainer) ExtensionsReversed() []server.IExtension {
+	ln := len(c.extensions)
 	if 0 == ln {
 		return nil
 	}
 	cp := make([]server.IExtension, ln)
 	for i, j := 0, ln-1; i < j; i, j = i+1, j-1 {
-		cp[i], cp[j] = m.extensions[j], m.extensions[i]
+		cp[i], cp[j] = c.extensions[j], c.extensions[i]
 	}
 	return cp
 }
 
-func (m *ExtensionContainer) Range(handler func(index int, extension server.IExtension)) {
-	for index, extension := range m.extensions {
+func (c *ExtensionContainer) Range(handler func(index int, extension server.IExtension)) {
+	for index, extension := range c.extensions {
 		handler(index, extension)
 	}
 }
 
-func (m *ExtensionContainer) RangeReverse(handler func(index int, extension server.IExtension)) {
-	ln := len(m.extensions)
+func (c *ExtensionContainer) RangeReverse(handler func(index int, extension server.IExtension)) {
+	ln := len(c.extensions)
 	for index := ln - 1; index >= 0; index-- {
-		handler(index, m.extensions[index])
+		handler(index, c.extensions[index])
 	}
 }
 
-func (m *ExtensionContainer) HandleAt(index int, handler func(index int, extension server.IExtension)) error {
-	if index < 0 || index >= len(m.extensions) {
+func (c *ExtensionContainer) HandleAt(index int, handler func(index int, extension server.IExtension)) error {
+	if index < 0 || index >= len(c.extensions) {
 		return errors.New("HandleAt Error : Out of index! ")
 	}
-	handler(index, m.extensions[index])
+	handler(index, c.extensions[index])
 	return nil
 }
 
-func (m *ExtensionContainer) HandleAtName(name string, handler func(name string, extension server.IExtension)) error {
-	if !m.CheckExtension(name) {
+func (c *ExtensionContainer) HandleAtName(name string, handler func(name string, extension server.IExtension)) error {
+	if !c.CheckExtension(name) {
 		return errors.New("HandleAtName Error : No such name [" + name + "]")
 	}
-	handler(name, m.extensionMap[name])
+	handler(name, c.extensionMap[name])
 	return nil
 }
 
-func (m *ExtensionContainer) checkMap(name string) bool {
-	_, ok := m.extensionMap[name]
+func (c *ExtensionContainer) checkMap(name string) bool {
+	_, ok := c.extensionMap[name]
 	return ok
 }
 
-type ProtocolContainer struct {
+func NewIRabbitExtensionContainer() server.IRabbitExtensionContainer {
+	return NewRabbitExtensionContainer()
+}
+
+func NewRabbitExtensionContainer() *RabbitExtensionContainer {
+	return &RabbitExtensionContainer{ExtensionContainer: *NewExtensionContainer()}
+}
+
+type RabbitExtensionContainer struct {
 	ExtensionContainer
 }
 
-func (c *ProtocolContainer) InitExtensions() []error {
+func (c *RabbitExtensionContainer) InitExtensions() []error {
 	ln := c.Len()
 	if ln == 0 {
 		return nil
@@ -132,7 +132,7 @@ func (c *ProtocolContainer) InitExtensions() []error {
 	return rs
 }
 
-func (c *ProtocolContainer) DestroyExtensions() []error {
+func (c *RabbitExtensionContainer) DestroyExtensions() []error {
 	ln := c.Len()
 	if ln == 0 {
 		return nil
@@ -147,7 +147,7 @@ func (c *ProtocolContainer) DestroyExtensions() []error {
 	return rs
 }
 
-func (c *ProtocolContainer) SaveExtensions() []error {
+func (c *RabbitExtensionContainer) SaveExtensions() []error {
 	ln := c.Len()
 	if ln == 0 {
 		return nil
@@ -164,7 +164,7 @@ func (c *ProtocolContainer) SaveExtensions() []error {
 	return rs
 }
 
-func (c *ProtocolContainer) SaveExtension(name string) error {
+func (c *RabbitExtensionContainer) SaveExtension(name string) error {
 	var err error
 	c.HandleAtName(name, func(_ string, extension server.IExtension) {
 		if e, ok := extension.(server.ISaveExtension); ok {
@@ -174,7 +174,7 @@ func (c *ProtocolContainer) SaveExtension(name string) error {
 	return err
 }
 
-func (c *ProtocolContainer) EnableExtensions(enable bool) []error {
+func (c *RabbitExtensionContainer) EnableExtensions(enable bool) []error {
 	ln := c.Len()
 	if ln == 0 {
 		return nil
@@ -198,7 +198,7 @@ func (c *ProtocolContainer) EnableExtensions(enable bool) []error {
 	return rs
 }
 
-func (c *ProtocolContainer) EnableExtension(name string, enable bool) error {
+func (c *RabbitExtensionContainer) EnableExtension(name string, enable bool) error {
 	var err error
 	c.HandleAtName(name, func(_ string, extension server.IExtension) {
 		if e, ok := extension.(server.IEnableExtension); ok {

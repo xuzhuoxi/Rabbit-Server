@@ -8,8 +8,8 @@ import (
 )
 
 type IRabbitServerManager interface {
-	SetReqVerify(reqVerify server.IReqVerify)
-	SetReqVerifyNew(newReqVerify server.FuncNewIReqVerify)
+	SetReqVerify(reqVerify server.IPacketVerifier)
+	SetReqVerifyNew(newReqVerify server.FuncNewIPacketVerifier)
 
 	StartServers()
 	StopServers()
@@ -26,23 +26,23 @@ type serverMgr struct {
 	Servers []server.IRabbitServer
 }
 
-func (o *serverMgr) SetReqVerify(reqVerify server.IReqVerify) {
+func (o *serverMgr) SetReqVerify(reqVerify server.IPacketVerifier) {
 	for index := range o.Servers {
 		mgr, ok := o.Servers[index].GetExtensionManager()
 		if !ok {
 			return
 		}
-		mgr.SetCustomVerify(reqVerify)
+		mgr.SetCustomPacketVerifier(reqVerify)
 	}
 }
 
-func (o *serverMgr) SetReqVerifyNew(newReqVerify server.FuncNewIReqVerify) {
+func (o *serverMgr) SetReqVerifyNew(newReqVerify server.FuncNewIPacketVerifier) {
 	for index := range o.Servers {
 		mgr, ok := o.Servers[index].GetExtensionManager()
 		if !ok {
 			return
 		}
-		mgr.SetCustomVerify(newReqVerify())
+		mgr.SetCustomPacketVerifier(newReqVerify())
 	}
 }
 

@@ -1,4 +1,4 @@
-// Package protox
+// Package extension
 // Created by xuzhuoxi
 // on 2019-05-19.
 // @author xuzhuoxi
@@ -11,9 +11,9 @@ import (
 )
 
 var (
-	DefaultRequestPool  = NewPoolExtensionRequest()
-	DefaultResponsePool = NewPoolExtensionResponse()
-	DefaultNotifyPool   = NewPoolExtensionNotify()
+	DefaultRequestPool  = NewRequestPool()
+	DefaultResponsePool = NewResponsePool()
+	DefaultNotifyPool   = NewNotifyPool()
 )
 
 func init() {
@@ -30,15 +30,13 @@ func init() {
 
 //--------------------------------------------
 
-func NewPoolExtensionRequest() server.IPoolExtensionRequest {
-	return &reqPool{pool: lang.NewObjectPoolSync()}
-}
+func NewRequestPool() server.IRequestPool { return &reqPool{pool: lang.NewObjectPoolSync()} }
 
-func NewPoolExtensionResponse() server.IPoolExtensionResponse {
+func NewResponsePool() server.IResponsePool {
 	return &respPool{pool: lang.NewObjectPoolSync()}
 }
 
-func NewPoolExtensionNotify() server.IPoolExtensionNotify {
+func NewNotifyPool() server.INotifyPool {
 	return &notifyPool{pool: lang.NewObjectPoolSync()}
 }
 

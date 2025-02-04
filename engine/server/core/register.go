@@ -4,6 +4,7 @@
 package core
 
 import (
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/netx"
 	"time"
 )
@@ -17,3 +18,7 @@ const (
 	// DefaultStatsInterval 统计时间区间
 	DefaultStatsInterval = int64(5 * time.Minute)
 )
+
+func init() {
+	server.RegisterRabbitServerDefault(NewIRabbitServer)
+}

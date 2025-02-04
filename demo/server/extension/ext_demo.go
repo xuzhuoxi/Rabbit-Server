@@ -9,7 +9,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 )
 
-func NewRabbitDemoExtension(Name string) server.IProtoExtension {
+func NewRabbitDemoExtension(Name string) server.IRabbitExtension {
 	return &RabbitDemoExtension{RabbitDemoExtensionSupport: NewRabbitDemoExtensionSupport(Name)}
 }
 
@@ -44,10 +44,10 @@ type RabbitDemoExtension struct {
 
 func (e *RabbitDemoExtension) InitExtension() error {
 	e.GetLogger().Debugln("DemoExtension.InitExtension", e.Name)
-	e.SetRequestHandler("N_0", e.onRequestNoneParam)
-	e.SetRequestHandlerBinary("B_0", e.onRequestBinary)
-	e.SetRequestHandlerString("J_0", e.onRequestJson)
-	e.SetRequestHandlerObject("Obj_0", e.onRequestObj, newOriginObj, &paramCodingHandler{})
+	e.SetOnRequestHandler("N_0", e.onRequestNoneParam)
+	e.SetOnBinaryRequestHandler("B_0", e.onRequestBinary)
+	e.SetOnStringRequestHandler("J_0", e.onRequestJson)
+	e.SetOnObjectRequestHandler("Obj_0", e.onRequestObj, newOriginObj, &paramCodingHandler{})
 	return nil
 }
 

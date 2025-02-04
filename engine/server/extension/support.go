@@ -1,4 +1,4 @@
-// Package protox
+// Package extension
 // Created by xuzhuoxi
 // on 2019-02-26.
 // @author xuzhuoxi
@@ -7,94 +7,133 @@ package extension
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/packet"
 	"github.com/xuzhuoxi/infra-go/encodingx"
 )
 
-// ExtensionProtoInfo
+// RequestMetaInfo
 // 协议定义
-type ExtensionProtoInfo struct {
-	ProtoId          string
-	ParamType        server.ExtensionParamType
-	ExtensionHandler interface{}
+type RequestMetaInfo struct {
+	ProtoId string
 
-	ParamHandler    server.IProtoParamsHandler
-	ReqParamFactory server.FuncParamCtor
+	ParamType       server.ExtensionParamType
+	ParamHandler    server.IPacketParamsHandler
+	ReqParamFactory server.FuncParamObjectCtor
+
+	OnBeforeHandler  server.FuncBeforeRequest
+	OnAfterHandler   server.FuncAfterRequest
+	OnRequestHandler interface{}
 }
 
 //---------------------------------------
 
-func NewProtoExtensionSupport(Name string) ProtoExtensionSupport {
-	return ProtoExtensionSupport{
-		Name: Name, ProtoIdToInfo: make(map[string]*ExtensionProtoInfo),
+func NewOnRequestSupport(Name string) OnRequestSupport {
+	return OnRequestSupport{
+		Name: Name, ProtoIdToInfo: make(map[string]*RequestMetaInfo),
 	}
 }
 
-type ProtoExtensionSupport struct {
+type OnRequestSupport struct {
 	Name          string
-	ProtoIdToInfo map[string]*ExtensionProtoInfo
+	ProtoIdToInfo map[string]*RequestMetaInfo
 }
 
-func (s *ProtoExtensionSupport) ExtensionName() string {
+func (s *OnRequestSupport) ExtensionName() string {
 	return s.Name
 }
-func (s *ProtoExtensionSupport) CheckProtocolId(protoId string) bool {
+func (s *OnRequestSupport) CheckProtoId(protoId string) bool {
 	_, ok := s.ProtoIdToInfo[protoId]
 	return ok
 }
-func (s *ProtoExtensionSupport) GetParamInfo(protoId string) (paramType server.ExtensionParamType, handler server.IProtoParamsHandler) {
+func (s *OnRequestSupport) GetParamInfo(protoId string) (paramType server.ExtensionParamType, handler server.IPacketParamsHandler) {
 	info, _ := s.ProtoIdToInfo[protoId]
 	return info.ParamType, info.ParamHandler
 }
 
-func (s *ProtoExtensionSupport) SetRequestHandler(protoId string, handler server.ExtensionHandlerNoneParam) {
-	s.ProtoIdToInfo[protoId] = &ExtensionProtoInfo{ProtoId: protoId, ParamType: server.None, ExtensionHandler: handler}
-}
-func (s *ProtoExtensionSupport) SetRequestHandlerBinary(protoId string, handler server.ExtensionHandlerBinaryParam) {
-	s.ProtoIdToInfo[protoId] = &ExtensionProtoInfo{ProtoId: protoId, ParamType: server.Binary, ExtensionHandler: handler}
-}
-func (s *ProtoExtensionSupport) SetRequestHandlerString(protoId string, handler server.ExtensionHandlerStringParam) {
-	s.ProtoIdToInfo[protoId] = &ExtensionProtoInfo{ProtoId: protoId, ParamType: server.String, ExtensionHandler: handler}
-}
-func (s *ProtoExtensionSupport) SetRequestHandlerObject(protoId string, handler server.ExtensionHandlerObjectParam,
-	factory server.FuncParamCtor, codingHandler encodingx.ICodingHandler) {
-	s.ProtoIdToInfo[protoId] = &ExtensionProtoInfo{ProtoId: protoId, ParamType: server.Object, ExtensionHandler: handler,
-		ReqParamFactory: factory, ParamHandler: NewProtoObjectParamsHandler(factory, codingHandler)}
-}
-func (s *ProtoExtensionSupport) ClearRequestHandler(protoId string) {
-	delete(s.ProtoIdToInfo, protoId)
-}
-func (s *ProtoExtensionSupport) ClearRequestHandlers() {
-	s.ProtoIdToInfo = make(map[string]*ExtensionProtoInfo)
+func (s *OnRequestSupport) SetBeforeRequestHandler(protoId string, handler server.FuncBeforeRequest) {
+	if info, ok := s.ProtoIdToInfo[protoId]; ok {
+		info.OnBeforeHandler = handler
+		return
+	}
+	s.ProtoIdToInfo[protoId] = &RequestMetaInfo{ProtoId: protoId, OnBeforeHandler: handler}
 }
 
-func (s *ProtoExtensionSupport) OnRequest(resp server.IExtensionResponse, req server.IExtensionRequest) {
+func (s *OnRequestSupport) SetAfterRequestHandler(protoId string, handler server.FuncAfterRequest) {
+	if info, ok := s.ProtoIdToInfo[protoId]; ok {
+		info.OnAfterHandler = handler
+		return
+	}
+	s.ProtoIdToInfo[protoId] = &RequestMetaInfo{ProtoId: protoId, OnAfterHandler: handler}
+}
+
+func (s *OnRequestSupport) SetOnRequestHandler(protoId string, handler server.FuncOnNoneParamRequest) {
+	if info, ok := s.ProtoIdToInfo[protoId]; ok {
+		info.ParamType, info.OnRequestHandler = server.None, handler
+		return
+	}
+	s.ProtoIdToInfo[protoId] = &RequestMetaInfo{ProtoId: protoId, ParamType: server.None, OnRequestHandler: handler}
+}
+func (s *OnRequestSupport) SetOnBinaryRequestHandler(protoId string, handler server.FuncOnBinaryRequest) {
+	if info, ok := s.ProtoIdToInfo[protoId]; ok {
+		info.ParamType, info.OnRequestHandler = server.Binary, handler
+		return
+	}
+	s.ProtoIdToInfo[protoId] = &RequestMetaInfo{ProtoId: protoId, ParamType: server.Binary, OnRequestHandler: handler}
+}
+func (s *OnRequestSupport) SetOnStringRequestHandler(protoId string, handler server.FuncOnStringRequest) {
+	if info, ok := s.ProtoIdToInfo[protoId]; ok {
+		info.ParamType, info.OnRequestHandler = server.String, handler
+		return
+	}
+	s.ProtoIdToInfo[protoId] = &RequestMetaInfo{ProtoId: protoId, ParamType: server.String, OnRequestHandler: handler}
+}
+
+func (s *OnRequestSupport) SetOnObjectRequestHandler(protoId string, handler server.FuncOnObjectRequest,
+	factory server.FuncParamObjectCtor, codingHandler encodingx.ICodingHandler) {
+	if info, ok := s.ProtoIdToInfo[protoId]; ok {
+		info.ParamType, info.OnRequestHandler = server.Object, handler
+		info.ReqParamFactory, info.ParamHandler = factory, packet.NewPacketParamsHandler(factory, codingHandler)
+		return
+	}
+	s.ProtoIdToInfo[protoId] = &RequestMetaInfo{ProtoId: protoId, ParamType: server.Object, OnRequestHandler: handler,
+		ReqParamFactory: factory, ParamHandler: packet.NewPacketParamsHandler(factory, codingHandler)}
+}
+func (s *OnRequestSupport) ClearRequestHandler(protoId string) {
+	delete(s.ProtoIdToInfo, protoId)
+}
+
+func (s *OnRequestSupport) ClearRequestHandlers() {
+	s.ProtoIdToInfo = make(map[string]*RequestMetaInfo)
+}
+
+func (s *OnRequestSupport) OnRequest(resp server.IExtensionResponse, req server.IExtensionRequest) {
 	info, _ := s.ProtoIdToInfo[req.ProtoId()]
 	switch info.ParamType {
 	case server.None:
-		handler := info.ExtensionHandler.(server.ExtensionHandlerNoneParam)
+		handler := info.OnRequestHandler.(server.FuncOnNoneParamRequest)
 		handler(resp.(server.IExtensionResponse), req.(server.IExtensionRequest))
 	case server.Binary:
-		handler := info.ExtensionHandler.(server.ExtensionHandlerBinaryParam)
+		handler := info.OnRequestHandler.(server.FuncOnBinaryRequest)
 		handler(resp.(server.IExtensionResponse), req.(server.IBinaryRequest))
 	case server.String:
-		handler := info.ExtensionHandler.(server.ExtensionHandlerStringParam)
+		handler := info.OnRequestHandler.(server.FuncOnStringRequest)
 		handler(resp.(server.IExtensionResponse), req.(server.IStringRequest))
 	case server.Object:
-		handler := info.ExtensionHandler.(server.ExtensionHandlerObjectParam)
+		handler := info.OnRequestHandler.(server.FuncOnObjectRequest)
 		handler(resp.(server.IExtensionResponse), req.(server.IObjectRequest))
 	}
 }
 
 //---------------------------------------
 
-func NewGoroutineExtensionSupport(MaxGo int) GoroutineExtensionSupport {
-	return GoroutineExtensionSupport{MaxGoroutine: MaxGo}
+func NewGoroutineExtensionSupport(MaxGo int) GoroutineOnRequestSupport {
+	return GoroutineOnRequestSupport{MaxGoroutine: MaxGo}
 }
 
-type GoroutineExtensionSupport struct {
+type GoroutineOnRequestSupport struct {
 	MaxGoroutine int
 }
 
-func (s *GoroutineExtensionSupport) MaxGo() int {
+func (s *GoroutineOnRequestSupport) MaxGo() int {
 	return s.MaxGoroutine
 }

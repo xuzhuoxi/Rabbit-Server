@@ -26,8 +26,8 @@ type RabbitLoginExtension struct {
 
 func (e *RabbitLoginExtension) InitExtension() error {
 	e.GetLogger().Debugln("LoginExtension.InitExtension", e.Name)
-	e.SetRequestHandlerString(LoginId, e.onRequestLogin)
-	e.SetRequestHandlerString(ReLoginId, e.onRequestReLogin)
+	e.SetOnStringRequestHandler(LoginId, e.onRequestLogin)
+	e.SetOnStringRequestHandler(ReLoginId, e.onRequestReLogin)
 	return nil
 }
 
@@ -43,7 +43,7 @@ func (e *RabbitLoginExtension) onRequestLogin(resp server.IExtensionResponse, re
 	if e.check(req.ClientId(), password) {
 		core.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
-		resp.SendStringResponse("ok", "200")
+		resp.ResponseString("ok", "200")
 		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)
 	} else {
 		e.GetLogger().Warnln("[RabbitLoginExtension.onRequestLogin]", "Check Fail!", req.ProtoId(), req.ClientId(), password)
@@ -55,7 +55,7 @@ func (e *RabbitLoginExtension) onRequestReLogin(resp server.IExtensionResponse, 
 	if e.check(req.ClientId(), password) {
 		core.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
 		time.Sleep(time.Millisecond * 20)
-		resp.SendStringResponse("ok")
+		resp.ResponseString("ok")
 		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestReLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)
 	} else {
 		e.GetLogger().Warnln("[RabbitLoginExtension.onRequestReLogin]", "Check Fail!", req.ProtoId(), req.ClientId(), password)

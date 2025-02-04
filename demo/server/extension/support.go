@@ -11,11 +11,11 @@ import (
 )
 
 func NewRabbitDemoExtensionSupport(Name string) RabbitDemoExtensionSupport {
-	support := extension.NewProtoExtensionSupport(Name)
-	return RabbitDemoExtensionSupport{ProtoExtensionSupport: support}
+	support := extension.NewOnRequestSupport(Name)
+	return RabbitDemoExtensionSupport{OnRequestSupport: support}
 }
 
 type RabbitDemoExtensionSupport struct {
-	extension.ProtoExtensionSupport
+	extension.OnRequestSupport
 	logx.LoggerSupport
 }

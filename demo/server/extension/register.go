@@ -16,5 +16,5 @@ const (
 
 func init() {
 	server.RegisterRabbitExtension(NameDemo, NewRabbitDemoExtension)
-	server.RegisterRabbitExtension(NameLogin, func(name string) server.IProtoExtension { return NewRabbitLoginExtension(name) })
+	server.RegisterRabbitExtension(NameLogin, func(name string) server.IRabbitExtension { return NewRabbitLoginExtension(name) })
 }

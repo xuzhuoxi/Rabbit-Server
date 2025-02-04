@@ -1,4 +1,4 @@
-// Package temp
+// Package server
 // Create on 2025/2/2
 // @author xuzhuoxi
 package server
@@ -6,12 +6,12 @@ package server
 // IExtensionRequest
 // 请求对象参数集合接口
 type IExtensionRequest interface {
-	IProtoHeader
+	IPacketHeader
 	// DataSize 数据长度
 	DataSize() int
 	// SetRequestData
 	// 设置集合数据信息
-	SetRequestData(paramType ExtensionParamType, paramHandler IProtoParamsHandler, data [][]byte)
+	SetRequestData(paramType ExtensionParamType, paramHandler IPacketParamsHandler, data [][]byte)
 }
 
 // IBinaryRequest
@@ -50,5 +50,3 @@ type IObjectRequest interface {
 	// 第一个请求参数
 	FirstObject() interface{}
 }
-
-//---------------------------------------

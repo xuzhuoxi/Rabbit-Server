@@ -1,4 +1,4 @@
-// Package protox
+// Package extension
 // Created by xuzhuoxi
 // on 2019-05-18.
 // @author xuzhuoxi
@@ -8,7 +8,7 @@ package extension
 import (
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/proto"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/packet"
 )
 
 func NewSockRequest() *SockRequest {
@@ -16,7 +16,7 @@ func NewSockRequest() *SockRequest {
 }
 
 type SockRequest struct {
-	proto.ProtoHeader
+	packet.PacketHeader
 	ParamType server.ExtensionParamType
 	binData   [][]byte
 	strData   []string
@@ -25,7 +25,7 @@ type SockRequest struct {
 
 func (req *SockRequest) String() string {
 	return fmt.Sprintf("{Request: %v, %v, %v, %v}",
-		req.ProtoHeader, req.ParamType, req.binData, req.objData)
+		req.PacketHeader, req.ParamType, req.binData, req.objData)
 }
 
 func (req *SockRequest) DataSize() int {
@@ -40,7 +40,7 @@ func (req *SockRequest) DataSize() int {
 	return 0
 }
 
-func (req *SockRequest) SetRequestData(paramType server.ExtensionParamType, paramHandler server.IProtoParamsHandler, data [][]byte) {
+func (req *SockRequest) SetRequestData(paramType server.ExtensionParamType, paramHandler server.IPacketParamsHandler, data [][]byte) {
 	req.ParamType = paramType
 	req.binData = data
 	switch paramType {
@@ -51,7 +51,7 @@ func (req *SockRequest) SetRequestData(paramType server.ExtensionParamType, para
 	case server.String:
 		req.strData, req.objData = req.toStringArray(data), nil
 	case server.Object:
-		objData := paramHandler.HandleRequestParams(data)
+		objData := paramHandler.DecodeRequestParams(data)
 		req.strData, req.objData = nil, objData
 	}
 }

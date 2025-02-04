@@ -1,19 +1,19 @@
-package extension
+package packet
 
 import "github.com/xuzhuoxi/infra-go/bytex"
 
-type IProtoMessageParser interface {
+type IPacketParser interface {
 }
 
-type defaultProtoMessageParser struct {
+type packetParser struct {
 }
 
-// ParseMessage
+// ParsePacket
 // block0 : eName utf8
 // block1 : pid	utf8
 // block2 : uid	utf8
 // [n]其它信息
-func (m *defaultProtoMessageParser) ParseMessage(msgBytes []byte) (name string, pid string, uid string, data [][]byte) {
+func (m *packetParser) ParsePacket(msgBytes []byte) (name string, pid string, uid string, data [][]byte) {
 	index := 0
 	buffToData := bytex.DefaultPoolBuffToData.GetInstance()
 	defer bytex.DefaultPoolBuffToData.Recycle(buffToData)

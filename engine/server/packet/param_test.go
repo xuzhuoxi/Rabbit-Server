@@ -1,6 +1,6 @@
 // Create on 2023/7/19
 // @author xuzhuoxi
-package extension
+package packet
 
 import (
 	"fmt"

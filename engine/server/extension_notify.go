@@ -6,6 +6,6 @@ package server
 import "github.com/xuzhuoxi/infra-go/encodingx"
 
 type IExtensionNotify interface {
-	IProtoReturnMessage
+	IResponsePacket
 	SetCodingHandler(encodeHandler encodingx.ICodingHandler)
 }

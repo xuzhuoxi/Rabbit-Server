@@ -14,10 +14,10 @@ type IExtensionContainer interface {
 	AppendExtension(ext IExtension)
 	// CheckExtension
 	// 检查
-	CheckExtension(name string) bool
+	CheckExtension(named string) bool
 	// GetExtension
 	// 取Extension
-	GetExtension(name string) IExtension
+	GetExtension(named string) IExtension
 	// Len
 	// Extension数量
 	Len() int
@@ -41,7 +41,7 @@ type IExtensionContainer interface {
 	HandleAtName(name string, handler func(name string, ext IExtension)) error
 }
 
-type IProtoExtensionContainer interface {
+type IRabbitExtensionContainer interface {
 	IExtensionContainer
 	// InitExtensions
 	// 初始化全部Extension
@@ -65,9 +65,9 @@ type IProtoExtensionContainer interface {
 	EnableExtension(name string, enable bool) error
 }
 
-// IExtensionManager
+// IRabbitExtensionManager
 // Extension管理接口
-type IExtensionManager interface {
+type IRabbitExtensionManager interface {
 	logx.ILoggerSetter
 	netx.IAddressProxySetter
 
@@ -76,7 +76,7 @@ type IExtensionManager interface {
 	// handlerContainer: 解包处理
 	// extensionContainer： 服务扩展
 	// sockSender: 消息发送器
-	InitManager(handlerContainer netx.IPackHandlerContainer, extensionContainer IProtoExtensionContainer, sockSender netx.ISockSender)
+	InitManager(handlerContainer netx.IPackHandlerContainer, extensionContainer IRabbitExtensionContainer, sockSender netx.ISockSender)
 
 	// StartManager
 	// 开始运行
@@ -110,45 +110,45 @@ type IExtensionManager interface {
 	OnMessageUnpack(msgData []byte, senderAddress string, other interface{}) bool
 	// DoRequest
 	// 消息处理入口，这里是并发方法
-	DoRequest(extension IProtoExtension, req IExtensionRequest, resp IExtensionResponse)
+	DoRequest(extension IRabbitExtension, req IExtensionRequest, resp IExtensionResponse)
 }
 
 // FuncStartOnPack
 // 响应入口
-type FuncStartOnPack func(senderAddress string)
+type FuncStartOnPack = func(senderAddress string)
 
-// FuncParseMessage
+// FuncParsePacket
 // 解释二进制数据
-type FuncParseMessage func(msgBytes []byte) (name string, pid string, uid string, data [][]byte)
+type FuncParsePacket = func(msgBytes []byte) (extName string, pid string, uid string, data [][]byte)
 
 // FuncGetExtension
 // 消息处理入口，这里是并发方法
-type FuncGetExtension func(name string) (extension IProtoExtension, rsCode int32)
+type FuncGetExtension = func(name string) (extension IRabbitExtension, rsCode int32)
 
 // FuncStartOnRequest
 // 响应开始
-type FuncStartOnRequest func(resp IExtensionResponse, req IExtensionRequest)
+type FuncStartOnRequest = func(resp IExtensionResponse, req IExtensionRequest)
 
 // FuncFinishOnRequest
 // 响应完成
-type FuncFinishOnRequest func(resp IExtensionResponse, req IExtensionRequest)
+type FuncFinishOnRequest = func(resp IExtensionResponse, req IExtensionRequest)
 
-type IExtensionManagerCustomizeSetting interface {
+type ICustomManagerSetting interface {
 	// SetCustomStartOnPackFunc
 	// 设置自定义响应开始行为
 	SetCustomStartOnPackFunc(funcStartOnPack FuncStartOnPack)
-	// SetCustomParseFunc
+	// SetCustomParsePacketFunc
 	// 设置自定义数据解释行为
-	SetCustomParseFunc(funcParse FuncParseMessage)
+	SetCustomParsePacketFunc(funcParse FuncParsePacket)
 	// SetCustomGetExtensionFunc
 	// 设置自定义扩展获取
 	SetCustomGetExtensionFunc(funcVerify FuncGetExtension)
 	// SetCustomVerifyFunc
 	// 设置自定义验证
-	SetCustomVerifyFunc(funcVerify FuncVerify)
-	// SetCustomVerify
-	// 设置自定义验证接口
-	SetCustomVerify(verify IReqVerify)
+	SetCustomVerifyFunc(funcVerify FuncVerifyPacket)
+	// SetCustomPacketVerifier
+	// 设置自定义的消息包校验器
+	SetCustomPacketVerifier(reqVerify IPacketVerifier)
 	// SetCustomStartOnRequestFunc
 	// 设置自定义响应前置行为
 	SetCustomStartOnRequestFunc(funcStart FuncStartOnRequest)
@@ -157,14 +157,14 @@ type IExtensionManagerCustomizeSetting interface {
 	SetCustomFinishOnRequestFunc(funcFinish FuncFinishOnRequest)
 	// SetCustom
 	// 设置自定义行为
-	SetCustom(funcStartOnPack FuncStartOnPack, funcParse FuncParseMessage, funcVerify FuncVerify, funcStart FuncStartOnRequest, funcFinish FuncFinishOnRequest)
+	SetCustom(funcStartOnPack FuncStartOnPack, funcParse FuncParsePacket, funcVerify FuncVerifyPacket, funcStart FuncStartOnRequest, funcFinish FuncFinishOnRequest)
 }
 
-type IExtensionManagerCustomizeSupport interface {
+type ICustomManagerSupport interface {
 	CustomStartOnPack(senderAddress string)
-	CustomParseMessage(msgBytes []byte) (name string, pid string, uid string, data [][]byte)
-	CustomGetExtension(name string) (extension IProtoExtension, rsCode int32)
-	CustomVerify(name string, pid string, uid string) (rsCode int32)
+	CustomParsePacket(msgBytes []byte) (extName string, pid string, uid string, data [][]byte)
+	CustomGetExtension(extName string) (extension IRabbitExtension, rsCode int32)
+	CustomVerify(extName string, pid string, uid string) (rsCode int32)
 	CustomStartOnRequest(resp IExtensionResponse, req IExtensionRequest)
 	CustomFinishOnRequest(resp IExtensionResponse, req IExtensionRequest)
 }

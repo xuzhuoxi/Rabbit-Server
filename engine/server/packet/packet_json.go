@@ -1,7 +1,7 @@
-// Package protox
+// Package packet
 // Create on 2023/7/22
 // @author xuzhuoxi
-package extension
+package packet
 
 import (
 	"encoding/json"

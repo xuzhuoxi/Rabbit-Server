@@ -7,8 +7,8 @@ import (
 	"github.com/xuzhuoxi/infra-go/netx"
 )
 
-type IProtoReturnMessage interface {
-	IProtoHeader
+type IResponsePacket interface {
+	IPacketHeader
 	// PrepareData
 	// 准备设置回复参数
 	PrepareData()
@@ -34,7 +34,10 @@ type IProtoReturnMessage interface {
 	AppendObject(data ...interface{}) error
 	// GenMsgBytes
 	// 生成消息
-	GenMsgBytes() (msg []byte, err error)
+	GenMsgBytes(eName string, pId string) (msg []byte, err error)
+	// GenDefaultMsgBytes
+	// 生成消息
+	GenDefaultMsgBytes() (msg []byte, err error)
 }
 
 type IExtensionResponseSettings interface {
@@ -45,10 +48,10 @@ type IExtensionResponseSettings interface {
 // IExtensionResponse
 // 响应对象参数集合接口
 type IExtensionResponse interface {
-	IProtoReturnMessage
+	IResponsePacket
 	// SetParamInfo
 	// 设置参数类型与处理器
-	SetParamInfo(paramType ExtensionParamType, paramHandler IProtoParamsHandler)
+	SetParamInfo(paramType ExtensionParamType, paramHandler IPacketParamsHandler)
 	// SetResultCode
 	// 设置返回状态码
 	SetResultCode(rsCode int32)
@@ -68,27 +71,27 @@ type IExtensionResponse interface {
 }
 
 type iExtResp interface {
-	// SendNoneResponse
+	// ResponseNone
 	// 无额外参数响应
-	SendNoneResponse() error
-	// SendNoneResponseToClient
+	ResponseNone() error
+	// ResponseNoneToClient
 	// 无额外参数响到其它用户
-	SendNoneResponseToClient(interruptOnErr bool, clientIds ...string) error
-	// SendBinaryResponse
+	ResponseNoneToClient(interruptOnErr bool, clientIds ...string) error
+	// ResponseBinary
 	// 响应客户端(二进制参数)
-	SendBinaryResponse(data ...[]byte) error
-	// SendCommonResponse
+	ResponseBinary(data ...[]byte) error
+	// ResponseCommon
 	// 响应客户端(基础数据参数)
-	SendCommonResponse(data ...interface{}) error
-	// SendStringResponse
+	ResponseCommon(data ...interface{}) error
+	// ResponseString
 	// 响应客户端(字符串参数)
-	SendStringResponse(data ...string) error
-	// SendJsonResponse
+	ResponseString(data ...string) error
+	// ResponseJson
 	// 响应客户端(Json字符串参数)
-	SendJsonResponse(data ...interface{}) error
-	// SendObjectResponse
+	ResponseJson(data ...interface{}) error
+	// ResponseObject
 	// 响应客户端(具体结构体参数)
 	// data only supports pointer types
 	// data 只支持指针类型
-	SendObjectResponse(data ...interface{}) error
+	ResponseObject(data ...interface{}) error
 }

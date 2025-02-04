@@ -11,11 +11,10 @@ import (
 
 // Server ---
 
-type IRabbitServer interface {
-	IRabbitServerInfo
-	IRabbitServerController
-	GetConnSet() (set netx.IServerConnSet, ok bool)
-	GetExtensionManager() (mgr IRabbitExtensionManager, ok bool)
+type IRabbitServerInfo interface {
+	logx.ILoggerSupport
+	GetId() string
+	GetName() string
 }
 
 type IRabbitServerController interface {
@@ -26,18 +25,14 @@ type IRabbitServerController interface {
 	Save()
 }
 
-type IRabbitServerInfo interface {
-	logx.ILoggerSupport
-	GetId() string
-	GetName() string
+type IRabbitServer interface {
+	IRabbitServerInfo
+	IRabbitServerController
+	GetConnSet() (set netx.IServerConnSet, ok bool)
+	GetExtensionManager() (mgr IRabbitExtensionManager, ok bool)
 }
 
-type FuncNewRabbitExtension func(name string) IProtoExtension
-type IRabbitExtensionContainer = IProtoExtensionContainer
-type IRabbitExtensionManager interface {
-	IExtensionManager
-	SetCustomVerify(reqVerify IReqVerify)
-}
+type FuncNewRabbitExtension = func(extName string) IRabbitExtension
 
 // Register ---
 
@@ -100,7 +95,7 @@ func GetAllExtensions() []string {
 	return rs
 }
 
-func NewRabbitExtension(name string) (extension IProtoExtension, err error) {
+func NewRabbitExtension(name string) (extension IRabbitExtension, err error) {
 	lock.RLock()
 	defer lock.RUnlock()
 	for _, meta := range extList {
