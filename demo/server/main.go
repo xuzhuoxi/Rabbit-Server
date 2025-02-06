@@ -7,7 +7,6 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/demo/server/cmd"
 	_ "github.com/xuzhuoxi/Rabbit-Server/demo/server/extension"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mgr"
-	_ "github.com/xuzhuoxi/Rabbit-Server/engine/server/rabbit"
 )
 
 func main() {

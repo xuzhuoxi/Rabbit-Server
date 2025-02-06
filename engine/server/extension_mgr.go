@@ -111,6 +111,9 @@ type IRabbitExtensionManager interface {
 	// DoRequest
 	// 消息处理入口，这里是并发方法
 	DoRequest(extension IRabbitExtension, req IExtensionRequest, resp IExtensionResponse)
+
+	ICustomManagerSetting
+	ICustomManagerSupport
 }
 
 // FuncStartOnPack

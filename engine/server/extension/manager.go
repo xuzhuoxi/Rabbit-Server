@@ -59,50 +59,50 @@ func (m *RabbitExtensionManager) StartManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
 	m.ExtensionContainer.InitExtensions()
-	m.HandlerContainer.AppendPackHandler(m.OnMessageUnpack)
+	var _ = m.HandlerContainer.AppendPackHandler(m.OnMessageUnpack)
 }
 
 func (m *RabbitExtensionManager) StopManager() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.HandlerContainer.ClearHandler(m.OnMessageUnpack)
-	m.ExtensionContainer.DestroyExtensions()
+	var _ = m.HandlerContainer.ClearHandler(m.OnMessageUnpack)
+	var _ = m.ExtensionContainer.DestroyExtensions()
 }
 
 func (m *RabbitExtensionManager) SaveExtensions() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.ExtensionContainer.SaveExtensions()
+	var _ = m.ExtensionContainer.SaveExtensions()
 }
 
 func (m *RabbitExtensionManager) SaveExtension(name string) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.ExtensionContainer.SaveExtension(name)
+	var _ = m.ExtensionContainer.SaveExtension(name)
 }
 
 func (m *RabbitExtensionManager) EnableExtension(name string) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.ExtensionContainer.EnableExtension(name, true)
+	var _ = m.ExtensionContainer.EnableExtension(name, true)
 }
 
 func (m *RabbitExtensionManager) DisableExtension(name string) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.ExtensionContainer.EnableExtension(name, false)
+	var _ = m.ExtensionContainer.EnableExtension(name, false)
 }
 
 func (m *RabbitExtensionManager) EnableExtensions() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.ExtensionContainer.EnableExtensions(true)
+	var _ = m.ExtensionContainer.EnableExtensions(true)
 }
 
 func (m *RabbitExtensionManager) DisableExtensions() {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.ExtensionContainer.EnableExtensions(false)
+	var _ = m.ExtensionContainer.EnableExtensions(false)
 }
 
 //---------------------------------

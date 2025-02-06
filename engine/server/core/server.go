@@ -69,7 +69,7 @@ func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	o.SockServer.SetMaxConn(100)
 	o.SockServer.SetLogger(o.GetLogger())
 	// 注入Extension
-	o.initExtensions()
+	o.registerExtensions()
 	// 初始化ExtensionManager
 	// 这里把Manager、SockServer、Container进行关联
 	o.ExtManager.InitManager(o.SockServer.GetPackHandlerContainer(), o.ExtContainer, o.SockServer)
@@ -77,7 +77,7 @@ func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	o.ExtManager.SetAddressProxy(RabbitAddressProxy)
 }
 
-func (o *RabbitServer) initExtensions() {
+func (o *RabbitServer) registerExtensions() {
 	var list []string
 	if o.Config.Extension.All {
 		list = server.GetAllExtensions()
