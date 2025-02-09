@@ -14,7 +14,7 @@ const (
 	NameLogin = "Login"
 )
 
-func init() {
+func Register() {
 	server.RegisterRabbitExtension(NameDemo, NewRabbitDemoExtension)
 	server.RegisterRabbitExtension(NameLogin, func(name string) server.IRabbitExtension { return NewRabbitLoginExtension(name) })
 }

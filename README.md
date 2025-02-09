@@ -1,5 +1,7 @@
 # Rabbit-Server
 
+[English](./README_EN.md) | 简体中文
+
 ## 概述
 
 Rabbit-Server 是一个功能全面的游戏服务器框架，支持多种网络连接方式、自定义通信协议、逻辑扩展、MMO 世界、

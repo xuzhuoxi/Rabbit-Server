@@ -1,5 +1,7 @@
 # Rabbit-Server
 
+English | [简体中文](./README.md)
+
 ## Overview
 
 Rabbit-Server is a comprehensive game server framework that supports multiple network connection methods, custom communication protocols, logic extensions, MMO worlds, and cluster deployment. It can be dynamically scaled with Rabbit-Home for seamless horizontal expansion.
