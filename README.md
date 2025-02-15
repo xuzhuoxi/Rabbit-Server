@@ -18,7 +18,7 @@ Rabbit-Server 支持集群部署，配合 Rabbit-Home 能够很好地进行动�
 
 ## 快速开始
 
-通过 `go mod` 或 下载整个仓库到 `gopath` 中便在项目中使用 Rabbit-Server.
+通过 `go mod` 或 克隆整个仓库到 `gopath` 中便在项目中使用 Rabbit-Server.
 
 ### 前提条件
 
@@ -88,19 +88,19 @@ res/
 - mmo.yaml
   + 用于配置 MMO 相关的 房间、 区域、世界等相关项
   + 房间: entities/rooms 属性下，为数组项目
-    + id: 房间唯一id, 在整个mmo中的全部实体中唯一。
-    + rid: 引用id，用于关联其它配置，如果地图配置等。可重复。
-    + name: 名称，用于显示。
-    + cap: 容量，用于限制玩家数量。
-    + tags: 标签，数组项。 可以为房间设置多个标签属性。
+    - id: 房间唯一id, 在整个mmo中的全部实体中唯一。
+    - rid: 引用id，用于关联其它配置，如地图配置等。可重复。
+    - name: 名称，用于显示。
+    - cap: 容量，用于限制玩家数量。
+    - tags: 标签，数组项。 可以为房间设置多个标签属性。
   + 区域: relations/zones 属性下，为数组项目
-    + id: 区域唯一id, 在整个mmo中的全部实体中唯一。
-    + name: 区域名称，用于显示。
-    + list: 关联房间，数组项。 可配置房间id。
+    - id: 区域唯一id, 在整个mmo中的全部实体中唯一。
+    - name: 区域名称，用于显示。
+    - list: 关联房间，数组项。 可配置房间id。
   + 世界: relations/worlds 属性下，为数组项目
-    + id: 世界唯一id, 在整个mmo中的全部实体中唯一。
-    + name: 世界名称，用于显示。
-    + list: 关联实体，数组项。 可配置 房间id 或 区域id。
+    - id: 世界唯一id, 在整个mmo中的全部实体中唯一。
+    - name: 世界名称，用于显示。
+    - list: 关联实体，数组项。 可配置 房间id 或 区域id。
   + default: 玩家登录后的默认房间配置，数组项，支持多个，随机选择。
   + log_ref: 世界相关日志配置， 值为log.yaml中的日志配置名称。
 
@@ -117,53 +117,51 @@ res/
 ### 在项目中使用
 
 1. 使用 `github.com/xuzhuoxi/infra-go/serialx` 中的 `NewStartupManager()` 创建一个启动管理器 `IStartupManager`。
-    ```go
-        startup := serialx.NewStartupManager()
-    ```
+   ```go
+   startup := serialx.NewStartupManager()
+   ```
 2. 创建启动模块，实际是一个实现IStartupModule的结构体。
-    ```go
-    import (
-	"github.com/xuzhuoxi/Project2208_Server/src/core"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/mgr"
-	"github.com/xuzhuoxi/infra-go/eventx"
-	"github.com/xuzhuoxi/infra-go/serialx"
-    )
+   ```go
+   import (
+   "github.com/xuzhuoxi/Project2208_Server/src/core"
+   "github.com/xuzhuoxi/Rabbit-Server/engine/mgr"
+   "github.com/xuzhuoxi/infra-go/eventx"
+   "github.com/xuzhuoxi/infra-go/serialx"
+   )
    
-    type rabbitServer struct {
-        eventx.EventDispatcher
-    }
+   type rabbitServer struct {
+       eventx.EventDispatcher
+   }
     
-    func (o *rabbitServer) Name() string {
-        return "Init Servers"
-    }
+   func (o *rabbitServer) Name() string {
+       return "Init Servers"
+   }
     
-    func (o *rabbitServer) StartModule() {
-        mgr := NewRabbitManager()
-        mgr.GetInitManager().LoadRabbitConfig("rabbit.yaml")            // 加载配置文件
-        mgr.GetInitManager().InitLoggerManager()                        // 初始化日志管理器
-		mgr.GetServerManager().StartServers()                           // 启动服务器
-        o.DispatchEvent(serialx.EventOnStartupModuleStarted, o, nil)
-    }
+   func (o *rabbitServer) StartModule() {
+       mgr := NewRabbitManager()
+       mgr.GetInitManager().LoadRabbitConfig("rabbit.yaml")            // 加载配置文件
+       mgr.GetInitManager().InitLoggerManager()                        // 初始化日志管理器
+	   mgr.GetServerManager().StartServers()                           // 启动服务器
+       o.DispatchEvent(serialx.EventOnStartupModuleStarted, o, nil)
+   }
     
-    func (o *initServer) StopModule() {
-		o.DispatchEvent(serialx.EventOnStartupModuleStopped, o, nil)
-    }
+   func (o *initServer) StopModule() {
+	   o.DispatchEvent(serialx.EventOnStartupModuleStopped, o, nil)
+   }
     
-    func (o *initServer) SaveModule() {
-        o.DispatchEvent(serialx.EventOnStartupModuleSaved, o, nil)
-    }
-
-    
-    ```
+   func (o *initServer) SaveModule() {
+       o.DispatchEvent(serialx.EventOnStartupModuleSaved, o, nil)
+   }
+   ```
    **注意：**
    - 实际项目中，启动模块至少有一个，一般不只一个。
    - 在 StartModule、StopModule、SaveModule 函数完成后，事件**必须**抛出，否则会处理一直等待状态。
 
 3. 把模块结构体添加到 startup 中去，并启动管理器。
-    ```go
-    startup.AppendModule(&rabbitServer{})
-    startup.StartManager()
-    ```
+   ```go
+   startup.AppendModule(&rabbitServer{})
+   startup.StartManager()
+   ```
    **注意：**
    - 实际项目中，启动模块至少有一个，一般一只一个。
    - 在 StartModule、StopModule、SaveModule 函数完成后，事件**必须**抛出，否则会处理一直等待状态。
@@ -175,39 +173,39 @@ res/
 ### 目录说明
 
 1. **engine/**: 包含核心游戏服务器逻辑。
-    - **config.go**: 配置文件解析和管理。
-    - **config/**: 配置文件解析和管理功能支持。
-    - **db/**: 数据库管理，目前主要支持 MySQL。
-    - **mmo/**: 多人在线游戏（MMO）相关逻辑。
-        - **basis/**: 基础实体和管理器。
-        - **config/**: MMO 配置管理。
-        - **events/**: 事件处理。
-        - **index/**: 实体索引管理。
-        - **manager/**: 实体管理。
-        - **proto/**: 协议定义。
-        - **vars/**: 变量定义。
-    - **server/**: 服务器核心逻辑。
-        - **core/**: 核心服务器管理。
-        - **extension/**: 扩展管理。
-        - **packet/**: 数据包处理。
-        - **status/**: 状态管理。
-    - **verify/**: 验证逻辑。
-    - **clock/**: 时钟管理。
-    - **mgr/**: 管理器。
-    - **utils/**: 工具函数。
+   - **config.go**: 配置文件解析和管理。
+   - **config/**: 配置文件解析和管理功能支持。
+   - **db/**: 数据库管理，目前主要支持 MySQL。
+   - **mmo/**: 多人在线游戏（MMO）相关逻辑。
+     + **basis/**: 基础实体和管理器。
+     + **config/**: MMO 配置管理。
+     + **events/**: 事件处理。
+     + **index/**: 实体索引管理。
+     + **manager/**: 实体管理。
+     + **proto/**: 协议定义。
+     + **vars/**: 变量定义。
+   - **server/**: 服务器核心逻辑。
+     + **core/**: 核心服务器管理。
+     + **extension/**: 扩展管理。
+     + **packet/**: 数据包处理。
+     + **status/**: 状态管理。
+   - **verify/**: 验证逻辑。
+   - **clock/**: 时钟管理。
+   - **mgr/**: 管理器。
+   - **utils/**: 工具函数。
 
 2. **res/**: 资源文件。
-    - **conf/**: 配置文件。
+   - **conf/**: 配置文件。
 
 3. **demo/**: 示例代码。
-    - **client/**: 客户端示例。
-        - **net/**: 网络客户端。
-        - **proto/**: 协议示例。
-        - **main.go**: 客户端示例程序入口。
-    - **server/**: 服务器示例。
-        - **cmd/**: 命令行工具。
-        - **extension/**: 扩展示例。
-        - **main.go**: 服务器示例程序入口。
+   - **client/**: 客户端示例。
+     - **net/**: 网络客户端。
+     - **proto/**: 协议示例。
+     - **main.go**: 客户端示例程序入口。
+   - **server/**: 服务器示例。
+     - **cmd/**: 命令行工具。
+     - **extension/**: 扩展示例。
+     - **main.go**: 服务器示例程序入口。
 
 ### 关键功能说明
 
@@ -304,122 +302,119 @@ res/
 ##### `forwardTransfer`
 - **功能**: 将玩家从一个房间转移到另一个房间。
 - **逻辑**:
-    1. 检查目标房间是否存在。
-    2. 检查玩家是否已经在目标房间中。
-    3. 从当前房间移除玩家。
-    4. 将玩家添加到目标房间。
-    5. 确认玩家的下一个房间。
-    6. 触发相应的事件。
+  1. 检查目标房间是否存在。
+  2. 检查玩家是否已经在目标房间中。
+  3. 从当前房间移除玩家。
+  4. 将玩家添加到目标房间。
+  5. 确认玩家的下一个房间。
+  6. 触发相应的事件。
 
 ##### `backwardTransfer`
 - **功能**: 将玩家从当前房间转移到前一个房间。
 - **逻辑**:
-    1. 获取玩家的前一个房间。
-    2. 检查前一个房间是否存在。
-    3. 从当前房间移除玩家。
-    4. 将玩家添加到前一个房间。
-    5. 确认玩家的前一个房间。
-    6. 触发相应的事件。
+  1. 获取玩家的前一个房间。
+  2. 检查前一个房间是否存在。
+  3. 从当前房间移除玩家。
+  4. 将玩家添加到前一个房间。
+  5. 确认玩家的前一个房间。
+  6. 触发相应的事件。
 
 #### 2. 实体管理器 (`engine/mmo/manager/entity.go`)
 
 ##### `CreateRoom`
 - **功能**: 创建一个新的房间。
 - **逻辑**:
-    1. 检查房间是否已经存在。
-    2. 创建新的房间实体。
-    3. 初始化房间实体。
-    4. 设置房间变量和标签。
-    5. 将房间添加到房间索引中。
-    6. 添加实体事件监听器。
-    7. 触发房间初始化事件。
+  1. 检查房间是否已经存在。
+  2. 创建新的房间实体。
+  3. 初始化房间实体。
+  4. 设置房间变量和标签。
+  5. 将房间添加到房间索引中。
+  6. 添加实体事件监听器。
+  7. 触发房间初始化事件。
 
 ##### `CreatePlayer`
 - **功能**: 创建一个新的玩家。
 - **逻辑**:
-    1. 检查玩家是否已经存在。
-    2. 创建新的玩家实体。
-    3. 初始化玩家实体。
-    4. 设置玩家变量。
-    5. 将玩家添加到玩家索引中。
-    6. 添加实体事件监听器。
-    7. 触发玩家初始化事件。
+  1. 检查玩家是否已经存在。
+  2. 创建新的玩家实体。
+  3. 初始化玩家实体。
+  4. 设置玩家变量。
+  5. 将玩家添加到玩家索引中。
+  6. 添加实体事件监听器。
+  7. 触发玩家初始化事件。
 
 #### 3. 数据包处理 (`engine/server/packet/packet.go`)
 
 ##### `AppendJson`
 - **功能**: 将 JSON 数据追加到数据包中。
 - **逻辑**:
-    1. 检查数据是否为空。
-    2. 将每个数据项转换为 JSON 字符串。
-    3. 将 JSON 字符串追加到数据包中。
+  1. 检查数据是否为空。
+  2. 将每个数据项转换为 JSON 字符串。
+  3. 将 JSON 字符串追加到数据包中。
 
 ##### `AppendObject`
 - **功能**: 将对象数据追加到数据包中。
 - **逻辑**:
-    1. 检查数据是否为空。
-    2. 检查参数处理器是否为空。
-    3. 使用参数处理器编码每个数据项。
-    4. 将编码后的数据追加到数据包中。
+  1. 检查数据是否为空。
+  2. 检查参数处理器是否为空。
+  3. 使用参数处理器编码每个数据项。
+  4. 将编码后的数据追加到数据包中。
 
 #### 4. 时钟管理 (`engine/clock/clock.go`)
 
 ##### `Init`
 - **功能**: 初始化时钟管理器。
 - **逻辑**:
-    1. 检查配置是否为空。
-    2. 初始化配置。
-    3. 设置服务器启动时间和启动时间戳。
+  1. 检查配置是否为空。
+  2. 初始化配置。
+  3. 设置服务器启动时间和启动时间戳。
 
 ##### `NowGameClock`
 - **功能**: 获取游戏当前时钟。
 - **逻辑**:
-    1. 获取游戏运行时长。
-    2. 计算游戏当前时钟。
+  1. 获取游戏运行时长。
+  2. 计算游戏当前时钟。
 
 #### 5. 数据源管理 (`engine/db/mysql/manager.go`)
 
 ##### `Init`
 - **功能**: 初始化数据源管理器。
 - **逻辑**:
-    1. 修复配置文件路径。
-    2. 解析配置文件。
-    3. 创建数据源实例。
-    4. 设置表元数据。
-    5. 触发管理器初始化事件。
+  1. 修复配置文件路径。
+  2. 解析配置文件。
+  3. 创建数据源实例。
+  4. 设置表元数据。
+  5. 触发管理器初始化事件。
 
 ##### `OpenAll`
 - **功能**: 打开所有数据源连接。
 - **逻辑**:
-    1. 初始化索引。
-    2. 打开数据源连接。
+  1. 初始化索引。
+  2. 打开数据源连接。
 
 #### 6. 扩展管理 (`engine/server/core/manager.go`)
 
 ##### `onRabbitGamePack`
 - **功能**: 处理游戏数据包。
 - **逻辑**:
-    1. 解析消息数据。
-    2. 验证扩展。
-    3. 获取回收参数。
-    4. 前置处理。
-    5. 请求处理。
-    6. 后置处理。
+  1. 解析消息数据。
+  2. 验证扩展。
+  3. 获取回收参数。
+  4. 前置处理。
+  5. 请求处理。
+  6. 后置处理。
 
-## Related Library
-
+## 依赖库
 - infra-go [https://github.com/xuzhuoxi/infra-go](https://github.com/xuzhuoxi/infra-go)<br>
   基础库支持库。
-
 - goxc [https://github.com/laher/goxc](https://github.com/laher/goxc)<br>
   打包依赖库，主要用于交叉编译
-
 - json-iterator [https://github.com/json-iterator/go](https://github.com/json-iterator/go)<br>
   带对应结构体的Json解释库
 
-## Contact
+## 联系作者
 xuzhuoxi<br>
-<xuzhuoxi@gmail.com> or <mailxuzhuoxi@163.com>
+<xuzhuoxi@gmail.com> or <mailxuzhuoxi@163.com> or <m_xuzhuoxi@outlook.com>
 
 ## License
 Rabbit-Server source code is available under the MIT [License](/LICENSE).
