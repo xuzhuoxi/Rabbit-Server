@@ -8,6 +8,7 @@ import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/extension"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/status"
+	"github.com/xuzhuoxi/infra-go/netx"
 	"github.com/xuzhuoxi/infra-go/timex"
 	"time"
 )
@@ -41,7 +42,7 @@ func (m *CustomRabbitManager) StopManager() {
 	m.ExtensionContainer.DestroyExtensions()
 }
 
-func (m *CustomRabbitManager) onRabbitGamePack(msgData []byte, senderAddress string, other interface{}) bool {
+func (m *CustomRabbitManager) onRabbitGamePack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool {
 	//m.Logger.Infoln("ExtManager.onPack", senderAddress, msgData)
 	funcName := "[RabbitExtensionManager.onRabbitGamePack]"
 	m.StatusDetail.AddReqCount()
@@ -50,16 +51,16 @@ func (m *CustomRabbitManager) onRabbitGamePack(msgData []byte, senderAddress str
 	if server.CodeSuc != rsCode {
 		resp := extension.DefaultResponsePool.GetInstance()
 		defer extension.DefaultResponsePool.Recycle(resp)
-		resp.SetHeader(name, pid, uid, senderAddress)
+		resp.SetHeader(name, pid, uid, connInfo.GetRemoteAddress())
 		resp.(server.IExtensionResponseSettings).SetSockSender(m.SockSender)
 		resp.SetResultCode(rsCode)
 		resp.ResponseNone()
-		m.Logger.Warnln("[RabbitExtensionManager.onRabbitGamePack]",
-			fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, FailCode=%d", name, pid, rsCode)) // 记录失败日志
+		//m.Logger.Warnln("[RabbitExtensionManager.onRabbitGamePack]",
+		//	fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, FailCode=%d", name, pid, rsCode)) // 记录失败日志
 		return false
 	}
 	// 参数处理
-	response, request := m.GetRecycleParams(ext, senderAddress, name, pid, uid, data)
+	response, request := m.GetRecycleParams(ext, connInfo, name, pid, uid, data)
 	defer func() {
 		extension.DefaultRequestPool.Recycle(request)
 		extension.DefaultResponsePool.Recycle(response)

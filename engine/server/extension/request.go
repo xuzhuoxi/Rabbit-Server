@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/packet"
+	"github.com/xuzhuoxi/infra-go/netx"
 )
 
 func NewSockRequest() *SockRequest {
@@ -18,9 +19,18 @@ func NewSockRequest() *SockRequest {
 type SockRequest struct {
 	packet.PacketHeader
 	ParamType server.ExtensionParamType
+	connInfo  netx.IConnInfo
 	binData   [][]byte
 	strData   []string
 	objData   []interface{}
+}
+
+func (req *SockRequest) SetConnInfo(connInfo netx.IConnInfo) {
+	req.connInfo = connInfo
+}
+
+func (req *SockRequest) GetConnInfo() netx.IConnInfo {
+	return req.connInfo
 }
 
 func (req *SockRequest) String() string {

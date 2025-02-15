@@ -6,17 +6,30 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/demo/client/net"
 	"github.com/xuzhuoxi/Rabbit-Server/demo/client/proto/login"
 	"github.com/xuzhuoxi/infra-go/bytex"
+	"github.com/xuzhuoxi/infra-go/encodingx"
+	"github.com/xuzhuoxi/infra-go/encodingx/jsonx"
 	"github.com/xuzhuoxi/infra-go/netx"
+	"github.com/xuzhuoxi/infra-go/netx/tcpx"
 	"time"
 )
 
 var (
-	sleep = make(chan struct{})
+	sleep                             = make(chan struct{})
+	order            binary.ByteOrder = binary.LittleEndian
+	dataBlockHandler                  = bytex.NewDataBlockHandler(order, bytex.DefaultDataToBlockHandler, bytex.DefaultBlockToDataHandler)
 )
+
+func init() {
+	bytex.DefaultOrder, bytex.DefaultDataBlockHandler = order, dataBlockHandler         // 包 bytex 下的大小端设置，封包处理
+	encodingx.DefaultOrder, encodingx.DefaultDataBlockHandler = order, dataBlockHandler // 包 encodingx下的大小端设置，封包处理
+	tcpx.TcpDataBlockHandler = dataBlockHandler                                         // Tcp封包处理
+	jsonx.DefaultDataBlockHandler = dataBlockHandler
+}
 
 func main() {
 	uc, err := openClient()
@@ -49,7 +62,8 @@ func doLogin(uc *net.UserClient) {
 	}()
 }
 
-func onPack(data []byte, senderAddress string, other interface{}) (catch bool) {
+func onPack(data []byte, connInfo netx.IConnInfo, other interface{}) (catch bool) {
+	fmt.Println("Rabbit-Server:Demo-Client.onPack:", len(data), connInfo)
 	dataBlock := bytex.NewBuffDataBlock(bytex.NewDefaultDataBlockHandler())
 	dataBlock.WriteBytes(data)
 	name := dataBlock.ReadString()

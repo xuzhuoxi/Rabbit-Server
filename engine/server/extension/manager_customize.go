@@ -7,6 +7,7 @@ package extension
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
+	"github.com/xuzhuoxi/infra-go/netx"
 )
 
 type CustomManagerSupport struct {
@@ -46,9 +47,9 @@ func (o *CustomManagerSupport) SetCustom(funcStartOnPack server.FuncStartOnPack,
 
 // Custom
 
-func (o *CustomManagerSupport) CustomStartOnPack(senderAddress string) {
+func (o *CustomManagerSupport) CustomStartOnPack(connInfo netx.IConnInfo) {
 	if nil != o.FuncStartOnPack {
-		o.FuncStartOnPack(senderAddress)
+		o.FuncStartOnPack(connInfo)
 	}
 }
 func (o *CustomManagerSupport) CustomParsePacket(msgBytes []byte) (name string, pid string, uid string, data [][]byte) {

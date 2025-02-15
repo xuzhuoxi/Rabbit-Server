@@ -12,17 +12,15 @@ import (
 )
 
 const (
-	RemoteAddress0 = "127.0.0.1:41000"
-	RemoteAddress1 = "127.0.0.1:42000"
+	RemoteAddress1 = "127.0.0.1:41000"
+	RemoteAddress2 = "127.0.0.1:42000"
 	Network        = netx.TcpNetwork
 )
 
-var ClientCreator = tcpx.NewTCP4Client
 var count = 0
 
 func NewUserClient(uId string) *UserClient {
-	client := ClientCreator()
-	return &UserClient{SockClient: client, UserId: uId}
+	return &UserClient{SockClient: tcpx.NewTCPClient(), UserId: uId}
 }
 
 type UserClient struct {
@@ -33,9 +31,9 @@ type UserClient struct {
 func (uc *UserClient) Open() error {
 	var err error = nil
 	if count == 0 {
-		err = uc.OpenWitAddr(RemoteAddress0)
-	} else {
 		err = uc.OpenWitAddr(RemoteAddress1)
+	} else {
+		err = uc.OpenWitAddr(RemoteAddress2)
 	}
 	count = mathx.AbsInt(count - 1)
 	return err

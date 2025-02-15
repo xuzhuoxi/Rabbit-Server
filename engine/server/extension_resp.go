@@ -41,14 +41,16 @@ type IResponsePacket interface {
 }
 
 type IExtensionResponseSettings interface {
-	netx.IAddressProxySetter
+	netx.IUserConnMapperSetter
 	netx.ISockSenderSetter
+	netx.IConnInfoSetter
 }
 
 // IExtensionResponse
 // 响应对象参数集合接口
 type IExtensionResponse interface {
 	IResponsePacket
+	netx.IConnInfoGetter
 	// SetParamInfo
 	// 设置参数类型与处理器
 	SetParamInfo(paramType ExtensionParamType, paramHandler IPacketParamsHandler)

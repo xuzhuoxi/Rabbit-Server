@@ -3,10 +3,17 @@
 // @author xuzhuoxi
 package server
 
+import "github.com/xuzhuoxi/infra-go/netx"
+
+type IExtensionRequestSettings interface {
+	netx.IConnInfoSetter
+}
+
 // IExtensionRequest
 // 请求对象参数集合接口
 type IExtensionRequest interface {
 	IPacketHeader
+	netx.IConnInfoGetter
 	// DataSize 数据长度
 	DataSize() int
 	// SetRequestData

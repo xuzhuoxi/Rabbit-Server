@@ -69,7 +69,7 @@ type IRabbitExtensionContainer interface {
 // Extension管理接口
 type IRabbitExtensionManager interface {
 	logx.ILoggerSetter
-	netx.IAddressProxySetter
+	netx.IUserConnMapperSetter
 
 	// InitManager
 	// 初始化
@@ -107,7 +107,7 @@ type IRabbitExtensionManager interface {
 
 	// OnMessageUnpack
 	// 消息处理入口，这里是并发方法
-	OnMessageUnpack(msgData []byte, senderAddress string, other interface{}) bool
+	OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool
 	// DoRequest
 	// 消息处理入口，这里是并发方法
 	DoRequest(extension IRabbitExtension, req IExtensionRequest, resp IExtensionResponse)
@@ -118,7 +118,7 @@ type IRabbitExtensionManager interface {
 
 // FuncStartOnPack
 // 响应入口
-type FuncStartOnPack = func(senderAddress string)
+type FuncStartOnPack = func(connInfo netx.IConnInfo)
 
 // FuncParsePacket
 // 解释二进制数据
@@ -126,7 +126,7 @@ type FuncParsePacket = func(msgBytes []byte) (extName string, pid string, uid st
 
 // FuncGetExtension
 // 消息处理入口，这里是并发方法
-type FuncGetExtension = func(name string) (extension IRabbitExtension, rsCode int32)
+type FuncGetExtension = func(extName string) (extension IRabbitExtension, rsCode int32)
 
 // FuncStartOnRequest
 // 响应开始
@@ -164,7 +164,7 @@ type ICustomManagerSetting interface {
 }
 
 type ICustomManagerSupport interface {
-	CustomStartOnPack(senderAddress string)
+	CustomStartOnPack(connInfo netx.IConnInfo)
 	CustomParsePacket(msgBytes []byte) (extName string, pid string, uid string, data [][]byte)
 	CustomGetExtension(extName string) (extension IRabbitExtension, rsCode int32)
 	CustomVerify(extName string, pid string, uid string) (rsCode int32)

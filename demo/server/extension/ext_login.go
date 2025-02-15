@@ -41,7 +41,7 @@ func (e *RabbitLoginExtension) DestroyExtension() error {
 func (e *RabbitLoginExtension) onRequestLogin(resp server.IExtensionResponse, req server.IStringRequest) {
 	password := string(req.StringData()[0])
 	if e.check(req.ClientId(), password) {
-		core.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
+		core.RabbitUserConnMapper.MapInto(req.ClientId(), req.GetConnInfo().GetConnId())
 		time.Sleep(time.Millisecond * 20)
 		resp.ResponseString("ok", "200")
 		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)
@@ -53,7 +53,7 @@ func (e *RabbitLoginExtension) onRequestLogin(resp server.IExtensionResponse, re
 func (e *RabbitLoginExtension) onRequestReLogin(resp server.IExtensionResponse, req server.IStringRequest) {
 	password := req.StringData()[0]
 	if e.check(req.ClientId(), password) {
-		core.RabbitAddressProxy.MapIdAddress(req.ClientId(), req.ClientAddress())
+		core.RabbitUserConnMapper.MapInto(req.ClientId(), req.GetConnInfo().GetConnId())
 		time.Sleep(time.Millisecond * 20)
 		resp.ResponseString("ok")
 		e.GetLogger().Traceln("[RabbitLoginExtension.onRequestReLogin]", "Check Suc!", req.ProtoId(), req.ClientId(), password)

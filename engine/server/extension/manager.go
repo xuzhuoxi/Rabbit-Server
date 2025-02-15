@@ -20,7 +20,7 @@ func NewIRabbitExtensionManager() server.IRabbitExtensionManager {
 
 func NewRabbitExtensionManager() *RabbitExtensionManager {
 	m := &RabbitExtensionManager{}
-	m.SetCustomParsePacketFunc(m.ParseMessage)
+	m.SetCustomParsePacketFunc(m.ParseMessage) //设置默认解析函数
 	return m
 }
 
@@ -29,9 +29,9 @@ type RabbitExtensionManager struct {
 	ExtensionContainer server.IRabbitExtensionContainer
 	SockSender         netx.ISockSender
 
-	Logger       logx.ILogger
-	AddressProxy netx.IAddressProxy
-	Mutex        sync.RWMutex
+	Logger         logx.ILogger
+	UserConnMapper netx.IUserConnMapper
+	Mutex          sync.RWMutex
 
 	CustomManagerSupport
 }
@@ -43,10 +43,10 @@ func (m *RabbitExtensionManager) InitManager(handlerContainer netx.IPackHandlerC
 	m.HandlerContainer, m.ExtensionContainer, m.SockSender = handlerContainer, extensionContainer, sockSender
 }
 
-func (m *RabbitExtensionManager) SetAddressProxy(proxy netx.IAddressProxy) {
+func (m *RabbitExtensionManager) SetUserConnMapper(mapper netx.IUserConnMapper) {
 	m.Mutex.Lock()
 	defer m.Mutex.Unlock()
-	m.AddressProxy = proxy
+	m.UserConnMapper = mapper
 }
 
 func (m *RabbitExtensionManager) SetLogger(logger logx.ILogger) {
@@ -112,14 +112,19 @@ type iExtResponse interface {
 	server.IExtensionResponse
 }
 
+type iExtRequest interface {
+	server.IExtensionRequestSettings
+	server.IExtensionRequest
+}
+
 // OnMessageUnpack
 // 消息处理入口，这里是并发方法
 // 并发注意:本方法是否并发，取决于SockServer的并发性
 // 在netx中，TCP,Quic,WebSocket为并发响应，UDP为非并发响应
 // msgData非共享的，但在parsePackMessage后这部分数据会发生变化
-func (m *RabbitExtensionManager) OnMessageUnpack(msgData []byte, senderAddress string, other interface{}) bool {
+func (m *RabbitExtensionManager) OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool {
 	//m.Logger.Infoln("ExtensionManager.onPack", senderAddress, msgData)
-	m.CustomStartOnPack(senderAddress)
+	m.CustomStartOnPack(connInfo)
 	name, pid, uid, data := m.CustomParsePacket(msgData) // 默认调用m.ParseMessage
 	extension, rsCode := m.Verify(name, pid, uid)
 	if server.CodeSuc != rsCode {
@@ -127,7 +132,7 @@ func (m *RabbitExtensionManager) OnMessageUnpack(msgData []byte, senderAddress s
 		return false
 	}
 	//参数处理
-	response, request := m.GetRecycleParams(extension, senderAddress, name, pid, uid, data)
+	response, request := m.GetRecycleParams(extension, connInfo, name, pid, uid, data)
 	defer func() {
 		DefaultRequestPool.Recycle(request)
 		DefaultResponsePool.Recycle(response)
@@ -137,16 +142,13 @@ func (m *RabbitExtensionManager) OnMessageUnpack(msgData []byte, senderAddress s
 	return true
 }
 
-// ParseMessage
+// ParseMessage 默认消息解释函数
 // block0 : eName utf8
 // block1 : pid	utf8
 // block2 : uid	utf8
 // block3 : data [][]byte
 // [n]其它信息
 func (m *RabbitExtensionManager) ParseMessage(msgBytes []byte) (extName string, pid string, uid string, data [][]byte) {
-	if nil != m.FuncParsePacket {
-		return m.FuncParsePacket(msgBytes)
-	}
 	buffToData := bytex.DefaultPoolBuffToData.GetInstance()
 	defer bytex.DefaultPoolBuffToData.Recycle(buffToData)
 
@@ -191,40 +193,45 @@ func (m *RabbitExtensionManager) Verify(extName string, pid string, uid string) 
 
 // GetRecycleParams
 // 构造响应参数
-func (m *RabbitExtensionManager) GetRecycleParams(extension server.IRabbitExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse, req server.IExtensionRequest) {
+func (m *RabbitExtensionManager) GetRecycleParams(extension server.IRabbitExtension, connInfo netx.IConnInfo, name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse, req server.IExtensionRequest) {
 	t, h := extension.GetParamInfo(pid)
-	response := DefaultResponsePool.GetInstance().(iExtResponse)
-	response.SetHeader(name, pid, uid, senderAddress)
-	response.SetSockSender(m.SockSender)
-	response.SetAddressProxy(m.AddressProxy)
-	response.SetResultCode(server.CodeSuc)
-	response.SetParamInfo(t, h)
-	request := DefaultRequestPool.GetInstance()
-	request.SetHeader(name, pid, uid, senderAddress)
-	request.SetRequestData(t, h, data)
-	return response, request
+	return m.getResponse(t, h, connInfo, name, pid, uid), m.getRequest(t, h, connInfo, name, pid, uid, data)
 }
 
 // GetRecycleResponse
 // 构造响应参数
-func (m *RabbitExtensionManager) GetRecycleResponse(extension server.IRabbitExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse) {
+func (m *RabbitExtensionManager) GetRecycleResponse(extension server.IRabbitExtension, connInfo netx.IConnInfo,
+	name string, pid string, uid string, data [][]byte) (resp server.IExtensionResponse) {
 	t, h := extension.GetParamInfo(pid)
-	response := DefaultResponsePool.GetInstance().(iExtResponse)
-	response.SetHeader(name, pid, uid, senderAddress)
-	response.SetSockSender(m.SockSender)
-	response.SetAddressProxy(m.AddressProxy)
-	response.SetResultCode(server.CodeSuc)
-	response.SetParamInfo(t, h)
-	return response
+	return m.getResponse(t, h, connInfo, name, pid, uid)
 }
 
 // GetRecycleRequest
 // 获取可回收的请求结构
-func (m *RabbitExtensionManager) GetRecycleRequest(extension server.IRabbitExtension, senderAddress string, name string, pid string, uid string, data [][]byte) (req server.IExtensionRequest) {
+func (m *RabbitExtensionManager) GetRecycleRequest(extension server.IRabbitExtension, connInfo netx.IConnInfo,
+	name string, pid string, uid string, data [][]byte) (req server.IExtensionRequest) {
 	t, h := extension.GetParamInfo(pid)
-	request := DefaultRequestPool.GetInstance()
-	request.SetHeader(name, pid, uid, senderAddress)
-	request.SetRequestData(t, h, data)
+	return m.getRequest(t, h, connInfo, name, pid, uid, data)
+}
+
+func (m *RabbitExtensionManager) getResponse(pType server.ExtensionParamType, pHandler server.IPacketParamsHandler, connInfo netx.IConnInfo,
+	name string, pid string, uid string) (resp server.IExtensionResponse) {
+	response := DefaultResponsePool.GetInstance().(iExtResponse)
+	response.SetHeader(name, pid, uid, connInfo.GetRemoteAddress())
+	response.SetSockSender(m.SockSender)
+	response.SetUserConnMapper(m.UserConnMapper)
+	response.SetConnInfo(connInfo)
+	response.SetResultCode(server.CodeSuc)
+	response.SetParamInfo(pType, pHandler)
+	return response
+}
+
+func (m *RabbitExtensionManager) getRequest(pType server.ExtensionParamType, pHandler server.IPacketParamsHandler, connInfo netx.IConnInfo,
+	name string, pid string, uid string, data [][]byte) (req server.IExtensionRequest) {
+	request := DefaultRequestPool.GetInstance().(iExtRequest)
+	request.SetHeader(name, pid, uid, connInfo.GetRemoteAddress())
+	request.SetConnInfo(connInfo)
+	request.SetRequestData(pType, pHandler, data)
 	return request
 }
 

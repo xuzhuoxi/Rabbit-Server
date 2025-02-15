@@ -74,7 +74,7 @@ func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	// 这里把Manager、SockServer、Container进行关联
 	o.ExtManager.InitManager(o.SockServer.GetPackHandlerContainer(), o.ExtContainer, o.SockServer)
 	o.ExtManager.SetLogger(o.GetLogger())
-	o.ExtManager.SetAddressProxy(RabbitAddressProxy)
+	o.ExtManager.SetUserConnMapper(RabbitUserConnMapper)
 }
 
 func (o *RabbitServer) registerExtensions() {
@@ -152,6 +152,7 @@ func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
 func (o *RabbitServer) rateUpdate() {
 	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternUpdate)
 	rate := o.Config.GetToHomeRate()
+	o.GetLogger().Debugln("RabbitServer.rateUpdate：", rate)
 	for o.SockServer.IsRunning() {
 		time.Sleep(rate)
 		err := homeClient.UpdateWithGet(url, o.getUpdateStatus(), o.onUpdateResp)
@@ -171,15 +172,15 @@ func (o *RabbitServer) onUpdateResp(resp *http.Response, body *[]byte) {
 func (o *RabbitServer) onConnOpened(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
 	o.StatusDetail.AddLinkCount()
-	address := evd.Data.(string)
-	o.GetLogger().Infoln("[RabbitServer.onConnOpened]", "Client Connection Open:", address)
+	connInfo := evd.Data.(netx.IConnInfo)
+	o.GetLogger().Infoln("[RabbitServer.onConnOpened]", "Client Connection Open:", connInfo)
 	o.DispatchEvent(evd.EventType, o, evd.Data)
 }
 
 func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
 	evd.StopImmediatePropagation()
-	address := evd.Data.(string)
-	o.GetLogger().Infoln("[RabbitServer.onConnClosed]", "Client Connection Close:", address)
+	connInfo := evd.Data.(netx.IConnInfo)
+	o.GetLogger().Infoln("[RabbitServer.onConnClosed]", "Client Connection Close:", connInfo)
 	o.StatusDetail.RemoveLinkCount()
 	o.DispatchEvent(evd.EventType, o, evd.Data)
 }

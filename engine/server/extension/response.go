@@ -19,13 +19,22 @@ func NewSockResponse() *SockResponse {
 
 type SockResponse struct {
 	packet.ResponsePacket
-	SockSender   netx.ISockSender
-	AddressProxy netx.IAddressProxy
-	ParamType    server.ExtensionParamType
+	SockSender     netx.ISockSender
+	UserConnMapper netx.IUserConnMapper
+	ConnInfo       netx.IConnInfo
+	ParamType      server.ExtensionParamType
 }
 
-func (resp *SockResponse) SetAddressProxy(proxy netx.IAddressProxy) {
-	resp.AddressProxy = proxy
+func (resp *SockResponse) SetConnInfo(connInfo netx.IConnInfo) {
+	resp.ConnInfo = connInfo
+}
+
+func (resp *SockResponse) GetConnInfo() netx.IConnInfo {
+	return resp.ConnInfo
+}
+
+func (resp *SockResponse) SetUserConnMapper(mapper netx.IUserConnMapper) {
+	resp.UserConnMapper = mapper
 }
 
 func (resp *SockResponse) SetSockSender(sockSender netx.ISockSender) {
@@ -116,17 +125,17 @@ func (resp *SockResponse) ResponseObject(data ...interface{}) error {
 // private
 
 func (resp *SockResponse) sendRedirectMsgTo(eName string, pId string,
-	interruptOnErr bool, clientIds ...string) error {
-	if len(clientIds) == 0 {
+	interruptOnErr bool, userIds ...string) error {
+	if len(userIds) == 0 {
 		return nil
 	}
 	msg, err1 := resp.GenMsgBytes(eName, pId)
 	if nil != err1 {
 		return err1
 	}
-	for _, clientId := range clientIds {
-		if address, ok := resp.AddressProxy.GetAddress(clientId); ok {
-			err := resp.SockSender.SendPackTo(msg, address)
+	for _, userId := range userIds {
+		if connId, ok := resp.UserConnMapper.GetConnId(userId); ok {
+			err := resp.SockSender.SendPackTo(msg, connId)
 			if nil != err && interruptOnErr {
 				return err
 			}
@@ -140,5 +149,5 @@ func (resp *SockResponse) sendRedirectMsg(eName string, pId string) error {
 	if nil != err {
 		return err
 	}
-	return resp.SockSender.SendPackTo(msg, resp.CAddress)
+	return resp.SockSender.SendPackTo(msg, resp.GetConnInfo().GetConnId()) // TODO: 未修改
 }

@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	// RabbitAddressProxy uid与address的交叉映射
-	RabbitAddressProxy = netx.NewIAddressProxyWithName("Rabbit")
+	// RabbitUserConnMapper uid与连接id的交叉映射
+	RabbitUserConnMapper = netx.NewIUserConnMapperWithName("Rabbit")
 )
 
 const (
