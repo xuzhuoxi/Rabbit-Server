@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Home/core"
 	homeClient "github.com/xuzhuoxi/Rabbit-Home/core/client"
-	"github.com/xuzhuoxi/Rabbit-Home/core/home"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/extension"
@@ -150,15 +149,11 @@ func (o *RabbitServer) onSockServerStop(evd *eventx.EventData) {
 }
 
 func (o *RabbitServer) rateUpdate() {
-	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternUpdate)
 	rate := o.Config.GetToHomeRate()
 	o.GetLogger().Debugln("RabbitServer.rateUpdate：", rate)
 	for o.SockServer.IsRunning() {
 		time.Sleep(rate)
-		err := homeClient.UpdateWithGet(url, o.getUpdateStatus(), o.onUpdateResp)
-		if nil != err {
-			o.GetLogger().Warnln("[RabbitServer.rateUpdate]", err)
-		}
+		o.doUpdate()
 	}
 }
 
@@ -188,13 +183,29 @@ func (o *RabbitServer) onConnClosed(evd *eventx.EventData) {
 // -----------------------------------
 
 func (o *RabbitServer) doLink() {
-	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternLink)
-	homeClient.LinkWithGet(url, o.getLinkInfo(), o.StatusDetail.StatsWeight())
+	url := "http://" + o.Config.ToHome.Addr
+	fmt.Println("RabbitServer.doLink:", url)
+	err := homeClient.LinkWithGet(url, o.getLinkInfo(), o.StatusDetail.StatsWeight(), nil)
+	if nil != err {
+		o.GetLogger().Warnln("[RabbitServer.rateUpdate]", err)
+	}
 }
 
 func (o *RabbitServer) doUnlink() {
-	url := fmt.Sprintf("http://%s/%s", o.Config.ToHome.Addr, home.PatternUnlink)
-	homeClient.UnlinkWithGet(url, o.GetId())
+	url := "http://" + o.Config.ToHome.Addr
+	//fmt.Println("RabbitServer.doUnlink:", url)
+	err := homeClient.UnlinkWithGet(url, o.GetId(), nil)
+	if nil != err {
+		o.GetLogger().Warnln("[RabbitServer.rateUpdate]", err)
+	}
+}
+func (o *RabbitServer) doUpdate() {
+	url := "http://" + o.Config.ToHome.Addr
+	//fmt.Println("RabbitServer.doUpdate:", url)
+	err := homeClient.UpdateWithGet(url, o.getUpdateStatus(), o.onUpdateResp)
+	if nil != err {
+		o.GetLogger().Warnln("[RabbitServer.rateUpdate]", err)
+	}
 }
 
 func (o *RabbitServer) getLinkInfo() core.LinkEntity {

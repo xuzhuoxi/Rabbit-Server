@@ -5,7 +5,7 @@ servers:
       name: "to-home"
       network: "http"
       addr: "127.0.0.1:9000"
-      disable: true
+      disable: false
     to_home_rate: 30s # h小时 m分钟 s秒 ms毫秒 ns纳秒
     from_user:
       name: "main01-from-user"
