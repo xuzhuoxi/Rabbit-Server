@@ -1,40 +1,88 @@
 servers:
-  - id: "main01"
-    name: "RabbitServer"
-    to_home:
-      name: "to-home"
+  - id: "main01" # 服务器ID
+    # 服务器平台ID，用于分组
+    p-id: "main01"
+    # 服务器类型名称，这个不能随便填，因为要在Rabbit-Server启动前注册
+    name: "Rabbit-Server"
+    # 日志引用配置，可在log.yaml文件查看
+    log-ref: 'log_main01'
+
+    # 与Rabbit-Home的注册通信相关配置
+    home:
+      # 是否启用
+      enable: false
+      # 网络名称
+      net-name: "to-home"
+      # 网络通信类型
       network: "http"
-      addr: "127.0.0.1:9000"
-      disable: false
-    to_home_rate: 30s # h小时 m分钟 s秒 ms毫秒 ns纳秒
-    from_user:
-      name: "main01-from-user"
+      # 网络通信地址
+      net-addr: "127.0.0.1:9000"
+      # 是否使用HTTP的POST请求
+      post: false
+      # 更新频率， h小时 m分钟 s秒 ms毫秒 ns纳秒
+      rate: 30s
+      # 是否使用加密传输
+      # 与Rabbit-Home通信的相关加密配置 ---------- ----------
+      encrypt: false
+      # 私钥文件路径
+      key-path: "keys/pkcs8_private.pem"
+
+    # 客户端配置
+    client:
+      # 是否启用
+      net-name: "main01-from-user"
+      # 网络通信类型
       network: "tcp"
-      addr: "127.0.0.1:41000"
-    from_home:
-      name: "main01-from-home"
-      network: "http"
-      addr: "127.0.0.1:9101"
-    extension:
-      all: true
-    log_ref: 'log_main01'
-  - id: "rabbit_login"
-    name: "RabbitServer"
-    to_home:
-      name: "to-home"
-      network: "http"
-      addr: "127.0.0.1:9000"
-      disable: true
-    to_home_rate: 60s # h小时 m分钟 s秒 ms毫秒 ns纳秒
-    from_user:
-      name: "main02-from-user"
-      network: "tcp"
-      addr: "127.0.0.1:42000"
-    from_home:
-      name: "main02-from-home"
-      network: "http"
-      addr: "127.0.0.1:9201"
-    extension:
-      all: false
-      list: [ "Login" ]
-    log_ref: 'log_main02'
+      # 网络通信地址
+      net-addr: "127.0.0.1:41000"
+      # 是否使用加密传输, 若启用，必须通过注册到Rabbit-Home端进行认证并获取临时密钥
+      encrypt: false
+      # 逻辑扩展配置
+      extension:
+        # 是否使用自定义配置，值为true时，blocks与allows才生效
+        # 优先级: blocks > allows
+        custom: false
+        # 禁用列表，all代表全部禁用
+        blocks: [ ]
+        # 允许列表，all代表全部允许
+        allows: [ ]
+
+
+
+
+#    to_home:
+#      name: "to-home"
+#      network: "http"
+#      addr: "127.0.0.1:9000"
+#      disable: false
+#    to_home_rate: 30s # h小时 m分钟 s秒 ms毫秒 ns纳秒
+#    from_user:
+#      name: "main01-from-user"
+#      network: "tcp"
+#      addr: "127.0.0.1:41000"
+#    from_home:
+#      name: "main01-from-home"
+#      network: "http"
+#      addr: "127.0.0.1:9101"
+#    extension:
+#      all: true
+#  - id: "rabbit_login"
+#    name: "RabbitServer"
+#    to_home:
+#      name: "to-home"
+#      network: "http"
+#      addr: "127.0.0.1:9000"
+#      disable: true
+#    to_home_rate: 60s # h小时 m分钟 s秒 ms毫秒 ns纳秒
+#    from_user:
+#      name: "main02-from-user"
+#      network: "tcp"
+#      addr: "127.0.0.1:42000"
+#    from_home:
+#      name: "main02-from-home"
+#      network: "http"
+#      addr: "127.0.0.1:9201"
+#    extension:
+#      all: false
+#      list: [ "Login" ]
+#    log_ref: 'log_main02'

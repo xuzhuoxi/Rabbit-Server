@@ -7,6 +7,7 @@ import (
 	RabbitConfig "github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/utils"
+	"github.com/xuzhuoxi/infra-go/filex"
 )
 
 const (
@@ -28,7 +29,7 @@ func (o CfgRabbitRoot) LoadLogConfig() (conf *RabbitConfig.CfgRabbitLog, err err
 	if o.LogPath == "" {
 		return nil, nil
 	}
-	filePath := utils.FixFilePath(o.LogPath)
+	filePath := filex.FixFilePath(o.LogPath)
 	conf = &RabbitConfig.CfgRabbitLog{}
 	err = utils.UnmarshalFromYaml(filePath, conf)
 	if nil != err {
@@ -41,7 +42,7 @@ func (o CfgRabbitRoot) LoadClockConfig() (conf *RabbitConfig.CfgClock, err error
 	if o.ClockPath == "" {
 		return nil, nil
 	}
-	filePath := utils.FixFilePath(o.ClockPath)
+	filePath := filex.FixFilePath(o.ClockPath)
 	conf = &RabbitConfig.CfgClock{}
 	err = utils.UnmarshalFromYaml(filePath, conf)
 	if nil != err {
@@ -54,7 +55,7 @@ func (o CfgRabbitRoot) LoadMMOConfig() (conf *config.MMOConfig, err error) {
 	if o.MMOPath == "" {
 		return nil, nil
 	}
-	filePath := utils.FixFilePath(o.MMOPath)
+	filePath := filex.FixFilePath(o.MMOPath)
 	conf = &config.MMOConfig{}
 	err = utils.UnmarshalFromYaml(filePath, conf)
 	if nil != err {
@@ -67,7 +68,7 @@ func (o CfgRabbitRoot) LoadServerConfig() (conf *RabbitConfig.CfgRabbitServer, e
 	if o.ServerPath == "" {
 		return nil, nil
 	}
-	filePath := utils.FixFilePath(o.ServerPath)
+	filePath := filex.FixFilePath(o.ServerPath)
 	conf = &RabbitConfig.CfgRabbitServer{}
 	err = utils.UnmarshalFromYaml(filePath, conf)
 	if nil != err {
@@ -80,7 +81,7 @@ func (o CfgRabbitRoot) LoadVerifyConfig() (conf *RabbitConfig.CfgVerifyRoot, err
 	if o.VerifyPath == "" {
 		return nil, nil
 	}
-	filePath := utils.FixFilePath(o.VerifyPath)
+	filePath := filex.FixFilePath(o.VerifyPath)
 	conf = &RabbitConfig.CfgVerifyRoot{}
 	err = utils.UnmarshalFromYaml(filePath, conf)
 	if nil != err {
@@ -91,7 +92,7 @@ func (o CfgRabbitRoot) LoadVerifyConfig() (conf *RabbitConfig.CfgVerifyRoot, err
 }
 
 func LoadRabbitRootConfig(filePath string) (cfg *CfgRabbitRoot, err error) {
-	filePath = utils.FixFilePath(filePath)
+	filePath = filex.FixFilePath(filePath)
 	cfg = &CfgRabbitRoot{}
 	err = utils.UnmarshalFromYaml(filePath, cfg)
 	if nil != err {

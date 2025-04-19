@@ -30,7 +30,7 @@ func (o *RabbitManager) initServers() {
 	}
 	var servers []server.IRabbitServer
 	for _, cfgServerItem := range o.CfgServer.Servers {
-		s, err := server.NewRabbitServer(cfgServerItem.Name)
+		s, err := server.NewRabbitServer(cfgServerItem.TypeName)
 		if nil != err {
 			panic(err)
 		}
@@ -42,7 +42,7 @@ func (o *RabbitManager) initServers() {
 		}
 		s.Init(cfgServerItem)
 		if connSet, ok := s.GetConnSet(); ok {
-			o.ConnManager.AddConnSet(s.GetName(), connSet)
+			o.ConnManager.AddConnSet(s.GetTypeName(), connSet)
 		}
 	}
 	o.ServerManager.Servers = servers

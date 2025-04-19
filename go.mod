@@ -11,6 +11,6 @@ require (
 )
 
 replace (
-	github.com/xuzhuoxi/infra-go v1.1.0 => ../infra-go
 	github.com/xuzhuoxi/Rabbit-Home v1.1.0 => ../Rabbit-Home
+	github.com/xuzhuoxi/infra-go v1.1.0 => ../infra-go
 )

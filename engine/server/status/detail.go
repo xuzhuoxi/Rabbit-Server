@@ -12,7 +12,7 @@ import (
 
 func NewServerStatusDetail(id string, statsInterval int64) *ServerStatusDetail {
 	return &ServerStatusDetail{
-		EntityDetailStatus: core.EntityDetailStatus{
+		UpdateDetailInfo: core.UpdateDetailInfo{
 			Id:            id,
 			StatsInterval: statsInterval,
 		},
@@ -20,7 +20,7 @@ func NewServerStatusDetail(id string, statsInterval int64) *ServerStatusDetail {
 }
 
 type ServerStatusDetail struct {
-	core.EntityDetailStatus
+	core.UpdateDetailInfo
 	lock sync.RWMutex
 }
 

@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
@@ -14,7 +15,8 @@ import (
 type IRabbitServerInfo interface {
 	logx.ILoggerSupport
 	GetId() string
-	GetName() string
+	GetPlatformId() string
+	GetTypeName() string
 }
 
 type IRabbitServerController interface {
@@ -36,7 +38,7 @@ type FuncNewRabbitExtension = func(extName string) IRabbitExtension
 
 // Register ---
 
-const NameRabbitServer = "RabbitServer"
+const NameRabbitServer = "Rabbit-Server"
 
 type FuncNewRabbitServer = func() IRabbitServer
 
@@ -46,9 +48,10 @@ type metaExtension struct {
 }
 
 var (
-	serverMap = make(map[string]FuncNewRabbitServer)
-	extList   = make([]metaExtension, 0, 0)
-	lock      sync.RWMutex
+	serverMap      = make(map[string]FuncNewRabbitServer)
+	extList        = make([]metaExtension, 0, 0)
+	lock           sync.RWMutex
+	Base64Encoding = base64.RawURLEncoding
 )
 
 // Register Server ---
