@@ -6,11 +6,13 @@ package config
 import "github.com/xuzhuoxi/infra-go/logx"
 
 type CfgRabbitLogItem struct {
-	Name string      `yaml:"name"`
-	Conf logx.CfgLog `yaml:"conf"`
+	Name string      `yaml:"name"` // 日志配置名称
+	Conf logx.CfgLog `yaml:"conf"` // 日志配置内容
 }
 
+// CfgRabbitLog
+// 日志配置文件log.yaml对应结构
 type CfgRabbitLog struct {
-	Default string             `yaml:"default"`
-	Logs    []CfgRabbitLogItem `yaml:"logs"`
+	Default string             `yaml:"default"` // 默认日志配置
+	Logs    []CfgRabbitLogItem `yaml:"logs"`    // 其它日志配置
 }

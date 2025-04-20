@@ -4,6 +4,7 @@
 package server
 
 import (
+	"github.com/xuzhuoxi/infra-go/cryptox"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
 )
@@ -137,6 +138,9 @@ type FuncStartOnRequest = func(resp IExtensionResponse, req IExtensionRequest)
 type FuncFinishOnRequest = func(resp IExtensionResponse, req IExtensionRequest)
 
 type ICustomManagerSetting interface {
+	// SetPacketCipher
+	// 设置消息包加密解密处理器
+	SetPacketCipher(cipher cryptox.ICipher)
 	// SetCustomStartOnPackFunc
 	// 设置自定义响应开始行为
 	SetCustomStartOnPackFunc(funcStartOnPack FuncStartOnPack)

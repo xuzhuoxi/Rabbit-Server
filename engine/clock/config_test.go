@@ -4,17 +4,16 @@ package clock
 
 import (
 	"fmt"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"testing"
 )
 
 var (
-	cfg1 = &config.CfgClock{
+	cfg1 = &CfgClock{
 		GameLocation: "Asia/Shanghai",
 		GameZero:     "2022-08-01 10:00:00",
 		DailyZero:    "10h00m00s",
 	}
-	cfg2 = &config.CfgClock{
+	cfg2 = &CfgClock{
 		GameLocation: "Etc/UTC",
 		GameZero:     "2022-08-01 02:00:00",
 		DailyZero:    "10h00m00s",

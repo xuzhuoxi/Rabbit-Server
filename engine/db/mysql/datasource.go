@@ -55,26 +55,35 @@ func NewDataSource(config CfgDataSourceItem) *DataSource {
 type IDataSource interface {
 	eventx.IEventDispatcher
 
-	// IsOpen 判断当前数据源是否已连接
+	// IsOpen
+	// 判断当前数据源是否已连接
 	IsOpen() bool
-	// GetMeta 取得当前数据源的元数据
+	// GetMeta
+	// 取得当前数据源的元数据
 	GetMeta() DatabaseMeta
 
-	// Open 开始启用数据源连接
+	// Open
+	// 开始启用数据源连接
 	Open()
-	// Close 开始关闭数据源连接
+	// Close
+	// 开始关闭数据源连接
 	Close()
 
-	// UpdateMeta 更新当前数据源的元数据信息
+	// UpdateMeta
+	// 更新当前数据源的元数据信息
 	UpdateMeta()
 
-	// SimpleQuery 执行简单sql语句查询
+	// SimpleQuery
+	// 执行简单sql语句查询
 	SimpleQuery(query string, onQuery OnQuery)
-	// Query 执行查询语句
+	// Query
+	// 执行查询语句
 	Query(query string, onQuery OnQuery, args ...interface{})
-	// Update 执行更新语句
+	// Update
+	// 执行更新语句
 	Update(query string, onUpdate OnUpdate, args ...interface{})
-	// ExecTrans 执行事务
+	// ExecTrans
+	// 执行事务
 	ExecTrans(sqlCtx []*SqlCtx, onTransCtx OnTransCtx, onTransCommit OnTransCommit) (err error)
 }
 

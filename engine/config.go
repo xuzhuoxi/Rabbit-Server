@@ -4,15 +4,11 @@
 package server
 
 import (
+	"github.com/xuzhuoxi/Rabbit-Server/engine/clock"
 	RabbitConfig "github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/mmo/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/utils"
 	"github.com/xuzhuoxi/infra-go/filex"
-)
-
-const (
-	GameZeroLayout  = "2006-01-02 15:04:05"
-	DailyZeroLayout = "15h04m05s"
 )
 
 type CfgRabbitRoot struct {
@@ -38,12 +34,12 @@ func (o CfgRabbitRoot) LoadLogConfig() (conf *RabbitConfig.CfgRabbitLog, err err
 	return
 }
 
-func (o CfgRabbitRoot) LoadClockConfig() (conf *RabbitConfig.CfgClock, err error) {
+func (o CfgRabbitRoot) LoadClockConfig() (conf *clock.CfgClock, err error) {
 	if o.ClockPath == "" {
 		return nil, nil
 	}
 	filePath := filex.FixFilePath(o.ClockPath)
-	conf = &RabbitConfig.CfgClock{}
+	conf = &clock.CfgClock{}
 	err = utils.UnmarshalFromYaml(filePath, conf)
 	if nil != err {
 		return nil, err

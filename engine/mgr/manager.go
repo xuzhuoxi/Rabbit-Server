@@ -27,7 +27,7 @@ type IRabbitInitManager interface {
 	// LoadRabbitConfig 加载配置
 	LoadRabbitConfig(rootPath string) error
 	// GetConfigs 取加载好的配置信息
-	GetConfigs() (root server.CfgRabbitRoot, log config.CfgRabbitLog, clock config.CfgClock,
+	GetConfigs() (root server.CfgRabbitRoot, log config.CfgRabbitLog, clock clock.CfgClock,
 		mmo mmoConfig.MMOConfig, server config.CfgRabbitServer, verify config.CfgVerifyRoot)
 
 	// InitLoggerManager 初始化Log管理器
@@ -54,7 +54,7 @@ type IRabbitManager interface {
 type RabbitManager struct {
 	CfgRoot   *server.CfgRabbitRoot
 	CfgLog    *config.CfgRabbitLog
-	CfgClock  *config.CfgClock
+	CfgClock  *clock.CfgClock
 	CfgMMO    *mmoConfig.MMOConfig
 	CfgServer *config.CfgRabbitServer
 	CfgVerify *config.CfgVerifyRoot
@@ -130,7 +130,7 @@ func (o *RabbitManager) LoadRabbitConfig(rootPath string) error {
 	return nil
 }
 
-func (o *RabbitManager) GetConfigs() (root server.CfgRabbitRoot, log config.CfgRabbitLog, clock config.CfgClock,
+func (o *RabbitManager) GetConfigs() (root server.CfgRabbitRoot, log config.CfgRabbitLog, clock clock.CfgClock,
 	mmo mmoConfig.MMOConfig, server config.CfgRabbitServer, verify config.CfgVerifyRoot) {
 	return *o.CfgRoot, *o.CfgLog, *o.CfgClock, *o.CfgMMO, *o.CfgServer, *o.CfgVerify
 }

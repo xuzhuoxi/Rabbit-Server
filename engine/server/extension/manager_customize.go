@@ -7,10 +7,13 @@ package extension
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
+	"github.com/xuzhuoxi/infra-go/cryptox"
 	"github.com/xuzhuoxi/infra-go/netx"
+	"sync"
 )
 
 type CustomManagerSupport struct {
+	Cipher              cryptox.ICipher
 	FuncStartOnPack     server.FuncStartOnPack
 	FuncParsePacket     server.FuncParsePacket
 	FuncGetExtension    server.FuncGetExtension
@@ -18,30 +21,54 @@ type CustomManagerSupport struct {
 	PacketVerifier      server.IPacketVerifier
 	FuncStartOnRequest  server.FuncStartOnRequest
 	FuncFinishOnRequest server.FuncFinishOnRequest
+
+	SupportMutex sync.RWMutex
+}
+
+func (o *CustomManagerSupport) SetPacketCipher(cipher cryptox.ICipher) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
+	o.Cipher = cipher
 }
 
 func (o *CustomManagerSupport) SetCustomStartOnPackFunc(funcStartOnPack server.FuncStartOnPack) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.FuncStartOnPack = funcStartOnPack
 }
 func (o *CustomManagerSupport) SetCustomParsePacketFunc(funcParse server.FuncParsePacket) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.FuncParsePacket = funcParse
 }
 func (o *CustomManagerSupport) SetCustomGetExtensionFunc(funcGet server.FuncGetExtension) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.FuncGetExtension = funcGet
 }
 func (o *CustomManagerSupport) SetCustomVerifyFunc(funcVerify server.FuncVerifyPacket) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.FuncVerifyPacket = funcVerify
 }
 func (o *CustomManagerSupport) SetCustomPacketVerifier(reqVerify server.IPacketVerifier) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.PacketVerifier = reqVerify
 }
 func (o *CustomManagerSupport) SetCustomStartOnRequestFunc(funcStart server.FuncStartOnRequest) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.FuncStartOnRequest = funcStart
 }
 func (o *CustomManagerSupport) SetCustomFinishOnRequestFunc(funcFinish server.FuncFinishOnRequest) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.FuncFinishOnRequest = funcFinish
 }
 func (o *CustomManagerSupport) SetCustom(funcStartOnPack server.FuncStartOnPack, funcParse server.FuncParsePacket, funcVerify server.FuncVerifyPacket, funcStart server.FuncStartOnRequest, funcFinish server.FuncFinishOnRequest) {
+	o.SupportMutex.Lock()
+	defer o.SupportMutex.Unlock()
 	o.FuncStartOnPack, o.FuncParsePacket, o.FuncVerifyPacket, o.FuncStartOnRequest, o.FuncFinishOnRequest = funcStartOnPack, funcParse, funcVerify, funcStart, funcFinish
 }
 

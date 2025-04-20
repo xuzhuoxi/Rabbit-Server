@@ -29,15 +29,15 @@ type CustomRabbitManager struct {
 }
 
 func (m *CustomRabbitManager) StartManager() {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
 	m.ExtensionContainer.InitExtensions()
 	m.HandlerContainer.AppendPackHandler(m.onRabbitGamePack)
 }
 
 func (m *CustomRabbitManager) StopManager() {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
 	m.HandlerContainer.ClearHandler(m.onRabbitGamePack)
 	m.ExtensionContainer.DestroyExtensions()
 }

@@ -274,15 +274,17 @@ func (o *RabbitServer) onLinkResp(res *http.Response, body *[]byte) {
 	if o.Config.Home.Encrypt {
 		if len(suc.InternalSK) == 32 {
 			o.homeInternalCipher = symmetric.NewAESCipher(suc.InternalSK)
+			o.GetLogger().Infoln("[RabbitServer.onLinkResp home.internalSK]:", suc.InternalSK)
 		} else {
-			o.GetLogger().Warnln("[RabbitServer.onLinkResp home.internalSK] size error")
+			o.GetLogger().Warnln("[RabbitServer.onLinkResp home.internalSK] size error:", suc.InternalSK)
 		}
 	}
 	if o.Config.Client.Encrypt {
 		if len(suc.OpenSK) == 32 {
 			o.openCipher = symmetric.NewAESCipher(suc.OpenSK)
+			o.GetLogger().Infoln("[RabbitServer.onLinkResp client.openSK]:", suc.OpenSK)
 		} else {
-			o.GetLogger().Warnln("[RabbitServer.onLinkResp client.openSK] size error")
+			o.GetLogger().Warnln("[RabbitServer.onLinkResp client.openSK] size error:", suc.OpenSK)
 		}
 	}
 	go o.rateUpdate()

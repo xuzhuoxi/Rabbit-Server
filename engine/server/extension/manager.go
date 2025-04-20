@@ -31,78 +31,79 @@ type RabbitExtensionManager struct {
 
 	Logger         logx.ILogger
 	UserConnMapper netx.IUserConnMapper
-	Mutex          sync.RWMutex
+	MgrMutex       sync.RWMutex
 
 	CustomManagerSupport
 }
 
 func (m *RabbitExtensionManager) InitManager(handlerContainer netx.IPackHandlerContainer, extensionContainer server.IRabbitExtensionContainer,
 	sockSender netx.ISockSender) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
 	m.HandlerContainer, m.ExtensionContainer, m.SockSender = handlerContainer, extensionContainer, sockSender
 }
 
 func (m *RabbitExtensionManager) SetUserConnMapper(mapper netx.IUserConnMapper) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
 	m.UserConnMapper = mapper
 }
 
 func (m *RabbitExtensionManager) SetLogger(logger logx.ILogger) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
 	m.Logger = logger
 }
 
 func (m *RabbitExtensionManager) StartManager() {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
 	m.ExtensionContainer.InitExtensions()
-	var _ = m.HandlerContainer.AppendPackHandler(m.OnMessageUnpack)
+	// 关联响应处理函数
+	_ = m.HandlerContainer.AppendPackHandler(m.OnMessageUnpack)
 }
 
 func (m *RabbitExtensionManager) StopManager() {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
-	var _ = m.HandlerContainer.ClearHandler(m.OnMessageUnpack)
-	var _ = m.ExtensionContainer.DestroyExtensions()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
+	_ = m.HandlerContainer.ClearHandler(m.OnMessageUnpack)
+	_ = m.ExtensionContainer.DestroyExtensions()
 }
 
 func (m *RabbitExtensionManager) SaveExtensions() {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
-	var _ = m.ExtensionContainer.SaveExtensions()
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
+	_ = m.ExtensionContainer.SaveExtensions()
 }
 
 func (m *RabbitExtensionManager) SaveExtension(name string) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
-	var _ = m.ExtensionContainer.SaveExtension(name)
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
+	_ = m.ExtensionContainer.SaveExtension(name)
 }
 
 func (m *RabbitExtensionManager) EnableExtension(name string) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
-	var _ = m.ExtensionContainer.EnableExtension(name, true)
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
+	_ = m.ExtensionContainer.EnableExtension(name, true)
 }
 
 func (m *RabbitExtensionManager) DisableExtension(name string) {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
-	var _ = m.ExtensionContainer.EnableExtension(name, false)
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
+	_ = m.ExtensionContainer.EnableExtension(name, false)
 }
 
 func (m *RabbitExtensionManager) EnableExtensions() {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
-	var _ = m.ExtensionContainer.EnableExtensions(true)
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
+	_ = m.ExtensionContainer.EnableExtensions(true)
 }
 
 func (m *RabbitExtensionManager) DisableExtensions() {
-	m.Mutex.Lock()
-	defer m.Mutex.Unlock()
-	var _ = m.ExtensionContainer.EnableExtensions(false)
+	m.MgrMutex.Lock()
+	defer m.MgrMutex.Unlock()
+	_ = m.ExtensionContainer.EnableExtensions(false)
 }
 
 //---------------------------------

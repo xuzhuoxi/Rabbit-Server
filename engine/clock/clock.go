@@ -4,7 +4,6 @@
 package clock
 
 import (
-	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/infra-go/timex"
 	"time"
 )
@@ -17,11 +16,13 @@ func NewRabbitClockManager() *RabbitClockManager {
 	return &RabbitClockManager{}
 }
 
+// IRabbitClockManager
+// 时钟管理器
 type IRabbitClockManager interface {
 	// GetConfig 获取时钟配置
 	GetConfig() RabbitClockConfig
 	// Init 初始化时钟管理器
-	Init(cfg *config.CfgClock) error
+	Init(cfg *CfgClock) error
 	// SetOperaDuration 设置运行时长
 	SetOperaDuration(d time.Duration)
 
@@ -40,7 +41,7 @@ type RabbitClockManager struct {
 	OperationDuration time.Duration // 服务器运行时长
 }
 
-func (o *RabbitClockManager) Init(cfg *config.CfgClock) error {
+func (o *RabbitClockManager) Init(cfg *CfgClock) error {
 	if nil == cfg {
 		o.initConfigDefault()
 	} else {
@@ -84,7 +85,7 @@ func (o *RabbitClockManager) initConfigDefault() {
 	}
 }
 
-func (o *RabbitClockManager) initConfig(cfg *config.CfgClock) error {
+func (o *RabbitClockManager) initConfig(cfg *CfgClock) error {
 	config := &RabbitClockConfig{}
 	err := config.FromCfg(cfg)
 	if nil != err {
