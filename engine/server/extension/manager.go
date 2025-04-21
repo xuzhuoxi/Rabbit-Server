@@ -125,8 +125,12 @@ type iExtRequest interface {
 // msgData非共享的，但在parsePackMessage后这部分数据会发生变化
 func (m *RabbitExtensionManager) OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool {
 	//m.Logger.Infoln("ExtensionManager.onPack", senderAddress, msgData)
+	packet, err := m.DecryptPacket(msgData)
+	if nil != err {
+		return false
+	}
 	m.CustomStartOnPack(connInfo)
-	name, pid, uid, data := m.CustomParsePacket(msgData) // 默认调用m.ParseMessage
+	name, pid, uid, data := m.CustomParsePacket(packet) // 默认调用m.ParseMessage
 	extension, rsCode := m.Verify(name, pid, uid)
 	if server.CodeSuc != rsCode {
 		// 这里可以直接响应失败

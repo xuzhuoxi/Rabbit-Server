@@ -45,7 +45,6 @@ type RabbitServer struct {
 	homeUrl              string
 	homeRsaPrivateCipher asymmetric.IRSAPrivateCipher
 	homeInternalCipher   cryptox.ICipher
-	openCipher           cryptox.ICipher
 	updating             bool
 	rate                 time.Duration
 }
@@ -247,10 +246,10 @@ func (o *RabbitServer) doLink() {
 	linkInfo := o.getLinkInfo()
 	var err error
 	if o.Config.Home.Post {
-		o.GetLogger().Infoln("RabbitServer.doLink with post:", o.homeUrl)
+		o.GetLogger().Infoln("[RabbitServer.doLink] post:", o.homeUrl)
 		err = homeClient.LinkWithPost(o.homeUrl, linkInfo, o.StatusDetail.StatsWeight(), o.onLinkResp)
 	} else {
-		o.GetLogger().Infoln("RabbitServer.doLink with get:", o.homeUrl)
+		o.GetLogger().Infoln("[RabbitServer.doLink] get:", o.homeUrl)
 		err = homeClient.LinkWithGet(o.homeUrl, linkInfo, o.StatusDetail.StatsWeight(), o.onLinkResp)
 	}
 	if nil != err {
@@ -281,7 +280,8 @@ func (o *RabbitServer) onLinkResp(res *http.Response, body *[]byte) {
 	}
 	if o.Config.Client.Encrypt {
 		if len(suc.OpenSK) == 32 {
-			o.openCipher = symmetric.NewAESCipher(suc.OpenSK)
+			openCipher := symmetric.NewAESCipher(suc.OpenSK)
+			o.ExtManager.SetPacketCipher(openCipher)
 			o.GetLogger().Infoln("[RabbitServer.onLinkResp client.openSK]:", suc.OpenSK)
 		} else {
 			o.GetLogger().Warnln("[RabbitServer.onLinkResp client.openSK] size error:", suc.OpenSK)
@@ -305,14 +305,14 @@ func (o *RabbitServer) doUpdate() {
 	updateInfo := o.getUpdateInfo()
 	var err error
 	if o.Config.Home.Post {
-		o.GetLogger().Infoln("RabbitServer.doUpdate with post:", o.homeUrl)
+		o.GetLogger().Infoln("[RabbitServer.doUpdate] post:", o.homeUrl)
 		err = homeClient.UpdateWithPost(o.homeUrl, updateInfo, o.homeInternalCipher, o.onUpdateResp)
 	} else {
-		o.GetLogger().Infoln("RabbitServer.doUpdate with get:", o.homeUrl)
+		o.GetLogger().Infoln("[RabbitServer.doUpdate] get:", o.homeUrl)
 		err = homeClient.UpdateWithGet(o.homeUrl, updateInfo, o.homeInternalCipher, o.onUpdateResp)
 	}
 	if nil != err {
-		o.GetLogger().Warnln("[RabbitServer.rateUpdate error]", err)
+		o.GetLogger().Warnln("[RabbitServer.doUpdate] error]", err)
 	}
 }
 
@@ -335,14 +335,14 @@ func (o *RabbitServer) doUnlink() {
 	unlinkInfo := o.getUnlinkInfo()
 	var err error
 	if o.Config.Home.Post {
-		o.GetLogger().Infoln("RabbitServer.doUnlink with post:", o.homeUrl)
+		o.GetLogger().Infoln("[RabbitServer.doUnlink] post:", o.homeUrl)
 		err = homeClient.UnlinkWithPost(o.homeUrl, unlinkInfo, o.onUnlinkResp)
 	} else {
-		o.GetLogger().Infoln("RabbitServer.doUnlink with get:", o.homeUrl)
+		o.GetLogger().Infoln("[RabbitServer.doUnlink] get:", o.homeUrl)
 		err = homeClient.UnlinkWithGet(o.homeUrl, unlinkInfo, o.onUnlinkResp)
 	}
 	if nil != err {
-		o.GetLogger().Warnln("[RabbitServer.doUnlink error]", err)
+		o.GetLogger().Warnln("[RabbitServer.doUnlink] error:", err)
 	}
 }
 
@@ -385,7 +385,7 @@ func (o *RabbitServer) getUnlinkInfo() core.UnlinkInfo {
 		original := info.OriginalSignData()
 		signature, err := o.homeRsaPrivateCipher.SignBase64(original, server.Base64Encoding)
 		if nil != err {
-			o.GetLogger().Errorln("[RabbitServer.getLinkInfo] SignError:", err)
+			o.GetLogger().Errorln("[RabbitServer.getUnlinkInfo] SignError:", err)
 		} else {
 			info.Signature = signature
 		}

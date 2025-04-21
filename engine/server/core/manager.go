@@ -43,16 +43,22 @@ func (m *CustomRabbitManager) StopManager() {
 }
 
 func (m *CustomRabbitManager) onRabbitGamePack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool {
-	//m.Logger.Infoln("ExtManager.onPack", senderAddress, msgData)
+	//m.Logger.Debugln("[CustomRabbitManager.onRabbitGamePack]", connInfo.GetRemoteAddress(), msgData)
 	funcName := "[RabbitExtensionManager.onRabbitGamePack]"
+	packet, err := m.DecryptPacket(msgData)
+	if nil != err {
+		return false
+	}
+	//m.Logger.Debugln("[CustomRabbitManager.onRabbitGamePack]", connInfo.GetRemoteAddress(), packet)
 	m.StatusDetail.AddReqCount()
-	name, pid, uid, data := m.ParseMessage(msgData)
+	name, pid, uid, data := m.ParseMessage(packet)
 	ext, rsCode := m.Verify(name, pid, uid)
 	if server.CodeSuc != rsCode {
 		resp := extension.DefaultResponsePool.GetInstance()
 		defer extension.DefaultResponsePool.Recycle(resp)
 		resp.SetHeader(name, pid, uid, connInfo.GetRemoteAddress())
 		resp.(server.IExtensionResponseSettings).SetSockSender(m.SockSender)
+		resp.(server.IExtensionResponseSettings).SetConnInfo(connInfo)
 		resp.SetResultCode(rsCode)
 		resp.ResponseNone()
 		//m.Logger.Warnln("[RabbitExtensionManager.onRabbitGamePack]",

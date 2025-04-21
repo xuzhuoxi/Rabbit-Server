@@ -6,6 +6,7 @@
 package extension
 
 import (
+	"fmt"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/infra-go/cryptox"
 	"github.com/xuzhuoxi/infra-go/netx"
@@ -29,6 +30,20 @@ func (o *CustomManagerSupport) SetPacketCipher(cipher cryptox.ICipher) {
 	o.SupportMutex.Lock()
 	defer o.SupportMutex.Unlock()
 	o.Cipher = cipher
+}
+
+func (o *CustomManagerSupport) DecryptPacket(msgBytes []byte) ([]byte, error) {
+	if nil == o.Cipher {
+		return msgBytes, nil
+	}
+	o.SupportMutex.RLock()
+	defer o.SupportMutex.RUnlock()
+	rs, err := o.Cipher.Decrypt(msgBytes)
+	if nil != err {
+		fmt.Println("[CustomManagerSupport.DecryptPacket] error:", err)
+		return msgBytes, err
+	}
+	return rs, nil
 }
 
 func (o *CustomManagerSupport) SetCustomStartOnPackFunc(funcStartOnPack server.FuncStartOnPack) {

@@ -10,7 +10,7 @@ servers:
     # 与Rabbit-Home的注册通信相关配置
     home:
       # 是否启用
-      enable: false
+      enable: true
       # 网络名称
       net-name: "to-home"
       # 网络通信类型
@@ -20,10 +20,10 @@ servers:
       # 是否使用HTTP的POST请求
       post: false
       # 更新频率， h小时 m分钟 s秒 ms毫秒 ns纳秒
-      rate: 30s
+      rate: 10s
       # 是否使用加密传输
       # 与Rabbit-Home通信的相关加密配置 ---------- ----------
-      encrypt: false
+      encrypt: true
       # 私钥文件路径
       key-path: "keys/pkcs8_private.pem"
 
@@ -36,7 +36,7 @@ servers:
       # 网络通信地址
       net-addr: "127.0.0.1:41000"
       # 是否使用加密传输, 若启用，必须通过注册到Rabbit-Home端进行认证并获取临时密钥
-      encrypt: false
+      encrypt: true
       # 逻辑扩展配置
       extension:
         # 是否使用自定义配置，值为true时，blocks与allows才生效
