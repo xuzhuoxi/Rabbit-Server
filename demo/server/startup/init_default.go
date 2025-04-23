@@ -6,7 +6,7 @@ package startup
 import (
 	"encoding/binary"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/packet"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/runtime/params/packets"
 	"github.com/xuzhuoxi/infra-go/bytex"
 	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/encodingx/jsonx"
@@ -34,7 +34,7 @@ func (o *initDefault) StartModule() {
 	encodingx.DefaultOrder, encodingx.DefaultDataBlockHandler = order, dataBlockHandler // 包 encodingx下的大小端设置，封包处理
 	tcpx.TcpDataBlockHandler = dataBlockHandler                                         // Tcp封包处理
 	jsonx.DefaultDataBlockHandler = dataBlockHandler                                    // Json封包处理
-	packet.SetJsonMarshalHandler(jsoniter.Marshal)                                      // 设置Json序列化处理器
+	packets.SetJsonMarshalHandler(jsoniter.Marshal)                                     // 设置Json序列化处理器
 	netx.ReceiverBuffLen = 4096                                                         // 设置数据包缓存的长度
 	o.DispatchEvent(serialx.EventOnStartupModuleStarted, o, nil)
 }

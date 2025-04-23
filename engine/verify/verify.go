@@ -58,7 +58,7 @@ func (o *RabbitVerify) Verify(name string, pid string, uid string) (rsCode int32
 		log.SetStamp(nowStamp) // 重置并记录
 		return server.CodeSuc
 	}
-	//fmt.Println("RabbitVerify.Verify", name, pid, uid, found, log.ReqStamps)
+	//fmt.Println("RabbitVerify.VerifyExtension", name, pid, uid, found, log.ReqStamps)
 	if found.FreqLimitOn() { // FreqLimit 频率限制验证
 		if (nowStamp - log.ReqStamps[len(log.ReqStamps)-1]) < int64(found.GetMinFreq()) {
 			log.AppendStamp(nowStamp)

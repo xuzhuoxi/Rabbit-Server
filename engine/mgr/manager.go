@@ -42,22 +42,21 @@ type IRabbitInitManager interface {
 
 type IRabbitManager interface {
 	logx.ILoggerGetter
-	GetInitManager() IRabbitInitManager
-
-	GetLogManager() logx.ILoggerManager
-	GetClockManger() clock.IRabbitClockManager
-	GetMMOManger() mmo.IMMOManager
-	GetServerManager() IRabbitServerManager
-	GetConnManager() IRabbitConnManager
+	GetInitManager() IRabbitInitManager        // 获取初始化管理器
+	GetLogManager() logx.ILoggerManager        // 获取日志管理器
+	GetClockManger() clock.IRabbitClockManager // 获取时钟管理器
+	GetMMOManger() mmo.IMMOManager             // 获取MMO世界管理器
+	GetServerManager() IRabbitServerManager    // 获取逻辑服务器管理器
+	GetConnManager() IRabbitConnManager        // 获取连接管理器
 }
 
 type RabbitManager struct {
 	CfgRoot   *server.CfgRabbitRoot
-	CfgLog    *config.CfgRabbitLog
-	CfgClock  *clock.CfgClock
-	CfgMMO    *mmoConfig.MMOConfig
-	CfgServer *config.CfgRabbitServer
-	CfgVerify *config.CfgVerifyRoot
+	CfgLog    *config.CfgRabbitLog    // 日志配置
+	CfgClock  *clock.CfgClock         // 时钟配置
+	CfgMMO    *mmoConfig.MMOConfig    // MMO世界配置
+	CfgServer *config.CfgRabbitServer // 逻辑服务器配置
+	CfgVerify *config.CfgVerifyRoot   // 验证配置
 
 	LogManager   logx.ILoggerManager
 	ClockManager clock.IRabbitClockManager

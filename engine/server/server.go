@@ -14,23 +14,43 @@ import (
 
 type IRabbitServerInfo interface {
 	logx.ILoggerSupport
+	// GetId
+	// 获取服务器ID
 	GetId() string
+	// GetPlatformId
+	// 获取平台Id
 	GetPlatformId() string
+	// GetTypeName
+	// 获取服务器类型名称
 	GetTypeName() string
 }
 
 type IRabbitServerController interface {
+	// Init
+	// 初始化服务器
 	Init(cfg config.CfgRabbitServerItem)
+	// Start
+	// 启动服务器
 	Start()
+	// Stop
+	// 停止服务器
 	Stop()
+	// Restart
+	// 重启服务器
 	Restart()
+	// Save
+	// 保存服务器数据
 	Save()
 }
 
 type IRabbitServer interface {
 	IRabbitServerInfo
 	IRabbitServerController
+	// GetConnSet
+	// 获取服务器连接集合
 	GetConnSet() (set netx.IServerConnSet, ok bool)
+	// GetExtensionManager
+	// 获取服务器扩展管理器
 	GetExtensionManager() (mgr IRabbitExtensionManager, ok bool)
 }
 
@@ -56,6 +76,8 @@ var (
 
 // Register Server ---
 
+// NewRabbitServer
+// 创建服务器
 func NewRabbitServer(name string) (server IRabbitServer, err error) {
 	lock.RLock()
 	defer lock.RUnlock()
@@ -65,10 +87,14 @@ func NewRabbitServer(name string) (server IRabbitServer, err error) {
 	return nil, errors.New(fmt.Sprintf("No name[%s] at RabbitServer list. ", name))
 }
 
+// NewRabbitServerDefault
+// 创建默认类型服务器
 func NewRabbitServerDefault() (server IRabbitServer, err error) {
 	return NewRabbitServer(NameRabbitServer)
 }
 
+// RegisterRabbitServer
+// 注册服务器类型名称与对应创建函数
 func RegisterRabbitServer(name string, server FuncNewRabbitServer) {
 	if len(name) == 0 {
 		panic(errors.New(fmt.Sprintf("RegisterRabbitServer Fail: name[%s]", name)))
@@ -81,12 +107,16 @@ func RegisterRabbitServer(name string, server FuncNewRabbitServer) {
 	serverMap[name] = server
 }
 
+// RegisterRabbitServerDefault
+// 注册默认服务器类型名称与对应创建函数
 func RegisterRabbitServerDefault(server FuncNewRabbitServer) {
 	RegisterRabbitServer(NameRabbitServer, server)
 }
 
 // Register Extension ---
 
+// GetAllExtensions
+// 获取全部扩展名称
 func GetAllExtensions() []string {
 	if len(extList) == 0 {
 		return nil
@@ -98,6 +128,8 @@ func GetAllExtensions() []string {
 	return rs
 }
 
+// NewRabbitExtension
+// 创建一个扩展
 func NewRabbitExtension(name string) (extension IRabbitExtension, err error) {
 	lock.RLock()
 	defer lock.RUnlock()
@@ -109,6 +141,8 @@ func NewRabbitExtension(name string) (extension IRabbitExtension, err error) {
 	return nil, errors.New(fmt.Sprintf("No name[%s] at RabbitExtension list.", name))
 }
 
+// RegisterRabbitExtension
+// 注册扩展创建函数
 func RegisterRabbitExtension(name string, extension FuncNewRabbitExtension) {
 	if len(name) == 0 {
 		panic(errors.New(fmt.Sprintf("RegisterRabbitServer Fail: name[%s]", name)))

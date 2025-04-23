@@ -6,9 +6,13 @@
 package server
 
 import (
+	"github.com/xuzhuoxi/infra-go/cryptox"
 	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/logx"
+	"github.com/xuzhuoxi/infra-go/netx"
 )
+
+// Extension ---------- ---------- ---------- ---------- ----------
 
 type IExtension interface {
 	// ExtensionName 主键标识
@@ -34,6 +38,8 @@ type IEnableExtension interface {
 	EnableExtension() error
 	// DisableExtension 禁用
 	DisableExtension() error
+	// SetEnable 设置启用状态
+	SetEnable(enable bool) error
 }
 
 type IGoroutineExtension interface {
@@ -51,7 +57,7 @@ type IRabbitExtension interface {
 	CheckProtoId(protoId string) bool
 	// GetParamInfo
 	// 检查ProtoId对应的设置
-	GetParamInfo(protoId string) (paramType ExtensionParamType, handler IPacketParamsHandler)
+	GetParamInfo(protoId string) (paramType ExtensionParamType, handler IPacketCoding)
 }
 
 // FuncBeforeRequest 响应前置函数
@@ -103,20 +109,121 @@ type IRequestExtensionSetter interface {
 	ClearRequestHandlers()
 }
 
-type IOnRequestExtension interface {
-	// OnRequest
-	// 请求响应
-	OnRequest(resp IExtensionResponse, req IExtensionRequest)
-}
-
 type IBeforeRequestExtension interface {
 	// BeforeRequest
 	// 执行响应前的一些处理
 	BeforeRequest(resp IExtensionResponse, req IExtensionRequest)
 }
 
+type IOnRequestExtension interface {
+	// OnRequest
+	// 请求响应
+	OnRequest(resp IExtensionResponse, req IExtensionRequest)
+}
+
 type IAfterRequestExtension interface {
 	// AfterRequest
 	// 响应结束后的一些处理
 	AfterRequest(resp IExtensionResponse, req IExtensionRequest)
+}
+
+// Container ---------- ---------- ---------- ---------- ----------
+
+type IExtensionContainer interface {
+	// AppendExtension
+	// 增加Extension
+	AppendExtension(ext IExtension)
+	// CheckExtension
+	// 检查
+	CheckExtension(named string) bool
+	// GetExtension
+	// 取Extension
+	GetExtension(named string) IExtension
+	// Len
+	// Extension数量
+	Len() int
+	// Extensions
+	// 列表
+	Extensions() []IExtension
+	// ExtensionsReversed
+	// 反向列表
+	ExtensionsReversed() []IExtension
+	// Range
+	// 按列表处理
+	Range(handler func(index int, ext IExtension))
+	// RangeReverse
+	// 按反向列表处理
+	RangeReverse(handler func(index int, ext IExtension))
+	// HandleAt
+	// 对指定Extension执行处理
+	HandleAt(index int, handler func(index int, ext IExtension)) error
+	// HandleAtName
+	// 对指定Extension执行处理
+	HandleAtName(name string, handler func(name string, ext IExtension)) error
+}
+
+type iInitExtensions interface {
+	// InitExtensions
+	// 初始化全部Extension
+	InitExtensions() []error
+	// DestroyExtensions
+	// 销毁全部Extension
+	DestroyExtensions() []error
+}
+
+type iSaveExtensions interface {
+	// SaveExtension
+	// 保存数据
+	SaveExtension(name string) error
+	// SaveExtensions
+	// 保存数据
+	SaveExtensions() []error
+}
+
+type iEnableExtensions interface {
+	// EnableExtension
+	// 设置Extension的激活状态
+	EnableExtension(extName string, enable bool) error
+	// EnableExtensions
+	// 设置全部Extension的激活状态
+	EnableExtensions(enable bool) []error
+}
+
+// IRabbitExtensionContainer
+// Extension容器接口
+type IRabbitExtensionContainer interface {
+	IExtensionContainer
+	iInitExtensions
+	iSaveExtensions
+	iEnableExtensions
+}
+
+// IRabbitExtensionManager
+// Extension管理器接口
+type IRabbitExtensionManager interface {
+	logx.ILoggerSetter
+	netx.IUserConnMapperSetter
+	iSaveExtensions
+	iEnableExtensions
+
+	// InitManager
+	// 初始化
+	// handlerContainer: 解包处理
+	// extensionContainer： 服务扩展
+	// sockSender: 消息发送器
+	InitManager(handlerContainer netx.IPackHandlerContainer, extensionContainer IRabbitExtensionContainer, sockSender netx.ISockSender)
+
+	// StartManager
+	// 开始运行
+	StartManager()
+	// StopManager
+	// 停止运行
+	StopManager()
+
+	// SetPacketCipher
+	// 设置消息包加密解密处理器
+	SetPacketCipher(cipher cryptox.ICipher)
+	// OnMessageUnpack
+	// 消息处理入口，这里是并发方法
+	OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool
 }

@@ -1,7 +1,7 @@
-// Package core
+// Package runtime
 // Create on 2023/6/14
 // @author xuzhuoxi
-package core
+package runtime
 
 import (
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"

@@ -1,7 +1,7 @@
-// Package packet
+// Package packets
 // Create on 2023/7/22
 // @author xuzhuoxi
-package packet
+package packets
 
 import (
 	"encoding/json"

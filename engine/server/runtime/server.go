@@ -1,4 +1,4 @@
-package core
+package runtime
 
 import (
 	"fmt"
@@ -6,8 +6,7 @@ import (
 	homeClient "github.com/xuzhuoxi/Rabbit-Home/core/client"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/config"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/extension"
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/status"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/runtime/status"
 	"github.com/xuzhuoxi/infra-go/cryptox"
 	"github.com/xuzhuoxi/infra-go/cryptox/asymmetric"
 	"github.com/xuzhuoxi/infra-go/cryptox/symmetric"
@@ -26,7 +25,7 @@ func NewIRabbitServer() server.IRabbitServer {
 }
 
 func NewRabbitServer() *RabbitServer {
-	container := extension.NewIRabbitExtensionContainer()
+	container := NewIRabbitExtensionContainer()
 	rs := &RabbitServer{
 		ExtContainer: container,
 	}
@@ -73,7 +72,7 @@ func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	o.Config = cfg
 	fmt.Println("Init", cfg)
 	o.StatusDetail = status.NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
-	o.ExtManager = NewCustomRabbitManager(o.StatusDetail)
+	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
 	o.homeUrl = fmt.Sprintf("%s://%s", cfg.Home.Network, cfg.Home.NetAddr)
 
 	// 计算更新频率

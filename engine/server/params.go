@@ -4,8 +4,66 @@
 package server
 
 import (
+	"github.com/xuzhuoxi/infra-go/encodingx"
 	"github.com/xuzhuoxi/infra-go/netx"
 )
+
+// Request ---------- ---------- ---------- ---------- ----------
+
+type IExtensionRequestSettings interface {
+	netx.IConnInfoSetter
+}
+
+// IExtensionRequest
+// 请求对象参数集合接口
+type IExtensionRequest interface {
+	IPacketHeader
+	netx.IConnInfoGetter
+	// DataSize 数据长度
+	DataSize() int
+	// SetRequestData
+	// 设置集合数据信息
+	SetRequestData(paramType ExtensionParamType, paramHandler IPacketCoding, data [][]byte)
+}
+
+// IBinaryRequest
+// 数据参数为二进制的请求对象参数集合接口
+type IBinaryRequest interface {
+	IExtensionRequest
+	// BinaryData
+	// RequestBinaryData
+	// 请求的参数数据(二进制)
+	BinaryData() [][]byte
+	// FirstBinary
+	// 第一个请求参数
+	FirstBinary() []byte
+}
+
+// IStringRequest
+// 数据参数为Json的请求对象参数集合接口
+type IStringRequest interface {
+	IExtensionRequest
+	// StringData
+	// 请求的参数数据(String)
+	StringData() []string
+	// FirstString
+	// 第一个请求参数
+	FirstString() string
+}
+
+// IObjectRequest
+// 数据参数为结构体的请求对象参数集合接口
+type IObjectRequest interface {
+	IExtensionRequest
+	// ObjectData
+	// 请求的参数数据(具体数据)
+	ObjectData() []interface{}
+	// FirstObject
+	// 第一个请求参数
+	FirstObject() interface{}
+}
+
+// Response ---------- ---------- ---------- ---------- ----------
 
 type IResponsePacket interface {
 	IPacketHeader
@@ -53,7 +111,7 @@ type IExtensionResponse interface {
 	netx.IConnInfoGetter
 	// SetParamInfo
 	// 设置参数类型与处理器
-	SetParamInfo(paramType ExtensionParamType, paramHandler IPacketParamsHandler)
+	SetParamInfo(paramType ExtensionParamType, paramHandler IPacketCoding)
 	// SetResultCode
 	// 设置返回状态码
 	SetResultCode(rsCode int32)
@@ -96,4 +154,40 @@ type iExtResp interface {
 	// data only supports pointer types
 	// data 只支持指针类型
 	ResponseObject(data ...interface{}) error
+}
+
+// Notify ---------- ---------- ---------- ---------- ----------
+
+type IExtensionNotify interface {
+	IResponsePacket
+	SetCodingHandler(encodeHandler encodingx.ICodingHandler)
+}
+
+// Pool ---------- ---------- ---------- ---------- ----------
+
+// IRequestPool
+// 请求参数集的对象池接口
+type IRequestPool interface {
+	// GetInstance 获取一个实例
+	GetInstance() IExtensionRequest
+	// Recycle 回收一个实例
+	Recycle(instance IExtensionRequest)
+}
+
+// IResponsePool
+// 响应参数集的对象池接口
+type IResponsePool interface {
+	// GetInstance 获取一个实例
+	GetInstance() IExtensionResponse
+	// Recycle 回收一个实例
+	Recycle(instance IExtensionResponse)
+}
+
+// INotifyPool
+// 通知参数集的对象池接口
+type INotifyPool interface {
+	// GetInstance 获取一个实例
+	GetInstance() IExtensionNotify
+	// Recycle 回收一个实例
+	Recycle(instance IExtensionNotify)
 }

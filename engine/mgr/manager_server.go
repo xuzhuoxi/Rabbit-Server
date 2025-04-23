@@ -8,42 +8,37 @@ import (
 )
 
 type IRabbitServerManager interface {
-	SetReqVerify(reqVerify server.IPacketVerifier)
-	SetReqVerifyNew(newReqVerify server.FuncNewIPacketVerifier)
-
+	// StartServers
+	// 启用全部服务器
 	StartServers()
+	// StopServers
+	// 停用全部服务器
 	StopServers()
+	// SaveServers
+	// 保存全部服务器数据
 	SaveServers()
 
+	// StartServer
+	// 启用指定服务器
+	// id 服务器ID
 	StartServer(id string)
+	// StopServer
+	// 停用指定服务器
+	// id 服务器ID
 	StopServer(id string)
+	// SaveServer
+	// 保存指定服务器数据
 	SaveServer(id string)
 
+	// ForEachServer
+	// 遍历服务器
+	// reverse 是否倒序遍历
+	// each 遍历回调
 	ForEachServer(reverse bool, each func(index int, server server.IRabbitServer))
 }
 
 type serverMgr struct {
 	Servers []server.IRabbitServer
-}
-
-func (o *serverMgr) SetReqVerify(reqVerify server.IPacketVerifier) {
-	for index := range o.Servers {
-		mgr, ok := o.Servers[index].GetExtensionManager()
-		if !ok {
-			return
-		}
-		mgr.SetCustomPacketVerifier(reqVerify)
-	}
-}
-
-func (o *serverMgr) SetReqVerifyNew(newReqVerify server.FuncNewIPacketVerifier) {
-	for index := range o.Servers {
-		mgr, ok := o.Servers[index].GetExtensionManager()
-		if !ok {
-			return
-		}
-		mgr.SetCustomPacketVerifier(newReqVerify())
-	}
 }
 
 func (o *serverMgr) StartServer(id string) {

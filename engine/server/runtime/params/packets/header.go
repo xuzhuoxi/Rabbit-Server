@@ -1,9 +1,9 @@
-// Package packet
+// Package packets
 // Created by xuzhuoxi
 // on 2019-05-20.
 // @author xuzhuoxi
 //
-package packet
+package packets
 
 import (
 	"fmt"

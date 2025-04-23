@@ -1,7 +1,7 @@
-// Package packet
+// Package packets
 // Create on 2023/8/6
 // @author xuzhuoxi
-package packet
+package packets
 
 import (
 	"errors"
@@ -20,7 +20,7 @@ func NewResponsePacket() *ResponsePacket {
 type ResponsePacket struct {
 	PacketHeader
 	RsCode       int32
-	ParamHandler server.IPacketParamsHandler
+	ParamHandler server.IPacketCoding
 	MsgBuff      bytex.IBuffToBlock
 	DataBuff     bytex.IBuffToBlock
 	dataBytes    []byte

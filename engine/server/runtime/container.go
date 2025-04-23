@@ -1,9 +1,9 @@
-// Package extension
+// Package runtime
 // Created by xuzhuoxi
 // on 2019-02-26.
 // @author xuzhuoxi
 //
-package extension
+package runtime
 
 import (
 	"errors"
@@ -147,6 +147,16 @@ func (c *RabbitExtensionContainer) DestroyExtensions() []error {
 	return rs
 }
 
+func (c *RabbitExtensionContainer) SaveExtension(name string) error {
+	var err error
+	c.HandleAtName(name, func(_ string, extension server.IExtension) {
+		if e, ok := extension.(server.ISaveExtension); ok {
+			err = e.SaveExtension()
+		}
+	})
+	return err
+}
+
 func (c *RabbitExtensionContainer) SaveExtensions() []error {
 	ln := c.Len()
 	if ln == 0 {
@@ -164,11 +174,11 @@ func (c *RabbitExtensionContainer) SaveExtensions() []error {
 	return rs
 }
 
-func (c *RabbitExtensionContainer) SaveExtension(name string) error {
+func (c *RabbitExtensionContainer) EnableExtension(name string, enable bool) error {
 	var err error
 	c.HandleAtName(name, func(_ string, extension server.IExtension) {
-		if e, ok := extension.(server.ISaveExtension); ok {
-			err = e.SaveExtension()
+		if e, ok := extension.(server.IEnableExtension); ok && e.Enable() != enable {
+			err = e.SetEnable(enable)
 		}
 	})
 	return err
@@ -180,38 +190,18 @@ func (c *RabbitExtensionContainer) EnableExtensions(enable bool) []error {
 		return nil
 	}
 	var rs []error
+	each := func(index int, es server.IExtension) {
+		if e, ok := es.(server.IEnableExtension); ok && e.Enable() != enable {
+			err := e.SetEnable(enable)
+			rs = appendError(rs, err)
+		}
+	}
 	if enable {
-		c.Range(func(_ int, extension server.IExtension) {
-			if e, ok := extension.(server.IEnableExtension); ok && !e.Enable() {
-				err := e.EnableExtension()
-				rs = appendError(rs, err)
-			}
-		})
+		c.Range(each)
 	} else {
-		c.RangeReverse(func(_ int, extension server.IExtension) {
-			if e, ok := extension.(server.IEnableExtension); ok && e.Enable() {
-				err := e.DisableExtension()
-				rs = appendError(rs, err)
-			}
-		})
+		c.RangeReverse(each)
 	}
 	return rs
-}
-
-func (c *RabbitExtensionContainer) EnableExtension(name string, enable bool) error {
-	var err error
-	c.HandleAtName(name, func(_ string, extension server.IExtension) {
-		if e, ok := extension.(server.IEnableExtension); ok {
-			if e.Enable() != enable {
-				if enable {
-					err = e.EnableExtension()
-				} else {
-					err = e.DisableExtension()
-				}
-			}
-		}
-	})
-	return err
 }
 
 func appendError(errs []error, err error) []error {

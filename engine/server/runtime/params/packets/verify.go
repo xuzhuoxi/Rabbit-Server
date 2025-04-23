@@ -1,12 +1,12 @@
-// Package packet
+// Package packets
 // Create on 2023/8/23
 // @author xuzhuoxi
-package packet
+package packets
 
 import "github.com/xuzhuoxi/Rabbit-Server/engine/server"
 
 func NewIReqPacketVerify() server.IPacketVerifier {
-	return &ReqPacketVerifier{}
+	return &PacketVerifier{}
 }
 
 type packetVerifyItem struct {
@@ -14,23 +14,23 @@ type packetVerifyItem struct {
 	verifier server.IPacketVerifier
 }
 
-type ReqPacketVerifier struct {
+type PacketVerifier struct {
 	handlers []*packetVerifyItem
 }
 
-func (o *ReqPacketVerifier) Clear() {
+func (o *PacketVerifier) Clear() {
 	o.handlers = nil
 }
 
-func (o *ReqPacketVerifier) AppendVerifyHandler(handler server.FuncVerifyPacket) {
+func (o *PacketVerifier) AppendVerifyHandler(handler server.FuncVerifyPacket) {
 	o.handlers = append(o.handlers, &packetVerifyItem{handler: handler})
 }
 
-func (o *ReqPacketVerifier) AppendVerifier(verifier server.IPacketVerifier) {
+func (o *PacketVerifier) AppendVerifier(verifier server.IPacketVerifier) {
 	o.handlers = append(o.handlers, &packetVerifyItem{verifier: verifier})
 }
 
-func (o *ReqPacketVerifier) Verify(extName string, pid string, uid string) (rsCode int32) {
+func (o *PacketVerifier) Verify(extName string, pid string, uid string) (rsCode int32) {
 	if len(o.handlers) == 0 {
 		return
 	}

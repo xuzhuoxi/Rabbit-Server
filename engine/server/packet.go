@@ -10,9 +10,13 @@ import "github.com/xuzhuoxi/infra-go/encodingx"
 type ExtensionParamType int
 
 const (
+	// None 无参数类型
 	None ExtensionParamType = iota
+	// Binary 二进制参数类型
 	Binary
+	// String 字符串参数类型
 	String
+	// Object 结构体参数类型
 	Object
 )
 
@@ -41,10 +45,10 @@ type IPacketHeader interface {
 // FuncParamObjectCtor 通用对象参数构造器
 type FuncParamObjectCtor = func() interface{}
 
-// IPacketParamsHandler
+// IPacketCoding
 // 协议参数处理器接口
 // 要求：并发安全
-type IPacketParamsHandler interface {
+type IPacketCoding interface {
 	// SetCodingHandler
 	// 设置编解码器
 	SetCodingHandler(handler encodingx.ICodingHandler)
@@ -65,10 +69,12 @@ type IPacketParamsHandler interface {
 	EncodeResponseParams(data []interface{}) [][]byte
 }
 
-// FuncVerifyPacket 协议校验函数
+// FuncVerifyPacket
+// 消息数据包校验函数
 type FuncVerifyPacket = func(extName string, pid string, uid string) (rsCode int32)
 
-// FuncNewIPacketVerifier 协议校验器构造函数
+// FuncNewIPacketVerifier
+// 消息数据包校验器构造函数
 type FuncNewIPacketVerifier = func() IPacketVerifier
 
 // IPacketVerifier 协议检验器

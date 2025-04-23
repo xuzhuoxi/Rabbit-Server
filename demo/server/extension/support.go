@@ -6,16 +6,16 @@
 package extension
 
 import (
-	"github.com/xuzhuoxi/Rabbit-Server/engine/server/extension"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/runtime"
 	"github.com/xuzhuoxi/infra-go/logx"
 )
 
 func NewRabbitDemoExtensionSupport(Name string) RabbitDemoExtensionSupport {
-	support := extension.NewOnRequestSupport(Name)
-	return RabbitDemoExtensionSupport{OnRequestSupport: support}
+	support := runtime.NewExtensionMeta(Name)
+	return RabbitDemoExtensionSupport{ExtensionMeta: support}
 }
 
 type RabbitDemoExtensionSupport struct {
-	extension.OnRequestSupport
+	runtime.ExtensionMeta
 	logx.LoggerSupport
 }
