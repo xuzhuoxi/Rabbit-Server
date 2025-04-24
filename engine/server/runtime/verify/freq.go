@@ -36,20 +36,20 @@ func (o *reqLog) SetStamp(newStamp int64) {
 	o.ReqStamps = append(o.origin, newStamp)
 }
 
-func NewRabbitVerify(cfg config.CfgVerifyRoot) *RabbitVerify {
-	return &RabbitVerify{
+func NewFreqVerifyItem(cfg config.CfgVerifyRoot) *FreqVerifyItem {
+	return &FreqVerifyItem{
 		CfgVerifyRoot: cfg,
 		Logs:          make(map[string]*reqLog, 2048),
 	}
 }
 
-type RabbitVerify struct {
+type FreqVerifyItem struct {
 	CfgVerifyRoot config.CfgVerifyRoot
 	Logs          map[string]*reqLog
 	Lock          sync.RWMutex
 }
 
-func (o *RabbitVerify) Verify(name string, pid string, uid string) (rsCode int32) {
+func (o *FreqVerifyItem) Verify(name string, pid string, uid string) (rsCode int32) {
 	found := o.CfgVerifyRoot.FindVerify(name, pid)
 	log := o.findLog(uid)
 	nowStamp := time.Now().UnixNano()
@@ -79,7 +79,7 @@ func (o *RabbitVerify) Verify(name string, pid string, uid string) (rsCode int32
 	return server.CodeSuc
 }
 
-func (o *RabbitVerify) findLog(uid string) *reqLog {
+func (o *FreqVerifyItem) findLog(uid string) *reqLog {
 	o.Lock.RLock()
 	if l, ok := o.Logs[uid]; ok {
 		o.Lock.RUnlock()

@@ -223,6 +223,9 @@ type IRabbitExtensionManager interface {
 	// SetPacketCipher
 	// 设置消息包加密解密处理器
 	SetPacketCipher(cipher cryptox.ICipher)
+	// AppendVerifyHandler
+	// 添加消息验证处理器
+	AppendVerifyHandler(handler FuncVerifyPacket)
 	// OnMessageUnpack
 	// 消息处理入口，这里是并发方法
 	OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool

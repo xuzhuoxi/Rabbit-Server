@@ -32,8 +32,8 @@ type ICfgProtoVerify interface {
 type CfgProtoVerify struct {
 	Name       string        `yaml:"name,omitempty"` // Extension中的Name
 	PId        string        `yaml:"pid,omitempty"`  // Extension中的ProtoId
-	MaxPerSec  int           `yaml:"max_per_sec"`    // 每秒最大响应次数
-	MinFreq    string        `yaml:"min_freq"`       // 同一客户端最小响应间隔时间(字符串表示)
+	MaxPerSec  int           `yaml:"max-per-sec"`    // 每秒最大响应次数
+	MinFreq    string        `yaml:"min-freq"`       // 同一客户端最小响应间隔时间(字符串表示)
 	MinFreqVal time.Duration // 同一客户端最小响应间隔时间, 在执行HandleData后值更新
 }
 
@@ -71,6 +71,7 @@ func (o *CfgVerifyRoot) FindVerify(name string, pid string) (v ICfgProtoVerify) 
 	return o.Default
 }
 
+// HandleData
 // 处理
 func (o *CfgVerifyRoot) HandleData() {
 	o.Default.MinFreqVal = timex.ParseDuration(o.Default.MinFreq)

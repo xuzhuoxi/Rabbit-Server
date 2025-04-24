@@ -1,11 +1,11 @@
-// Package packets
+// Package verify
 // Create on 2023/8/23
 // @author xuzhuoxi
-package packets
+package verify
 
 import "github.com/xuzhuoxi/Rabbit-Server/engine/server"
 
-func NewIReqPacketVerify() server.IPacketVerifier {
+func NewIPacketVerifier() server.IPacketVerifier {
 	return &PacketVerifier{}
 }
 

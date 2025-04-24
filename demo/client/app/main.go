@@ -51,6 +51,7 @@ var (
 	}
 	openCipher cryptox.ICipher
 	userClient *net.UserClient
+	freq       = time.Millisecond * 500
 )
 
 func init() {
@@ -128,7 +129,7 @@ func doLogin() {
 	go func() {
 		for {
 			login.TestLoginExtension(userClient, openCipher)
-			time.Sleep(time.Second * 5)
+			time.Sleep(freq)
 		}
 	}()
 }
@@ -140,8 +141,13 @@ func onPack(data []byte, connInfo netx.IConnInfo, other interface{}) (catch bool
 	name := dataBlock.ReadString()
 	pid := dataBlock.ReadString()
 	uid := dataBlock.ReadString()
-	ok := dataBlock.ReadString()
-	str := dataBlock.ReadString()
-	fmt.Println("Response Data：", name, pid, uid, ok, str)
+	var rsCode int32
+	_ = dataBlock.ReadBinary(&rsCode)
+	if rsCode == 0 {
+		str := dataBlock.ReadString()
+		fmt.Println("Response Data suc:", name, pid, uid, rsCode, str)
+	} else {
+		fmt.Println("Response Data：fail:", name, pid, uid, rsCode)
+	}
 	return true
 }

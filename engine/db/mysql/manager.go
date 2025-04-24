@@ -7,6 +7,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/utils"
 	"github.com/xuzhuoxi/infra-go/eventx"
+	"github.com/xuzhuoxi/infra-go/filex"
 )
 
 func NewIDataSourceManager() IDataSourceManager {
@@ -45,7 +46,7 @@ type DataSourceManager struct {
 }
 
 func (o *DataSourceManager) Init(cfgPath string) error {
-	cfgPath = utils.FixFilePath(cfgPath)
+	cfgPath = filex.FixFilePath(cfgPath)
 	config := &CfgDataSource{}
 	err := utils.UnmarshalFromYaml(cfgPath, config)
 	if nil != err {

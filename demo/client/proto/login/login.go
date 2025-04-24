@@ -17,7 +17,7 @@ func TestLoginExtension(uc *net.UserClient, cipher cryptox.IEncryptCipher) {
 	dataBlock.WriteString(uc.UserId) //Uid
 	dataBlock.WriteString(uc.UserId) //Data(Password)
 	bs := dataBlock.ReadBytes()
-	fmt.Println("[TestLoginExtension] data1:", bs)
+	//fmt.Println("[TestLoginExtension] data1:", bs)
 	var err error
 	if nil != cipher {
 		bs, err = cipher.Encrypt(bs)
@@ -25,7 +25,7 @@ func TestLoginExtension(uc *net.UserClient, cipher cryptox.IEncryptCipher) {
 			fmt.Println("[TestLoginExtension] error:", err)
 		}
 	}
-	fmt.Println("[TestLoginExtension] data2:", bs)
+	//fmt.Println("[TestLoginExtension] data2:", bs)
 	uc.SockClient.SendPackTo(bs)
 }
 

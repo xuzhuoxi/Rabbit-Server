@@ -14,7 +14,8 @@ func NewISockNotify() server.IExtensionNotify {
 }
 
 func NewSockNotify() *SockNotify {
-	return &SockNotify{ResponsePacket: *packets.NewResponsePacket()}
+	rs := &SockNotify{ResponsePacket: *packets.NewResponsePacket()}
+	return rs
 }
 
 type SockNotify struct {

@@ -20,7 +20,7 @@ servers:
       # 是否使用HTTP的POST请求
       post: false
       # 更新频率， h小时 m分钟 s秒 ms毫秒 ns纳秒
-      rate: 10s
+      rate: 30s
       # 是否使用加密传输
       # 与Rabbit-Home通信的相关加密配置 ---------- ----------
       encrypt: true

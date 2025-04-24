@@ -70,7 +70,7 @@ func (o *RabbitServer) GetTypeName() string {
 
 func (o *RabbitServer) Init(cfg config.CfgRabbitServerItem) {
 	o.Config = cfg
-	fmt.Println("Init", cfg)
+	//fmt.Println("Init", cfg)
 	o.StatusDetail = status.NewServerStatusDetail(cfg.Id, DefaultStatsInterval)
 	o.ExtManager = NewRabbitExtensionManager(o.StatusDetail)
 	o.homeUrl = fmt.Sprintf("%s://%s", cfg.Home.Network, cfg.Home.NetAddr)

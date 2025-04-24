@@ -1,4 +1,4 @@
-// Package extension
+// Package params
 // Created by xuzhuoxi
 // on 2019-05-19.
 // @author xuzhuoxi
@@ -66,6 +66,12 @@ func NewNotifyPool(newFunc func() server.IExtensionNotify) server.INotifyPool {
 
 type notifyPool struct {
 	pool *sync.Pool
+}
+
+func (o *notifyPool) SetNew(funcNew func() server.IExtensionNotify) {
+	o.pool.New = func() interface{} {
+		return funcNew()
+	}
 }
 
 func (o *notifyPool) GetInstance() server.IExtensionNotify {

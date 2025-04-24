@@ -186,6 +186,9 @@ type IResponsePool interface {
 // INotifyPool
 // 通知参数集的对象池接口
 type INotifyPool interface {
+	// SetNew
+	// 设置新的实例创建函数
+	SetNew(funcNew func() IExtensionNotify)
 	// GetInstance 获取一个实例
 	GetInstance() IExtensionNotify
 	// Recycle 回收一个实例

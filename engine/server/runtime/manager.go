@@ -7,10 +7,12 @@ package runtime
 
 import (
 	"fmt"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/mgr"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/runtime/params"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/runtime/params/packets"
 	"github.com/xuzhuoxi/Rabbit-Server/engine/server/runtime/status"
+	"github.com/xuzhuoxi/Rabbit-Server/engine/server/runtime/verify"
 	"github.com/xuzhuoxi/infra-go/cryptox"
 	"github.com/xuzhuoxi/infra-go/logx"
 	"github.com/xuzhuoxi/infra-go/netx"
@@ -26,10 +28,10 @@ type ExtensionManager struct {
 	SockSender     netx.ISockSender
 	UserConnMapper netx.IUserConnMapper
 
-	VerifySupport VerifySupport
-	RequestPacket packets.RequestPacket
-	ParamsSupport params.ParamsSupport
-	CryptoSupport CryptoSupport
+	PacketVerifier server.IPacketVerifier
+	RequestPacket  packets.RequestPacket
+	ParamsSupport  params.ParamsSupport
+	CryptoSupport  CryptoSupport
 
 	Logger   logx.ILogger
 	MgrMutex sync.RWMutex
@@ -39,8 +41,14 @@ func (o *ExtensionManager) InitManager(handlerContainer netx.IPackHandlerContain
 	sockSender netx.ISockSender) {
 	o.MgrMutex.Lock()
 	defer o.MgrMutex.Unlock()
+
 	o.HandlerContainer, o.ExtensionContainer, o.SockSender = handlerContainer, extensionContainer, sockSender
 	o.ParamsSupport.SockSender = sockSender
+
+	o.PacketVerifier = verify.NewIPacketVerifier()
+	o.PacketVerifier.AppendVerifyHandler(verify.NewExtensionVerifyItem(extensionContainer).Verify)
+	_, _, _, _, _, cfg := mgr.DefaultManager.GetInitManager().GetConfigs()
+	o.PacketVerifier.AppendVerifyHandler(verify.NewFreqVerifyItem(cfg).Verify)
 }
 
 func (o *ExtensionManager) SetUserConnMapper(mapper netx.IUserConnMapper) {
@@ -51,6 +59,12 @@ func (o *ExtensionManager) SetUserConnMapper(mapper netx.IUserConnMapper) {
 }
 func (o *ExtensionManager) SetPacketCipher(cipher cryptox.ICipher) {
 	o.CryptoSupport.SetPacketCipher(cipher)
+}
+
+func (o *ExtensionManager) AppendVerifyHandler(handler server.FuncVerifyPacket) {
+	o.MgrMutex.Lock()
+	defer o.MgrMutex.Unlock()
+	o.PacketVerifier.AppendVerifyHandler(handler)
 }
 
 func (o *ExtensionManager) SetLogger(logger logx.ILogger) {
@@ -64,13 +78,13 @@ func (o *ExtensionManager) StartManager() {
 	defer o.MgrMutex.Unlock()
 	o.ExtensionContainer.InitExtensions()
 	// 关联响应处理函数
-	_ = o.HandlerContainer.AppendPackHandler(o.onSimpleMessageUnpack)
+	_ = o.HandlerContainer.AppendPackHandler(o.OnMessageUnpack)
 }
 
 func (o *ExtensionManager) StopManager() {
 	o.MgrMutex.Lock()
 	defer o.MgrMutex.Unlock()
-	_ = o.HandlerContainer.ClearHandler(o.onSimpleMessageUnpack)
+	_ = o.HandlerContainer.ClearHandler(o.OnMessageUnpack)
 	_ = o.ExtensionContainer.DestroyExtensions()
 }
 
@@ -103,17 +117,18 @@ func (o *ExtensionManager) EnableExtensions(enable bool) []error {
 // 并发注意:本方法是否并发，取决于SockServer的并发性
 // 在netx中，TCP,Quic,WebSocket为并发响应，UDP为非并发响应
 // msgData非共享的，但在ParsePacket后这部分数据会发生变化
-func (o *ExtensionManager) onSimpleMessageUnpack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool {
+func (o *ExtensionManager) OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, _ interface{}) bool {
 	packetData, err := o.CryptoSupport.DecryptPacket(msgData)
 	if nil != err {
 		return false
 	}
-	name, pid, uid, data := o.RequestPacket.ParsePacket(packetData) // 默认调用m.ParseMessage
-	extension, rsCode := o.VerifySupport.VerifyExtension(o.ExtensionContainer, name, pid)
+	name, pid, uid, data := o.RequestPacket.ParsePacket(packetData)
+	rsCode := o.PacketVerifier.Verify(name, pid, uid)
 	if server.CodeSuc != rsCode {
 		// 这里可以直接响应失败
 		return false
 	}
+	extension := o.ExtensionContainer.GetExtension(name).(server.IRabbitExtension)
 	//参数处理
 	response, request := o.ParamsSupport.GetRecycleParams(extension, connInfo, name, pid, uid, data)
 	defer func() {
@@ -151,18 +166,18 @@ func (o *RabbitExtensionManager) StartManager() {
 	o.MgrMutex.Lock()
 	defer o.MgrMutex.Unlock()
 	o.ExtensionContainer.InitExtensions()
-	o.HandlerContainer.AppendPackHandler(o.OnMessageUnpack)
+	_ = o.HandlerContainer.AppendPackHandler(o.OnMessageUnpack)
 }
 
 func (o *RabbitExtensionManager) StopManager() {
 	o.MgrMutex.Lock()
 	defer o.MgrMutex.Unlock()
-	o.HandlerContainer.ClearHandler(o.OnMessageUnpack)
+	_ = o.HandlerContainer.ClearHandler(o.OnMessageUnpack)
 	o.ExtensionContainer.DestroyExtensions()
 }
 
-func (o *RabbitExtensionManager) OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, other interface{}) bool {
-	//m.Logger.Debugln("[RabbitExtensionManager.OnMessageUnpack]", connInfo.GetRemoteAddress(), msgData)
+func (o *RabbitExtensionManager) OnMessageUnpack(msgData []byte, connInfo netx.IConnInfo, _ interface{}) bool {
+	//o.Logger.Debugln("[RabbitExtensionManager.OnMessageUnpack]", connInfo.GetRemoteAddress(), msgData)
 
 	// 解密数据
 	packetData, err := o.CryptoSupport.DecryptPacket(msgData)
@@ -170,12 +185,10 @@ func (o *RabbitExtensionManager) OnMessageUnpack(msgData []byte, connInfo netx.I
 		return false
 	}
 
-	// 统计请求次数
-	o.StatusDetail.AddReqCount()
-
 	// 解析数据，提取响应扩展名与协议Id，并进行存在性检验
 	name, pid, uid, data := o.RequestPacket.ParsePacket(packetData)
-	ext, rsCode := o.VerifySupport.VerifyExtension(o.ExtensionContainer, name, pid)
+	// 检验响应合法性
+	rsCode := o.PacketVerifier.Verify(name, pid, uid)
 	if server.CodeSuc != rsCode {
 		resp := params.DefaultResponsePool.GetInstance()
 		defer params.DefaultResponsePool.Recycle(resp)
@@ -183,12 +196,14 @@ func (o *RabbitExtensionManager) OnMessageUnpack(msgData []byte, connInfo netx.I
 		resp.(server.IExtensionResponseSettings).SetSockSender(o.SockSender)
 		resp.(server.IExtensionResponseSettings).SetConnInfo(connInfo)
 		resp.SetResultCode(rsCode)
-		resp.ResponseNone()
-		//m.Logger.Warnln("[RabbitExtensionManager.onRabbitGamePack]",
-		//	fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, FailCode=%d", name, pid, rsCode)) // 记录失败日志
+		_ = resp.ResponseNone()
+		o.Logger.Warnln("[RabbitExtensionManager.onRabbitGamePack]",
+			fmt.Sprintf("Extension Settlement: Name=%s, PId=%s, FailCode=%d", name, pid, rsCode)) // 记录失败日志
 		return false
 	}
-
+	// 统计请求次数
+	o.StatusDetail.AddReqCount()
+	ext := o.ExtensionContainer.GetExtension(name).(server.IRabbitExtension)
 	// 响应参数生成
 	response, request := o.ParamsSupport.GetRecycleParams(ext, connInfo, name, pid, uid, data)
 	defer func() {

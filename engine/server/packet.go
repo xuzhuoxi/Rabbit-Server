@@ -77,6 +77,12 @@ type FuncVerifyPacket = func(extName string, pid string, uid string) (rsCode int
 // 消息数据包校验器构造函数
 type FuncNewIPacketVerifier = func() IPacketVerifier
 
+// IPacketVerifyItem 协议单项检验器
+type IPacketVerifyItem interface {
+	// Verify 验证请求入口
+	Verify(extName string, pid string, uid string) (rsCode int32)
+}
+
 // IPacketVerifier 协议检验器
 type IPacketVerifier interface {
 	// Clear 清除
